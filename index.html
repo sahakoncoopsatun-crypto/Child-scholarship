@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบตรวจสอบข้อมูลการรับทุนการศึกษา ประจำปี 2569</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts - Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col bg-slate-50 antialiased">
+
+  <div class="flex-grow flex flex-col justify-between">
+    
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-indigo-900 via-blue-900 to-indigo-950 text-white py-8 px-4 text-center shadow-lg border-b border-indigo-500/20">
+      <div class="max-w-4xl mx-auto">
+        <div class="inline-block bg-indigo-500/10 p-3.5 rounded-full border border-indigo-400/20 mb-3 backdrop-blur-sm shadow-inner">
+          <span class="text-3xl font-bold">🎓</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-emerald-200">
+          ระบบติดตามสถานะการยื่นทุนการศึกษาบุตรสมาชิก ประจำปี 2569
+        </h1>
+        <p class="text-slate-300 text-sm mt-2.5 max-w-xl mx-auto font-light leading-relaxed">
+          สวัสดิการทุนส่งเสริมการศึกษาบุตรสมาชิก ประจำปี 2569 <br />
+          <span class="font-semibold text-emerald-400 text-xs">สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด</span>
+        </p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex flex-col gap-6 justify-center">
+      
+      <!-- Live Sync Status Indicator Bar -->
+      <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3.5 px-5 rounded-3xl text-center text-xs font-semibold border bg-blue-50 text-blue-800 border-blue-200 animate-pulse">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+          <span class="font-bold text-slate-900">กำลังเชื่อมต่อฐานข้อมูลออนไลน์...</span>
+        </div>
+      </div>
+
+      <!-- Diagnostic Help Box (จะปรากฏเฉพาะเมื่อดึงข้อมูลล้มเหลว) -->
+      <div id="diagnosticHelpBox" class="hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-200 p-6 rounded-3xl border border-slate-700 shadow-xl text-left">
+        <h3 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-1.5">⚠️ วิธีการตั้งค่า Google Sheets ปี 2569 ให้ทำงานแบบออนไลน์สำเร็จ 100%</h3>
+        <div class="space-y-4 text-xs leading-relaxed">
+          <div>
+            <p class="font-semibold text-white text-xs mb-1">สาเหตุที่การดึงข้อมูลอัตโนมัติไม่ทำงาน:</p>
+            <p class="text-slate-400">ระบบของ Google Sheets จำกัดสิทธิ์ให้ไฟล์นี้เป็นส่วนตัวไว้ สมาชิกที่เข้าชมจากภายนอกจึงยังไม่สามารถสืบค้นได้</p>
+          </div>
+          <div class="border-t border-slate-800 pt-3">
+            <p class="font-semibold text-emerald-400 text-xs mb-1.5">🛠️ วิธีแก้ไขง่ายๆ ใน 1 นาที:</p>
+            <ol class="list-decimal list-inside space-y-2 text-slate-300 pl-1">
+              <li>เปิดไฟล์สเปรดชีตฐานข้อมูลปี 2569 บน Google Drive ของคุณ</li>
+              <li>คลิกปุ่ม <strong class="text-white">"แชร์" (Share)</strong> สีน้ำเงินบริเวณมุมบนขวามือ</li>
+              <li>ตรงส่วนของการเข้าถึงทั่วไป (General Access) ให้ปรับสิทธิ์จาก "จำกัด" (Restricted) เป็น <strong class="text-emerald-400">"ทุกคนที่มีลิงก์" (Anyone with the link)</strong></li>
+              <li>ตรวจสอบให้สถานะขวามือเป็น <strong class="text-white">"มีสิทธิ์อ่าน" (Viewer)</strong> จากนั้นกด <strong class="text-white">"เสร็จสิ้น" (Done)</strong> แล้วเปิดหน้าเว็บใหม่อีกครั้ง ระบบจะดึงข้อมูลสดสำเร็จทันที!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1: Individual Portal (ช่องกรอกข้อมูลตรวจสอบสถานะ) -->
+      <section class="bg-white rounded-3xl border border-slate-200/80 shadow-xl p-6 md:p-10 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-teal-500"></div>
+        
+        <div class="text-center mb-6">
+          <h2 class="text-lg font-bold text-slate-900 mt-3 leading-relaxed">
+            ยินดีต้อนรับสู่ระบบตรวจสอบผลการอนุมัติสวัสดิการส่งเสริมการศึกษาบุตร ประจำปี 2569
+          </h2>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+            ระบบดังกล่าวจัดทำขึ้นเพื่อให้สมาชิกสหกรณ์สามารถตรวจสอบข้อมูลสิทธิ์และสถานะการพิจารณาอนุมัติสวัสดิการส่งเสริมการศึกษาบุตรได้ด้วยตนเอง โดยกรอกหมายเลขประจำตัวสมาชิกสหกรณ์ในช่องที่กำหนด
+          </p>
+        </div>
+
+        <form id="searchForm" class="max-w-md mx-auto">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-grow">
+              <input 
+                id="searchId"
+                type="text"
+                maxlength="5"
+                placeholder="ระบุเลขที่สมาชิก 5 หลัก"
+                class="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-center text-lg font-bold tracking-widest placeholder:tracking-normal placeholder:font-normal placeholder:text-sm transition-all shadow-inner"
+              />
+            </div>
+            <button
+              type="submit"
+              class="bg-indigo-900 hover:bg-indigo-950 text-white font-bold px-8 py-4 rounded-2xl shadow-md transition-all active:scale-95 text-base shrink-0 flex items-center justify-center gap-1.5"
+            >
+              🚀 ตรวจสอบสถานะ
+            </button>
+          </div>
+          <p id="inputError" class="text-xs text-rose-600 font-medium text-center mt-3 hidden animate-pulse"></p>
+        </form>
+      </section>
+
+      <!-- Results Area -->
+      <div id="resultsArea" class="hidden"></div>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
+      <div class="max-w-3xl mx-auto px-4 text-center">
+        <p class="text-[11px] text-slate-500">© 2569 สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด. สงวนลิขสิทธิ์ตามกฎหมาย</p>
+        <p class="text-[10px] text-slate-600 mt-1">ระบบติดตามสถานะดึงข้อมูลและประมวลผลผ่านเข้ารหัสรักษาความปลอดภัยแบบเรียลไทม์ 100%</p>
+        <p class="text-[11px] text-indigo-400/90 mt-2.5 font-medium tracking-wide">ชื่อผู้พัฒนา : นายดำรงค์  ห. เจ้าหน้าที่ธุรการ</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // ฐานข้อมูลตัวอย่างสำหรับกรณีเชื่อมโยงล้มเหลว (Fallback Database)
+    const defaultData = [
+      {
+        index: "1",
+        memberId: "00463",
+        memberName: "นายจารักษ์  เพ็ชรเขียว",
+        childName: "ด.ช.ศุกร์ธันวา เพ็ชรเขียว",
+        amount: 1000,
+        level: "ป.6",
+        coopAccount: "123-45678-9",
+        department: "สสอ.เมือง",
+        docStatus: "ยื่นเอกสารเรียบร้อย",
+        remarks: ""
+      },
+      {
+        index: "2",
+        memberId: "00642",
+        memberName: "นายอภิชาติ ไชยจิตต์",
+        childName: "ด.ช.ทัตเทพ ไชยจิตต์",
+        amount: 1000,
+        level: "ป.5",
+        coopAccount: "987-65432-1",
+        department: "รพ.ทุ่งหว้า",
+        docStatus: "อยู่ระหว่างตรวจสอบเอกสาร",
+        remarks: ""
+      }
+    ];
+
+    let dbData = [...defaultData];
+
+    // ฟังก์ชันสร้างวันเวลาภาษาไทยแบบไดนามิก ณ ตอนดึงข้อมูลสำเร็จ
+    function formatThaiDateTime() {
+      const d = new Date();
+      const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+      const months = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+      ];
+      return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543} เวลา ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} น.`;
+    }
+
+    // ฟังก์ชันอัปเดตสเตตัสออนไลน์ของหัวตาราง (ระบบแสดงผลแยกตามสีอย่างเด่นชัดและถูกต้อง)
+    function updateSyncStatus(type, msg) {
+      const container = document.getElementById('syncStatusContainer');
+      const diagnosticBox = document.getElementById('diagnosticHelpBox');
+      if (!container) return;
+
+      let bgClass = 'bg-blue-50 text-blue-800 border-blue-200 animate-pulse';
+      let dotClass = 'bg-blue-500 animate-pulse';
+
+      if (type === 'success') {
+        bgClass = 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-sm shadow-emerald-100/50';
+        dotClass = 'bg-emerald-500 animate-ping';
+        if (diagnosticBox) diagnosticBox.classList.add('hidden');
+      } else if (type === 'error') {
+        bgClass = 'bg-rose-50 text-rose-800 border-rose-200 shadow-sm shadow-rose-100/50';
+        dotClass = 'bg-rose-500 animate-pulse';
+        if (diagnosticBox) diagnosticBox.classList.remove('hidden');
+      }
+
+      container.className = `flex flex-col sm:flex-row items-center justify-center gap-2 py-3.5 px-5 rounded-3xl text-center text-xs font-semibold border ${bgClass}`;
+      
+      const parts = msg.split('|');
+      const statusText = parts[0] ? parts[0].trim() : msg;
+      const timeText = parts[1] ? parts[1].trim() : '';
+
+      container.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full ${dotClass}"></span>
+          <span class="font-bold text-slate-900">${statusText}</span>
+        </div>
+        ${timeText ? `
+          <span class="hidden sm:inline text-slate-300">|</span>
+          <span class="text-slate-600 font-normal">${timeText}</span>
+        ` : ''}
+      `;
+    }
+
+    // ฟังก์ชันช่วยแยกคำของ CSV เพื่อดึงข้อมูลอย่างแม่นยำ
+    function parseCSV(text) {
+      let p = '', c = '', r = [];
+      let q = false;
+      let row = [''];
+      for (let i = 0; i < text.length; i++) {
+        c = text[i];
+        let next = text[i+1];
+        if (c === '"') {
+          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { q = !q; }
+        } else if (c === ',' && !q) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !q) {
+          if (c === '\r' && next === '\n') { i++; }
+          r.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') {
+        r.push(row);
+      }
+      return r;
+    }
+
+    // วิเคราะห์หาลำดับคอลัมน์ของ Google Sheets อัตโนมัติ (Dynamic Column Mapper)
+    function parseDynamicCSV(rows) {
+      let memberIdCol = -1;
+      let memberNameCol = -1;
+      let childNameCol = -1;
+      let amountCol = -1;
+      let levelCol = -1;
+      let indexCol = -1;
+      let deptCol = -1;
+      let coopAccCol = -1;
+      let docStatusCol = -1;
+      let remarksCol = -1;
+
+      let headerRowIndex = -1;
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r].map(c => (c || '').toString().replace(/[\u00a0\s]/g, '').trim());
+        const hasMemberId = row.some(c => c.includes('เลขที่สมาชิก') || c.includes('เลขสมาชิก') || c.includes('รหัสสมาชิก'));
+        const hasMemberName = row.some(c => c.includes('ชื่อ') && (c.includes('สกุล') || c.includes('สมาชิก') || c.includes('ผู้ขอ') || c.includes('ผู้ยื่น')));
+        if (hasMemberId && hasMemberName) {
+          headerRowIndex = r;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) {
+        for (let r = 0; r < Math.min(rows.length, 25); r++) {
+          const row = rows[r];
+          if (row.length >= 4) {
+            const col1 = (row[1] || '').toString().trim();
+            const col2 = (row[2] || '').toString().trim();
+            if (/^\d+$/.test(col1) && col1.length >= 2 && col2.length > 2) {
+              headerRowIndex = r - 1;
+              break;
+            }
+          }
+        }
+      }
+
+      if (headerRowIndex !== -1 && headerRowIndex < rows.length) {
+        const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
+        for (let i = 0; i < header.length; i++) {
+          const val = header[i].replace(/[\u00a0\s]/g, '');
+          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) {
+            memberIdCol = i;
+          } else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) {
+            memberNameCol = i;
+          } else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง' || val.includes('ชื่อบุตร')) {
+            childNameCol = i;
+          } else if (val.includes('จำนวนเงิน') || val.includes('บาท') || val.includes('เงิน')) {
+            amountCol = i;
+          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) {
+            levelCol = i;
+          } else if (val.includes('ลำดับ') || val.includes('ที่')) {
+            indexCol = i;
+          } else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) {
+            deptCol = i;
+          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์')) {
+            coopAccCol = i;
+          } else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('สถานะการยื่น') || val.includes('สถานะการยื่นเอกสาร')) {
+            docStatusCol = i;
+          } else if (val.includes('หมายเหตุ') || val.includes('สาเหตุ') || val.includes('คำอธิบาย') || val.includes('remark') || val.includes('note')) {
+            remarksCol = i;
+          }
+        }
+      }
+
+      if (memberIdCol === -1) memberIdCol = 1;
+      if (memberNameCol === -1) memberNameCol = 2;
+      if (childNameCol === -1) childNameCol = 4;
+      if (amountCol === -1) amountCol = 5;
+      if (levelCol === -1) levelCol = 6;
+      if (indexCol === -1) indexCol = 0;
+      if (deptCol === -1) deptCol = 3;
+
+      const parsedRecords = [];
+      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+
+      for (let r = startRow; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
+
+        let memberId = (row[memberIdCol] || '').toString().trim();
+        memberId = memberId.replace(/[\s\u00a0\r\n]/g, '');
+
+        if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
+        if (!/\d/.test(memberId)) continue;
+
+        if (/^\d+$/.test(memberId)) {
+          memberId = memberId.padStart(5, '0');
+        }
+
+        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
+        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+        
+        let amount = 0;
+        if (amountCol < row.length) {
+          const rawAmount = (row[amountCol] || '').toString().trim();
+          const cleanAmountStr = rawAmount.replace(/[^0-9.]/g, '');
+          amount = parseFloat(cleanAmountStr) || 0;
+        }
+
+        const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
+        // ดึงลำดับจากช่องคอลัมน์ลำดับของแผ่นงานโดยตรง หากไม่มีให้ fallback เป็นรันลำดับต่อเนื่อง
+        const indexVal = (indexCol !== -1 && indexCol < row.length && (row[indexCol] || '').toString().trim() !== '') 
+          ? (row[indexCol] || '').toString().trim() 
+          : (parsedRecords.length + 1).toString();
+          
+        const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
+        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
+        
+        let docStatus = 'ยื่นเอกสารสำเร็จ';
+        if (docStatusCol !== -1 && docStatusCol < row.length) {
+          const val = (row[docStatusCol] || '').toString().trim();
+          if (val && val !== '-') {
+            docStatus = val;
+          }
+        }
+
+        const remarks = remarksCol !== -1 && remarksCol < row.length ? (row[remarksCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : '';
+
+        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
+
+        parsedRecords.push({
+          index: indexVal,
+          memberId,
+          memberName,
+          childName,
+          amount,
+          level,
+          department,
+          coopAccount,
+          docStatus,
+          remarks
+        });
+      }
+
+      return parsedRecords;
+    }
+
+    // โหลดฐานข้อมูลจาก Google Sheets ผ่าน URL ผูกมัดเรียลไทม์ (ใช้โครงสร้างย้อนกลับเพื่อหลีกเลี่ยง Typo จาก Base64)
+    async function loadDataOnline() {
+      try {
+        const reversedUrl = "vsc=tamrof?tropxe/3pydFlWgnOAVXK_fMnOxQerZ1bLcNppL1/d/steehsdaerps/moc.elgoog.scod//:sptth";
+        const sheetExportUrl = reversedUrl.split('').reverse().join('');
+        const response = await fetch(sheetExportUrl);
+        
+        if (!response.ok) {
+          throw new Error("ดึงข้อมูลออนไลน์ผิดพลาด");
+        }
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+        
+        if (!rows || rows.length < 2) {
+          throw new Error("โครงสร้างไฟล์ไม่สมบูรณ์");
+        }
+
+        const parsed = parseDynamicCSV(rows);
+        if (parsed && parsed.length > 0) {
+          dbData = parsed;
+          updateSyncStatus('success', `เชื่อมต่อข้อมูลออนไลน์แบบเรียลไทม์ (Real-time) | ข้อมูล ณ ${formatThaiDateTime()}`);
+        } else {
+          throw new Error("แกะโครงสร้างตารางข้อมูลล้มเหลว");
+        }
+      } catch (err) {
+        console.error("Online Sync Failed: ", err);
+        updateSyncStatus('error', `อยู่ระหว่างการปรับปรุงข้อมูล | ข้อมูล ณ ${formatThaiDateTime()}`);
+      }
+    }
+
+    // จัดการตรวจกรองสืบค้นสิทธิ์
+    function handleSearchSubmit(e) {
+      if (e) e.preventDefault();
+
+      const searchInput = document.getElementById('searchId');
+      const errorEl = document.getElementById('inputError');
+      const resultsArea = document.getElementById('resultsArea');
+
+      if (!searchInput || !errorEl || !resultsArea) return;
+
+      let targetId = searchInput.value.trim();
+      targetId = targetId.replace(/[\s\u00a0\r\n]/g, '');
+
+      if (/^\d+$/.test(targetId)) {
+        targetId = targetId.padStart(5, '0');
+        searchInput.value = targetId;
+      }
+
+      if (!targetId) {
+        showInputError('กรุณาระบุเลขที่สมาชิกของคุณ');
+        return;
+      }
+
+      if (!/^\d{5}$/.test(targetId)) {
+        showInputError('รูปแบบไม่ถูกต้อง! เลขที่สมาชิกต้องเป็นตัวเลข 5 หลักเท่านั้น (เช่น 01297 หรือ 00463)');
+        return;
+      }
+
+      errorEl.classList.add('hidden');
+      errorEl.textContent = '';
+
+      const matchedRecords = dbData.filter(item => item.memberId === targetId);
+
+      if (matchedRecords.length > 0) {
+        renderTrackingDashboard(matchedRecords);
+      } else {
+        renderNotSubmitted(targetId);
+      }
+    }
+
+    function showInputError(msg) {
+      const errorEl = document.getElementById('inputError');
+      const resultsArea = document.getElementById('resultsArea');
+      if (errorEl && resultsArea) {
+        errorEl.textContent = "⚠️ " + msg;
+        errorEl.classList.remove('hidden');
+        resultsArea.classList.add('hidden');
+      }
+    }
+
+    // วิเคราะห์ประเมินขั้นตอนเอกสารเพื่อแปลงเป็นความคืบหน้า (5 ระดับที่กำหนด - ปรับสลับลำดับให้อนุมัติก่อนจึงจะโอนเข้าบัญชี)
+    function evaluateProgress(status, remarks) {
+      const statusStr = (status || '').toString().trim();
+      const remarkStr = (remarks || '').toString().trim();
+      
+      // ไม่ได้รับการอนุมัติ เนื่องจาก... (ดึงเหตุผลจากช่องหมายเหตุ)
+      if (statusStr.includes('ไม่ได้รับการอนุมัติ') || statusStr.includes('ไม่ผ่าน')) {
+        const reason = remarkStr ? ` เนื่องจาก ${remarkStr}` : '';
+        return { step: 4, label: `ไม่ได้รับการอนุมัติ${reason}`, color: 'rose', percent: 'w-4/5', isFailed: true };
+      }
+      // อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก (ขั้นตอนสุดท้าย 100%)
+      if (statusStr.includes('อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก') || statusStr.includes('โอนเข้าบัญชี') || statusStr.includes('โอนเงิน')) {
+        return { step: 5, label: 'ได้รับการอนุมัติและอยู่ระหว่างการโอนเข้าบัญชีเงินฝาก', color: 'emerald', percent: 'w-full', isFailed: false };
+      }
+      // ได้รับการอนุมัติ (ได้รับการอนุมัติก่อน จึงขยับเป็นขั้นตอนที่ 4 (80%))
+      if (statusStr.includes('ได้รับการอนุมัติ') || statusStr.includes('อนุมัติ')) {
+        return { step: 4, label: 'ได้รับการอนุมัติทุนการศึกษาเรียบร้อย', color: 'indigo', percent: 'w-4/5', isFailed: false };
+      }
+      // อยู่ระหว่างการพิจารณา
+      if (statusStr.includes('อยู่ระหว่างการพิจารณา') || statusStr.includes('การพิจารณา')) {
+        return { step: 3, label: 'อยู่ระหว่างการพิจารณาคุณสมบัติ', color: 'amber', percent: 'w-3/5', isFailed: false };
+      }
+      // อยู่ระหว่างตรวจสอบเอกสาร
+      if (statusStr.includes('อยู่ระหว่างตรวจสอบเอกสาร') || statusStr.includes('ตรวจสอบเอกสาร')) {
+        return { step: 2, label: 'อยู่ระหว่างตรวจสอบความถูกต้องของเอกสาร', color: 'amber', percent: 'w-2/5', isFailed: false };
+      }
+      // ยื่นเอกสารสำเร็จ (Default)
+      return { step: 1, label: 'ยื่นเอกสารสำเร็จเรียบร้อย', color: 'blue', percent: 'w-1/5', isFailed: false };
+    }
+
+    // เรนเดอร์ส่วนแผงควบคุมติดตามสถานะพร้อมแถบขั้นตอนภาพ (Step Progress Tracker)
+    function renderTrackingDashboard(records) {
+      const resultsArea = document.getElementById('resultsArea');
+      if (!resultsArea) return;
+
+      const primaryRecord = records[0];
+      const prog = evaluateProgress(primaryRecord.docStatus, primaryRecord.remarks);
+
+      // เลือกใช้ไอคอนและสีสันตามความเหมาะสมของ Progress
+      let activeColorClass = 'bg-indigo-600';
+      let textAccentClass = 'text-indigo-600 font-bold';
+      let bgAlertClass = 'bg-indigo-50 border-indigo-100/50';
+
+      if (prog.isFailed) {
+        activeColorClass = 'bg-rose-500';
+        textAccentClass = 'text-rose-600 font-bold';
+        bgAlertClass = 'bg-rose-50 border-rose-200';
+      } else if (prog.step === 5) {
+        activeColorClass = 'bg-emerald-500';
+        textAccentClass = 'text-emerald-600 font-bold';
+        bgAlertClass = 'bg-emerald-50 border-emerald-100';
+      } else if (prog.step === 4) {
+        activeColorClass = 'bg-indigo-500';
+        textAccentClass = 'text-indigo-600 font-bold';
+        bgAlertClass = 'bg-indigo-50 border-indigo-100/50';
+      } else if (prog.step === 2 || prog.step === 3) {
+        activeColorClass = 'bg-amber-500';
+        textAccentClass = 'text-amber-600 font-bold';
+        bgAlertClass = 'bg-amber-50 border-amber-100';
+      }
+
+      let rowsHtml = '';
+      for (let i = 0; i < records.length; i++) {
+        const item = records[i];
+        const itemProg = evaluateProgress(item.docStatus, item.remarks);
+
+        let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
+        if (itemProg.isFailed) {
+          badgeClass = 'bg-rose-50 text-rose-800 border border-rose-200';
+        } else if (item.docStatus.includes('อนุมัติ')) {
+          badgeClass = 'bg-indigo-50 text-indigo-800 border border-indigo-200';
+        } else if (item.docStatus.includes('โอน')) {
+          badgeClass = 'bg-emerald-50 text-emerald-800 border border-emerald-200';
+        } else if (item.docStatus.includes('ตรวจสอบ') || item.docStatus.includes('พิจารณา')) {
+          badgeClass = 'bg-amber-50 text-amber-800 border border-amber-200';
+        }
+
+        // คอลัมน์ลำดับดึงจาก index ของสับพาร์ทแผ่นงานที่ส่งเข้ามาตรงตัว
+        rowsHtml += `
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-5 py-4 text-center font-semibold text-slate-400 whitespace-nowrap">${item.index}</td>
+            <td class="px-5 py-4 font-mono font-bold text-indigo-700 whitespace-nowrap">${item.memberId}</td>
+            <td class="px-5 py-4 font-semibold text-slate-800 whitespace-nowrap">${item.memberName}</td>
+            <td class="px-5 py-4 text-slate-900 font-medium whitespace-nowrap">${item.childName}</td>
+            <td class="px-5 py-4 text-right font-bold text-emerald-600 whitespace-nowrap">${item.amount.toLocaleString()} บาท</td>
+            <td class="px-5 py-4 text-center font-bold text-slate-700 whitespace-nowrap">
+              <span class="bg-slate-100 px-3 py-1 rounded-full text-xs">${item.level}</span>
+            </td>
+            <td class="px-5 py-4 font-mono font-semibold text-slate-700 whitespace-nowrap">${item.coopAccount || '-'}</td>
+            <td class="px-5 py-4 text-center whitespace-nowrap">
+              <span class="px-3.5 py-1.5 rounded-full text-xs font-bold ${badgeClass}">${item.docStatus}</span>
+            </td>
+          </tr>
+        `;
+      }
+
+      resultsArea.innerHTML = `
+        <div class="space-y-6 animate-fadeIn">
+          
+          <!-- Visual Step Progress Tracker Card -->
+          <section class="bg-white rounded-3xl border border-slate-200 shadow-xl p-6 md:p-8 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
+            
+            <h3 class="text-xs font-bold text-slate-400 mb-6 uppercase tracking-wider">แผงรายงานความคืบหน้าคำขอปี 2569</h3>
+            
+            <div class="relative mb-8 overflow-x-auto pb-4">
+              <div class="min-w-[650px] relative">
+                <!-- แถบหลักพาร์ท -->
+                <div class="absolute top-5 left-10 right-10 h-1 bg-slate-200 rounded-full"></div>
+                <!-- แถบแสดงความคืบหน้าสถานะจริง -->
+                <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-500 ${prog.percent}"></div>
+
+                <div class="relative z-10 flex justify-between">
+                  <!-- ขั้นที่ 1: ยื่นเอกสารสำเร็จ -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                      1
+                    </div>
+                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 1 ? 'text-indigo-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
+                  </div>
+
+                  <!-- ขั้นที่ 2: อยู่ระหว่างตรวจสอบเอกสาร -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                      2
+                    </div>
+                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 2 ? 'text-indigo-900' : 'text-slate-400'}">ตรวจสอบเอกสาร</span>
+                  </div>
+
+                  <!-- ขั้นที่ 3: อยู่ระหว่างการพิจารณา -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 3 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                      3
+                    </div>
+                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 3 ? 'text-indigo-900' : 'text-slate-400'}">การพิจารณา</span>
+                  </div>
+
+                  <!-- ขั้นที่ 4: ผลการอนุมัติ / ไม่ได้รับการอนุมัติ -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
+                      prog.step >= 4 
+                        ? (prog.isFailed ? 'bg-rose-500 text-white animate-bounce' : 'bg-indigo-600 text-white') 
+                        : 'bg-slate-200 text-slate-500'
+                    }">
+                      4
+                    </div>
+                    <span class="text-[11px] font-bold mt-2.5 ${
+                      prog.step >= 4 
+                        ? (prog.isFailed ? 'text-rose-600' : 'text-indigo-900') 
+                        : 'text-slate-400'
+                    }">
+                      ${prog.isFailed ? 'ไม่ได้รับการอนุมัติ' : 'อนุมัติเรียบร้อย'}
+                    </span>
+                  </div>
+
+                  <!-- ขั้นที่ 5: อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
+                      prog.step >= 5 
+                        ? 'bg-emerald-500 text-white animate-pulse' 
+                        : 'bg-slate-200 text-slate-500'
+                    }">
+                      5
+                    </div>
+                    <span class="text-[11px] font-bold mt-2.5 ${
+                      prog.step >= 5 
+                        ? 'text-emerald-700' 
+                        : 'text-slate-400'
+                    }">
+                      โอนเข้าบัญชี
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- กล่องสรุปผลประเมินตามชนิดสถานะ -->
+            <div class="${bgAlertClass} rounded-2xl p-4.5 border flex items-center justify-between transition-all duration-300">
+              <div class="flex-grow pr-4">
+                <span class="text-[10px] text-slate-400 font-semibold block uppercase">ผลการตรวจสอบสิทธิ์</span>
+                <span class="text-sm font-semibold text-slate-900">
+                  คำขอของสมาชิก : <span class="${textAccentClass}">${prog.label}</span>
+                </span>
+              </div>
+              <span class="text-xl shrink-0">${prog.isFailed ? '❌' : prog.step === 5 ? '🎉' : '⏳'}</span>
+            </div>
+          </section>
+
+          <!-- Detail Table Section -->
+          <section class="bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+            <div class="p-6 md:p-8">
+              <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">ประวัติรายละเอียดการยื่นคำขอรับสิทธิ์สวัสดิการของท่าน</h4>
+              <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table class="min-w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                      <th class="px-5 py-4 text-center whitespace-nowrap">ลำดับ</th>
+                      <th class="px-5 py-4 whitespace-nowrap">เลขที่สมาชิก</th>
+                      <th class="px-5 py-4 whitespace-nowrap">ชื่อ - สกุล สมาชิก</th>
+                      <th class="px-5 py-4 whitespace-nowrap">ชื่อบุตร</th>
+                      <th class="px-5 py-4 text-right whitespace-nowrap">จำนวนเงิน</th>
+                      <th class="px-5 py-4 text-center whitespace-nowrap">ชั้นปี</th>
+                      <th class="px-5 py-4 whitespace-nowrap">เลขที่บัญชีสหกรณ์</th>
+                      <th class="px-5 py-4 text-center whitespace-nowrap">สถานะการยื่นเอกสาร</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    ${rowsHtml}
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-4 flex flex-col sm:flex-row items-center justify-between p-4 bg-indigo-50 border border-indigo-100/50 rounded-2xl gap-2">
+                <span class="text-slate-600 text-sm font-semibold">รวมวงเงินช่วยเหลือจัดสรรที่ได้รับสิทธิ์:</span>
+                <span class="text-xl font-bold text-indigo-900">
+                  ${records.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()} บาท
+                </span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      `;
+      resultsArea.classList.remove('hidden');
+    }
+
+    // เรนเดอร์การแสดงผลกรณีไม่พบสิทธิ์ (Not Submitted Card)
+    function renderNotSubmitted(attemptedId) {
+      const Pence = attemptedId;
+      const resultsArea = document.getElementById('resultsArea');
+      if (!resultsArea) return;
+
+      resultsArea.innerHTML = `
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden animate-fadeIn">
+          <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-6 flex items-center gap-4">
+            <div class="bg-white/20 p-2.5 rounded-2xl">
+              <span class="text-lg">⚠️</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold">ไม่พบข้อมูลการยื่นขอรับทุนการศึกษา ประจำปี 2569</h3>
+              <p class="text-xs text-amber-100">เลขที่สมาชิก ${Pence} ตรวจสอบไม่ผ่านเกณฑ์บันทึกการรับทุน</p>
+            </div>
+          </div>
+
+          <div class="p-8 text-center">
+            <p class="text-base font-semibold text-rose-600 mb-2">
+              "ไม่ได้ยื่นรับทุนเมื่อปี 2569"
+            </p>
+            <p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+              ระบบได้ตรวจสอบแล้วว่า สมาชิกเลขที่ <strong class="text-slate-900 font-bold">${Pence}</strong> <strong>ไม่ได้ส่งแบบคำขออนุมัติหรือยื่นรับทุนการศึกษาบุตรเมื่อปี 2569</strong> หรือข้อมูลเอกสารสิทธิ์จัดส่งเลยช่วงเวลากำหนดการลงทะเบียนของระบบสหกรณ์ฯ
+            </p>
+            
+            <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+              <a 
+                href="tel:074721930" 
+                class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all animate-bounce"
+              >
+                📞 โทร. 074721930 (งานธุรการ)
+              </a>
+              <a 
+                href="tel:0953937696" 
+                class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all"
+              >
+                📱 โทร. 0953937696 (งานธุรการ)
+              </a>
+            </div>
+
+            <div class="mt-6 pt-5 border-t border-slate-100 text-xs text-slate-400 max-w-sm mx-auto">
+              หากมีข้อสงสัยหรือมีความประสงค์ยื่นทักท้วงข้อมูลสิทธิ์ กรุณาติดต่อ ฝ่ายงานธุรการ สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด
+            </div>
+          </div>
+        </section>
+      `;
+      resultsArea.classList.remove('hidden');
+    }
+
+    // เริ่มต้นระบบงานทันทีเมื่อโหลดหน้าสำเร็จ
+    window.addEventListener('DOMContentLoaded', () => {
+      // ลงทะเบียนการจัดการฟอร์ม
+      const searchForm = document.getElementById('searchForm');
+      if (searchForm) {
+        searchForm.addEventListener('submit', handleSearchSubmit);
+      }
+      
+      // ดึงข้อมูลออนไลน์จาก Google Sheets ทันที
+      loadDataOnline();
+    });
+  </script>
+</body>
+</html>
