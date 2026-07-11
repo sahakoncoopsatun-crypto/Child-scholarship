@@ -18,7 +18,7 @@
   <div class="flex-grow flex flex-col justify-between">
     
     <!-- Header Section -->
-    <header class="bg-gradient-to-r from-indigo-900 via-blue-900 to-indigo-950 text-white py-8 px-4 text-center shadow-lg border-b border-indigo-500/20">
+    <header class="bg-gradient-to-r from-indigo-900 via-blue-900 to-indigo-950 text-white py-8 px-4 text-center shadow-lg border-b border-indigo-500/20 animate-fadeIn">
       <div class="max-w-4xl mx-auto">
         <div class="inline-block bg-indigo-500/10 p-3.5 rounded-full border border-indigo-400/20 mb-3 backdrop-blur-sm shadow-inner">
           <span class="text-3xl font-bold">🎓</span>
@@ -45,7 +45,7 @@
       </div>
 
       <!-- Diagnostic Help Box (จะปรากฏเฉพาะเมื่อดึงข้อมูลล้มเหลว) -->
-      <div id="diagnosticHelpBox" class="hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-200 p-6 rounded-3xl border border-slate-700 shadow-xl text-left">
+      <div id="diagnosticHelpBox" class="hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-200 p-6 rounded-3xl border border-slate-700 shadow-xl text-left animate-fadeIn">
         <h3 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-1.5">⚠️ วิธีการตั้งค่า Google Sheets ปี 2569 ให้ทำงานแบบออนไลน์สำเร็จ 100%</h3>
         <div class="space-y-4 text-xs leading-relaxed">
           <div>
@@ -127,8 +127,7 @@
         level: "ป.6",
         coopAccount: "123-45678-9",
         department: "สสอ.เมือง",
-        docStatus: "ยื่นเอกสารเรียบร้อย",
-        remarks: ""
+        docStatus: "ยื่นเอกสารเรียบร้อย"
       },
       {
         index: "2",
@@ -139,8 +138,7 @@
         level: "ป.5",
         coopAccount: "987-65432-1",
         department: "รพ.ทุ่งหว้า",
-        docStatus: "อยู่ระหว่างตรวจสอบเอกสาร",
-        remarks: ""
+        docStatus: "อยู่ระหว่างตรวจสอบเอกสาร"
       }
     ];
 
@@ -232,7 +230,6 @@
       let deptCol = -1;
       let coopAccCol = -1;
       let docStatusCol = -1;
-      let remarksCol = -1;
 
       let headerRowIndex = -1;
       for (let r = 0; r < rows.length; r++) {
@@ -277,13 +274,40 @@
             indexCol = i;
           } else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) {
             deptCol = i;
-          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์')) {
+          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) {
             coopAccCol = i;
           } else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('สถานะการยื่น') || val.includes('สถานะการยื่นเอกสาร')) {
             docStatusCol = i;
-          } else if (val.includes('หมายเหตุ') || val.includes('สาเหตุ') || val.includes('คำอธิบาย') || val.includes('remark') || val.includes('note')) {
-            remarksCol = i;
           }
+        }
+      }
+
+      // ตรวจจับคอลัมน์สมุดบัญชีแบบอัจฉริยะในกรณีไม่มีหัวตารางตรงตัว (Smart Account Pattern Finder)
+      if (coopAccCol === -1) {
+        let colVotes = {};
+        const scanRowsLimit = Math.min(rows.length, 30);
+        const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+        for (let r = startRow; r < scanRowsLimit; r++) {
+          const row = rows[r];
+          if (!row) continue;
+          for (let c = 0; c < row.length; c++) {
+            const val = (row[c] || '').toString().trim().replace(/[\s\u00a0-]/g, '');
+            // ตรวจหาตัวเลข 7-15 หลักซึ่งระบุว่าเป็นเลขที่บัญชีเงินฝากสหกรณ์
+            if (/^\d{7,15}$/.test(val)) {
+              colVotes[c] = (colVotes[c] || 0) + 1;
+            }
+          }
+        }
+        let maxVotes = 0;
+        let bestCol = -1;
+        for (let c in colVotes) {
+          if (colVotes[c] > maxVotes) {
+            maxVotes = colVotes[c];
+            bestCol = parseInt(c);
+          }
+        }
+        if (maxVotes >= 1) {
+          coopAccCol = bestCol;
         }
       }
 
@@ -294,6 +318,7 @@
       if (levelCol === -1) levelCol = 6;
       if (indexCol === -1) indexCol = 0;
       if (deptCol === -1) deptCol = 3;
+      if (coopAccCol === -1) coopAccCol = 6; // ฟอลแบ็กตำแหน่งคอลัมน์มาตรฐาน
 
       const parsedRecords = [];
       const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
@@ -323,6 +348,7 @@
         }
 
         const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
+        
         // ดึงลำดับจากช่องคอลัมน์ลำดับของแผ่นงานโดยตรง หากไม่มีให้ fallback เป็นรันลำดับต่อเนื่อง
         const indexVal = (indexCol !== -1 && indexCol < row.length && (row[indexCol] || '').toString().trim() !== '') 
           ? (row[indexCol] || '').toString().trim() 
@@ -339,8 +365,6 @@
           }
         }
 
-        const remarks = remarksCol !== -1 && remarksCol < row.length ? (row[remarksCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : '';
-
         if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
 
         parsedRecords.push({
@@ -352,8 +376,7 @@
           level,
           department,
           coopAccount,
-          docStatus,
-          remarks
+          docStatus
         });
       }
 
@@ -442,14 +465,12 @@
     }
 
     // วิเคราะห์ประเมินขั้นตอนเอกสารเพื่อแปลงเป็นความคืบหน้า (5 ระดับที่กำหนด - ปรับสลับลำดับให้อนุมัติก่อนจึงจะโอนเข้าบัญชี)
-    function evaluateProgress(status, remarks) {
+    function evaluateProgress(status) {
       const statusStr = (status || '').toString().trim();
-      const remarkStr = (remarks || '').toString().trim();
       
-      // ไม่ได้รับการอนุมัติ เนื่องจาก... (ดึงเหตุผลจากช่องหมายเหตุ)
+      // ไม่ได้รับการอนุมัติ
       if (statusStr.includes('ไม่ได้รับการอนุมัติ') || statusStr.includes('ไม่ผ่าน')) {
-        const reason = remarkStr ? ` เนื่องจาก ${remarkStr}` : '';
-        return { step: 4, label: `ไม่ได้รับการอนุมัติ${reason}`, color: 'rose', percent: 'w-4/5', isFailed: true };
+        return { step: 4, label: statusStr, color: 'rose', percent: 'w-4/5', isFailed: true };
       }
       // อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก (ขั้นตอนสุดท้าย 100%)
       if (statusStr.includes('อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก') || statusStr.includes('โอนเข้าบัญชี') || statusStr.includes('โอนเงิน')) {
@@ -477,7 +498,7 @@
       if (!resultsArea) return;
 
       const primaryRecord = records[0];
-      const prog = evaluateProgress(primaryRecord.docStatus, primaryRecord.remarks);
+      const prog = evaluateProgress(primaryRecord.docStatus);
 
       // เลือกใช้ไอคอนและสีสันตามความเหมาะสมของ Progress
       let activeColorClass = 'bg-indigo-600';
@@ -505,7 +526,7 @@
       let rowsHtml = '';
       for (let i = 0; i < records.length; i++) {
         const item = records[i];
-        const itemProg = evaluateProgress(item.docStatus, item.remarks);
+        const itemProg = evaluateProgress(item.docStatus);
 
         let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
         if (itemProg.isFailed) {
