@@ -17,6 +17,14 @@
     body {
       font-family: 'Prompt', sans-serif;
     }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+    .animate-pulse-ring {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
     @keyframes pulse-shimmer {
       0%, 100% { opacity: 1; }
       50% { opacity: .4; }
@@ -70,8 +78,29 @@
         </div>
       </div>
 
+      <!-- Diagnostic Help Box (จะปรากฏเฉพาะเมื่อดึงข้อมูลออนไลน์ล้มเหลว) -->
+      <div id="diagnosticHelpBox" class="hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-200 p-6 rounded-3xl border border-slate-700 shadow-xl text-left">
+        <h3 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-1.5">⚠️ วิธีการตั้งค่า Google Sheets ปี 2569 ให้ทำงานแบบออนไลน์สำเร็จ 100%</h3>
+        <div class="space-y-4 text-xs leading-relaxed">
+          <div>
+            <p class="font-semibold text-white text-xs mb-1">สาเหตุที่การดึงข้อมูลอัตโนมัติไม่ทำงาน:</p>
+            <p class="text-slate-400">ระบบของ Google Sheets จำกัดสิทธิ์ให้ไฟล์นี้เป็นส่วนตัวไว้ สมาชิกที่เข้าชมจากภายนอกจึงยังไม่สามารถสืบค้นได้</p>
+          </div>
+          <div class="border-t border-slate-800 pt-3">
+            <p class="font-semibold text-emerald-400 text-xs mb-1.5">🛠... วิธีแก้ไขง่ายๆ ใน 1 นาที:</p>
+            <ol class="list-decimal list-inside space-y-2 text-slate-300 pl-1">
+              <li>เปิดไฟล์สเปรดชีตฐานข้อมูลปี 2569 บน Google Drive ของคุณ</li>
+              <li>คลิกปุ่ม <strong class="text-white">"แชร์" (Share)</strong> สีน้ำเงินบริเวณมุมบนขวามือ</li>
+              <li>ตรงส่วนของการเข้าถึงทั่วไป (General Access) ให้ปรับสิทธิ์จาก "จำกัด" (Restricted) เป็น <strong class="text-emerald-400">"ทุกคนที่มีลิงก์" (Anyone with the link)</strong></li>
+              <li>ตรวจสอบให้สถานะขวามือเป็น <strong class="text-white">"มีสิทธิ์อ่าน" (Viewer)</strong> จากนั้นกด <strong class="text-white">"เสร็จสิ้น" (Done)</strong> แล้วเปิดหน้าเว็บใหม่อีกครั้ง ระบบจะดึงข้อมูลสดสำเร็จทันที!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
       <!-- Section 1: Individual Portal (Sleek Glass Card) -->
       <section class="bg-white/90 backdrop-blur-lg rounded-[2rem] border border-slate-200 shadow-2xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 hover:border-slate-300">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
         
         <div class="text-center mb-8">
           <h2 class="text-xl font-bold text-slate-900 leading-snug">
@@ -689,48 +718,52 @@
               </button>
             </div>
             
-            <div class="relative mb-8 overflow-x-auto pb-4">
-              <div class="min-w-[650px] relative">
-                <!-- แถบด้านหลัง -->
+            <!-- DESKTOP TIMELINE (Hidden on mobile to avoid squishing) -->
+            <div class="hidden md:block relative mb-8 pt-4 pb-6">
+              <div class="relative">
+                <!-- เส้นพื้นหลังสีเทา -->
                 <div class="absolute top-5 left-10 right-10 h-1 bg-slate-200 rounded-full"></div>
-                <!-- แถบประเมินผลความคืบหน้าจริง -->
-                <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-500 ${prog.percent}"></div>
+                <!-- เส้นความคืบหน้าไล่เฉดตามสเตตัสจริง -->
+                <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-700 ${prog.percent}"></div>
 
                 <div class="relative z-10 flex justify-between">
                   <!-- ขั้นที่ 1: ยื่นเอกสารสำเร็จ -->
-                  <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                  <div class="flex flex-col items-center group cursor-help">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${prog.step >= 1 ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
                       1
                     </div>
-                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 1 ? 'text-indigo-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
+                    <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 1 ? 'text-indigo-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
                   </div>
 
                   <!-- ขั้นที่ 2: ตรวจสอบเอกสาร -->
-                  <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                  <div class="flex flex-col items-center group cursor-help">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${prog.step >= 2 ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
                       2
                     </div>
-                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 2 ? 'text-indigo-900' : 'text-slate-400'}">ตรวจสอบเอกสาร</span>
+                    <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 2 ? 'text-indigo-900' : 'text-slate-400'}">ตรวจสอบเอกสาร</span>
                   </div>
 
                   <!-- ขั้นที่ 3: การพิจารณาคุณสมบัติ -->
-                  <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${prog.step >= 3 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                  <div class="flex flex-col items-center group cursor-help">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${prog.step >= 3 ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
                       3
                     </div>
-                    <span class="text-[11px] font-bold mt-2.5 ${prog.step >= 3 ? 'text-indigo-900' : 'text-slate-400'}">การพิจารณา</span>
+                    <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 3 ? 'text-indigo-900' : 'text-slate-400'}">การพิจารณา</span>
                   </div>
 
                   <!-- ขั้นที่ 4: อนุมัติสิทธิ์ / ไม่อนุมัติ -->
-                  <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
-                      prog.step >= 4 
-                        ? (prog.isFailed ? 'bg-rose-500 text-white animate-bounce' : 'bg-indigo-600 text-white') 
-                        : 'bg-slate-200 text-slate-500'
-                    }">
-                      4
+                  <div class="flex flex-col items-center group cursor-help">
+                    <div class="relative">
+                      ${prog.step === 4 ? '<span class="absolute -inset-1.5 rounded-full bg-indigo-500/30 animate-pulse-ring"></span>' : ''}
+                      <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${
+                        prog.step >= 4 
+                          ? (prog.isFailed ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white') 
+                          : 'bg-slate-100 text-slate-400'
+                      }">
+                        4
+                      </div>
                     </div>
-                    <span class="text-[11px] font-bold mt-2.5 ${
+                    <span class="text-[11px] font-bold mt-3 transition-colors ${
                       prog.step >= 4 
                         ? (prog.isFailed ? 'text-rose-600' : 'text-indigo-900') 
                         : 'text-slate-400'
@@ -740,15 +773,18 @@
                   </div>
 
                   <!-- ขั้นที่ 5: โอนเงินเข้าบัญชี -->
-                  <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
-                      prog.step >= 5 
-                        ? 'bg-emerald-500 text-white animate-pulse' 
-                        : 'bg-slate-200 text-slate-500'
-                    }">
-                      5
+                  <div class="flex flex-col items-center group cursor-help">
+                    <div class="relative">
+                      ${prog.step === 5 ? '<span class="absolute -inset-1.5 rounded-full bg-emerald-500/30 animate-pulse-ring"></span>' : ''}
+                      <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${
+                        prog.step >= 5 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-slate-100 text-slate-400'
+                      }">
+                        5
+                      </div>
                     </div>
-                    <span class="text-[11px] font-bold mt-2.5 ${
+                    <span class="text-[11px] font-bold mt-3 transition-colors ${
                       prog.step >= 5 
                         ? 'text-emerald-700' 
                         : 'text-slate-400'
@@ -760,8 +796,66 @@
               </div>
             </div>
 
+            <!-- MOBILE VERTICAL STEPPER (Prevents horrible horizontal squeezing) -->
+            <div class="block md:hidden mb-6 pl-2 pr-2">
+              <div class="relative border-l-2 border-slate-200 ml-4 space-y-6 pb-2">
+                
+                <!-- Step 1 -->
+                <div class="relative pl-8">
+                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                    1
+                  </div>
+                  <h4 class="text-xs font-bold ${prog.step >= 1 ? 'text-slate-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</h4>
+                  <p class="text-[10px] text-slate-500">ระบบบันทึกความจำนงรับสิทธิ์เรียบร้อย</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative pl-8">
+                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 2 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                    2
+                  </div>
+                  <h4 class="text-xs font-bold ${prog.step >= 2 ? 'text-slate-900' : 'text-slate-400'}">ตรวจสอบเอกสาร</h4>
+                  <p class="text-[10px] text-slate-500">งานธุรการตรวจสอบความครบถ้วนถูกต้อง</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative pl-8">
+                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 3 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}">
+                    3
+                  </div>
+                  <h4 class="text-xs font-bold ${prog.step >= 3 ? 'text-slate-900' : 'text-slate-400'}">การพิจารณา</h4>
+                  <p class="text-[10px] text-slate-500">คณะกรรมการสหกรณ์ฯ พิจารณารับรองสิทธิ์</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="relative pl-8">
+                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${
+                    prog.step >= 4 
+                      ? (prog.isFailed ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white') 
+                      : 'bg-slate-100 text-slate-400'
+                  }">
+                    4
+                  </div>
+                  <h4 class="text-xs font-bold ${prog.step >= 4 ? (prog.isFailed ? 'text-rose-600' : 'text-slate-900') : 'text-slate-400'}">
+                    ${prog.isFailed ? 'ไม่ได้รับการอนุมัติเอกสาร' : 'อนุมัติเรียบร้อย'}
+                  </h4>
+                  <p class="text-[10px] text-slate-500">สรุปคำร้องอนุมัติสิทธิ์จัดสรรงบช่วยเหลือ</p>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="relative pl-8">
+                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 5 ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}">
+                    5
+                  </div>
+                  <h4 class="text-xs font-bold ${prog.step >= 5 ? 'text-emerald-700' : 'text-slate-400'}">โอนเงินเข้าบัญชี</h4>
+                  <p class="text-[10px] text-slate-500">เตรียมสั่งจ่ายผ่านสมุดบัญชีสหกรณ์ของสมาชิก</p>
+                </div>
+
+              </div>
+            </div>
+
             <!-- กล่องสรุปสเตตัสพิจารณาแบบไดนามิกพร้อมดึงเหตุผลหมายเหตุเมื่อไม่อนุมัติ -->
-            <div class="${bgAlertClass} rounded-2xl p-4.5 border flex items-center justify-between transition-all duration-300">
+            <div class="${bgAlertClass} rounded-2xl p-4.5 border flex items-center justify-between transition-all duration-300 shadow-inner">
               <div class="flex-grow pr-4">
                 <span class="text-[10px] text-slate-400 font-semibold block uppercase">ผลการตรวจสอบสิทธิ์</span>
                 <span class="text-sm font-semibold text-slate-900">
@@ -777,10 +871,16 @@
             </div>
           </section>
 
-          <!-- Detail Table Section -->
+          <!-- Detail Table Section (Enhanced Scroll indicator and responsiveness) -->
           <section class="bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden">
             <div class="p-6 md:p-8">
               <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">ประวัติรายละเอียดการยื่นคำขอรับสิทธิ์สวัสดิการของท่าน</h4>
+              
+              <!-- Indicator of scrollable on mobile -->
+              <div class="flex md:hidden items-center justify-end gap-1 mb-2 text-[10px] font-bold text-indigo-600 animate-pulse">
+                <span>◀ เลื่อนหน้าจอแนวนอนเพื่อดูข้อมูลบัญชี ▶</span>
+              </div>
+
               <div class="overflow-x-auto border border-slate-200 rounded-2xl">
                 <table class="min-w-full text-left text-sm border-collapse">
                   <thead>
