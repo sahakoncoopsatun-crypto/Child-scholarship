@@ -204,7 +204,7 @@
             </button>
             <button onclick="openGasSettingsModal()" class="bg-violet-700 hover:bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
               <span>⚙️</span>
-              <span>ตั้งค่า Google Sheets</span>
+              <span>ตั้งค่า Google Sheets Sync</span>
             </button>
             <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
               <span>📥</span>
@@ -440,16 +440,16 @@
 
     <!-- Modal: Google Sheets Web App Config -->
     <div id="gasConfigModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200">
-        <div class="bg-gradient-to-r from-violet-800 to-indigo-900 text-white p-6 flex justify-between items-center">
+      <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="bg-gradient-to-r from-violet-800 to-indigo-900 text-white p-6 flex justify-between items-center shrink-0">
           <h3 class="text-base font-bold flex items-center gap-2">
             <span>⚙️</span>
-            <span>ตั้งค่าซิงค์ข้อมูล Google Sheets (Apps Script)</span>
+            <span>ตั้งค่าซิงค์ข้อมูล Google Sheets สองทาง (Two-Way Sync)</span>
           </h3>
           <button onclick="closeGasSettingsModal()" class="text-slate-300 hover:text-white text-lg font-bold">✕</button>
         </div>
 
-        <div class="p-6 space-y-4 text-xs">
+        <div class="p-6 space-y-4 text-xs overflow-y-auto">
           <div>
             <label class="font-bold text-slate-700 block mb-1">URL ของ Google Apps Script Web App</label>
             <input 
@@ -458,17 +458,72 @@
               placeholder="https://script.google.com/macros/s/.../exec" 
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-violet-500 outline-none font-mono text-[11px]"
             />
-            <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จากการ Deploy Google Apps Script ในแผ่นงาน Google Sheets</p>
+            <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จากการ Deploy Google Apps Script ใน Google Sheets เพื่อส่งข้อมูลจากเว็บกลับไป Google Sheets ทันที</p>
+          </div>
+
+          <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1 leading-relaxed">
+            <h5 class="font-bold">📝 ขั้นตอนการติดตั้งง่ายๆ บน Google Sheets:</h5>
+            <ol class="list-decimal list-inside space-y-1">
+              <li>เปิดไฟล์ Google Sheets ของสหกรณ์ฯ ➔ ไปที่เมนู <strong class="text-slate-900">ส่วนขยาย (Extensions)</strong> ➔ เลือก <strong class="text-slate-900">Apps Script</strong></li>
+              <li>ลบโค้ดเดิมออก แล้วนำโค้ดด้านล่างนี้ไปวางแทนที่</li>
+              <li>กดปุ่ม <strong class="text-slate-900">ทำให้ใช้งานได้ (Deploy)</strong> ➔ เลือก <strong class="text-slate-900">การทำให้ใช้งานได้ใหม่ (New deployment)</strong></li>
+              <li>เลือกประเภทเป็น <strong class="text-slate-900">เว็บแอป (Web app)</strong> ➔ กำหนด <strong class="text-slate-900">ผู้มีสิทธิ์เข้าถึง (Who has access)</strong> เป็น <strong class="text-rose-700 font-bold">ทุกคน (Anyone)</strong></li>
+              <li>กด <strong class="text-slate-900">ทำให้ใช้งานได้ (Deploy)</strong> คัดลอก Web App URL นำมาวางใส่ในช่องด้านบนได้เลย!</li>
+            </ol>
           </div>
 
           <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-            <h4 class="font-bold text-slate-800">🛠️ โค้ดสำหรับวางใน Google Apps Script (GAS):</h4>
-            <textarea readonly class="w-full h-28 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
+            <h4 class="font-bold text-slate-800">🛠️ โค้ดสำหรับวางใน Google Apps Script (รองรับ เพิ่ม/แก้ไข/ลบ):</h4>
+            <textarea readonly class="w-full h-36 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([data.index, data.memberId, data.memberName, data.department, data.childName, data.amount, data.level, data.coopAccount, data.docStatus, data.remark]);
-  return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action || 'save';
+    var rows = sheet.getDataRange().getValues();
+    
+    var targetRow = -1;
+    for (var i = 1; i < rows.length; i++) {
+      var mId = String(rows[i][1]).replace(/\D/g, '');
+      var reqMId = String(data.memberId).replace(/\D/g, '');
+      var cName = String(rows[i][4]).trim();
+      var reqCName = String(data.childName).trim();
+      
+      if ((mId && mId === reqMId) && (!reqCName || cName === reqCName)) {
+        targetRow = i + 1;
+        break;
+      }
+    }
+    
+    if (action === 'delete') {
+      if (targetRow > 1) {
+        sheet.deleteRow(targetRow);
+      }
+    } else {
+      var rowData = [
+        data.index || '',
+        data.memberId || '',
+        data.memberName || '',
+        data.department || '',
+        data.childName || '',
+        data.amount || 0,
+        data.level || '',
+        data.coopAccount || '',
+        data.docStatus || '',
+        data.remark || ''
+      ];
+      
+      if (targetRow > 1) {
+        sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+      } else {
+        sheet.appendRow(rowData);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", message: error.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
 }</textarea>
             <button onclick="copyGasScript()" class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-3 py-1.5 rounded-lg text-[10px]">
               คัดลอกโค้ด Apps Script
@@ -1728,10 +1783,8 @@ function doPost(e) {
       renderAdminDashboard();
       showToast('✓ บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว', 'success');
 
-      // Sync to Google Sheets if Web App URL is configured
-      if (gasWebAppUrl) {
-        syncToGoogleSheets(newRecord);
-      }
+      // Two-Way Sync: Sync addition/update directly to Google Sheets
+      syncToGoogleSheets(newRecord, 'save');
 
       // Refresh Member Search View if active
       const searchInput = document.getElementById('searchId');
@@ -1756,28 +1809,37 @@ function doPost(e) {
     function executeDeleteRecord() {
       const index = parseInt(document.getElementById('deleteTargetIndex').value);
       if (index >= 0 && index < dbData.length) {
+        const targetRecord = dbData[index];
         dbData.splice(index, 1);
         reIndexDbData();
         saveLocalStorageData();
         renderAdminDashboard();
         showToast('🗑️ ลบรายการสำเร็จเรียบร้อยแล้ว', 'info');
+
+        // Two-Way Sync: Sync deletion directly to Google Sheets
+        syncToGoogleSheets(targetRecord, 'delete');
       }
       closeDeleteConfirmModal();
     }
 
-    // Google Apps Script Sync
-    async function syncToGoogleSheets(recordData) {
-      if (!gasWebAppUrl) return;
+    // Google Apps Script Smart Two-Way Sync
+    async function syncToGoogleSheets(recordData, action = 'save') {
+      if (!gasWebAppUrl) {
+        showToast('💡 ข้อมูลถูกบันทึกในระบบแล้ว (แนะนำตั้งค่า Google Apps Script เพื่อให้ข้อมูลสะท้อนกลับ Google Sheets)', 'info');
+        return;
+      }
       try {
+        const payload = { ...recordData, action };
         await fetch(gasWebAppUrl, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(recordData)
+          body: JSON.stringify(payload)
         });
-        showToast('📡 ซิงค์ข้อมูลตรงไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
+        showToast('📡 ซิงค์ข้อมูลไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
       } catch (err) {
         console.error('GAS Sync Error:', err);
+        showToast('⚠️ ไม่สามารถซิงค์ข้อมูลไปยัง Google Sheets ได้', 'error');
       }
     }
 
@@ -1841,10 +1903,54 @@ function doPost(e) {
 
     function copyGasScript() {
       const scriptCode = `function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([data.index, data.memberId, data.memberName, data.department, data.childName, data.amount, data.level, data.coopAccount, data.docStatus, data.remark]);
-  return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action || 'save';
+    var rows = sheet.getDataRange().getValues();
+    
+    var targetRow = -1;
+    for (var i = 1; i < rows.length; i++) {
+      var mId = String(rows[i][1]).replace(/\\D/g, '');
+      var reqMId = String(data.memberId).replace(/\\D/g, '');
+      var cName = String(rows[i][4]).trim();
+      var reqCName = String(data.childName).trim();
+      
+      if ((mId && mId === reqMId) && (!reqCName || cName === reqCName)) {
+        targetRow = i + 1;
+        break;
+      }
+    }
+    
+    if (action === 'delete') {
+      if (targetRow > 1) {
+        sheet.deleteRow(targetRow);
+      }
+    } else {
+      var rowData = [
+        data.index || '',
+        data.memberId || '',
+        data.memberName || '',
+        data.department || '',
+        data.childName || '',
+        data.amount || 0,
+        data.level || '',
+        data.coopAccount || '',
+        data.docStatus || '',
+        data.remark || ''
+      ];
+      
+      if (targetRow > 1) {
+        sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+      } else {
+        sheet.appendRow(rowData);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", message: error.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
 }`;
       const tempTextArea = document.createElement('textarea');
       tempTextArea.value = scriptCode;
@@ -1893,6 +1999,3 @@ function doPost(e) {
   </script>
 </body>
 </html>
-```eof
-
-ไฟล์ `index.html` ได้รับการปรับปรุงแก้ไขเรียบร้อยแล้วครับ คุณสามารถนำไฟล์นี้ไปอัปเดตบน Vercel หรือ GitHub Pages ได้เลยทันทีครับ! รายชื่อที่เพิ่มผ่านหน้าคณะกรรมการจะคงอยู่และสืบค้นเจอในหน้าสมาชิกได้ตลอดเวลาครับ
