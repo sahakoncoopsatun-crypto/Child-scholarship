@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="h-full bg-slate-100">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบติดตามสถานะการยื่นทุนการศึกษาบุตรสมาชิก ประจำปี 2569</title>
+  <title>ระบบบริหารจัดการและติดตามทุนการศึกษาบุตรสมาชิก ประจำปี 2569 - สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,6 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- Chart.js for Admin Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
       font-family: 'Prompt', sans-serif;
@@ -25,13 +28,6 @@
     .animate-pulse-ring {
       animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-    @keyframes pulse-shimmer {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .4; }
-    }
-    .animate-shimmer {
-      animation: pulse-shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
     @media print {
       body * { visibility: hidden; }
       #printSlipArea, #printSlipArea * { visibility: visible; }
@@ -39,113 +35,377 @@
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col bg-slate-900/5 antialiased">
+<body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-900/5">
 
-  <div class="flex-grow flex flex-col justify-between">
+  <div id="app" class="flex-grow flex flex-col justify-between">
     
     <!-- Top Decorative Bar -->
-    <div class="h-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500"></div>
+    <div class="h-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-emerald-500"></div>
 
-    <!-- Header Section (Modern Glass Gradient Style) -->
-    <header class="relative bg-gradient-to-b from-indigo-950 via-slate-950 to-indigo-950 text-white py-10 px-4 text-center overflow-hidden border-b border-white/5">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.15),transparent_50%)]"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.1),transparent_50%)]"></div>
-      
-      <div class="max-w-4xl mx-auto relative z-10">
-        <div class="inline-flex bg-gradient-to-br from-indigo-500/20 to-emerald-500/20 p-4 rounded-3xl border border-white/10 mb-4 shadow-xl backdrop-blur-md">
-          <span class="text-4xl filter drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">🎓</span>
+    <!-- Header & Mode Selector -->
+    <header class="bg-gradient-to-b from-indigo-950 via-slate-950 to-indigo-950 text-white py-6 px-4 shadow-xl border-b border-white/10 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <div class="flex items-center gap-3 text-center md:text-left">
+          <div class="bg-gradient-to-br from-indigo-500/20 to-emerald-500/20 p-3 rounded-2xl border border-white/10 shadow-lg backdrop-blur-md">
+            <span class="text-3xl">🎓</span>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-emerald-300">
+              ระบบสวัสดิการส่งเสริมการศึกษาบุตรสมาชิก 2569
+            </h1>
+            <p class="text-xs text-emerald-400 font-medium tracking-wide">
+              สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด
+            </p>
+          </div>
         </div>
-        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-emerald-300">
-          ระบบติดตามสถานะการยื่นทุนการศึกษาบุตร
-        </h1>
-        <p class="text-emerald-400 font-semibold tracking-wider text-xs md:text-sm uppercase mt-2.5">
-          สวัสดิการส่งเสริมการศึกษาบุตรสมาชิก ประจำปี 2569
-        </p>
-        <p class="text-slate-400 text-xs mt-1.5 font-light">
-          สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด
-        </p>
+
+        <!-- Mode Switcher Navigation Tabs -->
+        <nav class="flex items-center bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
+          <button 
+            id="tabMemberBtn" 
+            onclick="switchView('member')" 
+            class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md"
+          >
+            <span>🎓</span>
+            <span>สำหรับสมาชิก (ติดตามสถานะ)</span>
+          </button>
+          
+          <button 
+            id="tabAdminBtn" 
+            onclick="switchView('admin')" 
+            class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5"
+          >
+            <span>🔐</span>
+            <span>เจ้าหน้าที่ / คณะกรรมการ</span>
+          </button>
+        </nav>
+
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8 flex flex-col gap-6 justify-center">
-      
-      <!-- Live Sync Status Indicator Bar -->
-      <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border bg-white shadow-sm border-slate-200 transition-all duration-300">
-        <div class="flex items-center gap-2.5">
-          <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20"></span>
-          <span class="font-bold text-slate-700">กำลังเชื่อมต่อฐานข้อมูลออนไลน์...</span>
-        </div>
-      </div>
+    <!-- Main Dynamic Content Wrapper -->
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8">
 
-      <!-- Diagnostic Help Box (จะปรากฏเฉพาะเมื่อดึงข้อมูลออนไลน์ล้มเหลว) -->
-      <div id="diagnosticHelpBox" class="hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-200 p-6 rounded-3xl border border-slate-700 shadow-xl text-left">
-        <h3 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-1.5">⚠️ วิธีการตั้งค่า Google Sheets ปี 2569 ให้ทำงานแบบออนไลน์สำเร็จ 100%</h3>
-        <div class="space-y-4 text-xs leading-relaxed">
-          <div>
-            <p class="font-semibold text-white text-xs mb-1">สาเหตุที่การดึงข้อมูลออนไลน์ไม่ทำงาน:</p>
-            <p class="text-slate-400">ระบบของ Google Sheets จำกัดสิทธิ์ไฟล์เป็นส่วนตัว สมาชิกภายนอกจึงยังไม่สามารถสืบค้นได้</p>
-          </div>
-          <div class="border-t border-slate-800 pt-3">
-            <p class="font-semibold text-emerald-400 text-xs mb-1.5">🛠️ วิธีแก้ไขง่ายๆ ใน 1 นาที:</p>
-            <ol class="list-decimal list-inside space-y-2 text-slate-300 pl-1">
-              <li>เปิดไฟล์สเปรดชีตฐานข้อมูลปี 2569 บน Google Drive ของคุณ</li>
-              <li>คลิกปุ่ม <strong class="text-white">"แชร์" (Share)</strong> สีน้ำเงินบริเวณมุมบนขวามือ</li>
-              <li>ตรงส่วนของการเข้าถึงทั่วไป (General Access) ให้ปรับสิทธิ์จาก "จำกัด" (Restricted) เป็น <strong class="text-emerald-400">"ทุกคนที่มีลิงก์" (Anyone with the link)</strong></li>
-              <li>ตรวจสอบให้สถานะขวามือเป็น <strong class="text-white">"มีสิทธิ์อ่าน" (Viewer)</strong> จากนั้นกด <strong class="text-white">"เสร็จสิ้น" (Done)</strong> แล้วเปิดหน้าเว็บใหม่อีกครั้ง ระบบจะดึงข้อมูลสดสำเร็จทันที!</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 1: Individual Portal (Sleek Glass Card) -->
-      <section class="bg-white/90 backdrop-blur-lg rounded-[2rem] border border-slate-200 shadow-2xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 hover:border-slate-300">
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
+      <!-- ========================================== -->
+      <!-- PART 1: MEMBER PORTAL (หน้าสำหรับสมาชิก)   -->
+      <!-- ========================================== -->
+      <div id="memberPortalView" class="space-y-6">
         
-        <div class="text-center mb-8">
-          <h2 class="text-xl font-bold text-slate-900 leading-snug">
-            ศูนย์ข้อมูลติดตามสถานะการยื่นขออนุมัติรับสิทธิ์ทุนส่งเสริมการศึกษา
-          </h2>
-          <p class="text-xs text-slate-500 mt-2 max-w-xl mx-auto leading-relaxed">
-            ระบุหมายเลขสมาชิกสหกรณ์ 5 หลัก เพื่อเรียกเอกสารความคืบหน้า รายละเอียดวงเงินช่วยเหลือจัดสรร และสถานะความคืบหน้าแบบเรียลไทม์จากระบบส่วนกลาง
-          </p>
+        <!-- Live Sync Status Bar -->
+        <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border bg-white shadow-sm border-slate-200 transition-all duration-300">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></span>
+            <span class="font-bold text-slate-700">เชื่อมต่อฐานข้อมูลออนไลน์เรียลไทม์ พร้อมสืบค้นสิทธิ์</span>
+          </div>
         </div>
 
-        <form id="searchForm" class="max-w-md mx-auto">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-grow">
-              <input 
-                id="searchId"
-                type="text"
-                maxlength="5"
-                placeholder="ระบุเลขที่สมาชิก 5 หลัก"
-                class="w-full px-6 py-4.5 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-center text-xl font-bold tracking-widest placeholder:tracking-normal placeholder:font-normal placeholder:text-sm transition-all shadow-inner"
-              />
-              <div id="checkBadge" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 hidden text-xl">✓</div>
+        <!-- Search Input Box Card -->
+        <section class="bg-white/90 backdrop-blur-lg rounded-3xl border border-slate-200 shadow-xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 hover:border-indigo-300">
+          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
+          
+          <div class="text-center mb-8">
+            <span class="px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs">
+              ส่วนบริการสมาชิกออนไลน์
+            </span>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-snug mt-3">
+              ศูนย์ติดตามสถานะการยื่นขอรับทุนการศึกษาบุตร ประจำปี 2569
+            </h2>
+            <p class="text-xs text-slate-500 mt-2 max-w-xl mx-auto leading-relaxed">
+              กรุณาระบุหมายเลขสมาชิกสหกรณ์ 5 หลัก เพื่อเรียกเอกสารความคืบหน้า รายละเอียดวงเงินช่วยเหลือจัดสรร และผลการพิจารณาจากระบบส่วนกลาง
+            </p>
+          </div>
+
+          <form id="searchForm" class="max-w-md mx-auto">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-grow">
+                <input 
+                  id="searchId"
+                  type="text"
+                  maxlength="5"
+                  placeholder="ระบุเลขที่สมาชิก 5 หลัก"
+                  class="w-full px-6 py-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-center text-xl font-bold tracking-widest placeholder:tracking-normal placeholder:font-normal placeholder:text-sm transition-all shadow-inner"
+                />
+                <div id="checkBadge" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 hidden text-xl">✓</div>
+              </div>
+              <button
+                type="submit"
+                class="bg-gradient-to-r from-indigo-900 to-indigo-950 hover:from-indigo-950 hover:to-slate-950 text-white font-bold px-8 py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-base shrink-0 flex items-center justify-center gap-2 group border border-white/5"
+              >
+                <span>สืบค้นสถานะ</span>
+                <span class="transition-transform group-hover:translate-x-1">🚀</span>
+              </button>
             </div>
-            <button
-              type="submit"
-              class="bg-gradient-to-r from-indigo-900 to-indigo-950 hover:from-indigo-950 hover:to-slate-950 text-white font-bold px-8 py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-base shrink-0 flex items-center justify-center gap-2 group border border-white/5"
-            >
-              <span>สืบค้นสถานะ</span>
-              <span class="transition-transform group-hover:translate-x-1">🚀</span>
+            <p id="inputError" class="text-xs text-rose-600 font-semibold text-center mt-3 hidden animate-pulse"></p>
+          </form>
+        </section>
+
+        <!-- Dynamic Results Area for Member -->
+        <div id="resultsArea" class="hidden"></div>
+
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- PART 2: STAFF & ADMIN PORTAL (ระบบคณะกรรมการ/เจ้าหน้าที่) -->
+      <!-- ==================================================== -->
+      <div id="adminPortalView" class="hidden space-y-6">
+        
+        <!-- Admin Sub Header & Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-6 rounded-3xl shadow-xl border border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
+                🔒 เจ้าหน้าที่เข้าสู่ระบบแล้ว
+              </span>
+            </div>
+            <h2 class="text-xl font-bold mt-2">ศูนย์บริหารจัดการข้อมูลทุนการศึกษาบุตร 2569</h2>
+            <p class="text-xs text-slate-400 mt-1">เพิ่ม แก้ไขสถานะ อนุมัติทุน และตรวจสอบภาพรวมรายงานสำหรับคณะกรรมการ</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
+              <span>➕</span>
+              <span>เพิ่มผู้ยื่นทุนใหม่</span>
+            </button>
+            <button onclick="openShareLinkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
+              <span>🔗</span>
+              <span>ลิงก์ให้สมาชิก</span>
+            </button>
+            <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
+              <span>📥</span>
+              <span>ส่งออก CSV</span>
             </button>
           </div>
-          <p id="inputError" class="text-xs text-rose-600 font-semibold text-center mt-3 hidden animate-pulse"></p>
-        </form>
-      </section>
+        </div>
 
-      <!-- Results Area -->
-      <div id="resultsArea" class="hidden"></div>
+        <!-- Dashboard Analytics Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-400">คำขอทั้งหมด</p>
+            <h3 id="statTotalCount" class="text-2xl font-bold text-slate-900 mt-1">0 ราย</h3>
+            <p class="text-[10px] text-slate-400 mt-1">ผู้ยื่นคำขอรับทุนในปี 2569</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
+            <p class="text-xs font-semibold text-emerald-600">อนุมัติสำเร็จ / โอนเงิน</p>
+            <h3 id="statApprovedCount" class="text-2xl font-bold text-emerald-700 mt-1">0 ราย</h3>
+            <p class="text-[10px] text-emerald-600 mt-1">ผ่านคุณสมบัติครบถ้วน</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
+            <p class="text-xs font-semibold text-amber-600">อยู่ระหว่างการพิจารณา</p>
+            <h3 id="statPendingCount" class="text-2xl font-bold text-amber-700 mt-1">0 ราย</h3>
+            <p class="text-[10px] text-amber-600 mt-1">รอการตรวจสอบคุณสมบัติ</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
+            <p class="text-xs font-semibold text-rose-600">เอกสารไม่ถูกต้อง / ไม่อนุมัติ</p>
+            <h3 id="statRejectCount" class="text-2xl font-bold text-rose-700 mt-1">0 ราย</h3>
+            <p class="text-[10px] text-rose-600 mt-1">ต้องแก้ไขเอกสารหรือไม่อนุมัติ</p>
+          </div>
+
+          <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 p-5 rounded-2xl text-white shadow-md">
+            <p class="text-xs font-semibold text-indigo-200">งบประมาณรวมจัดสรร</p>
+            <h3 id="statTotalAmount" class="text-xl font-bold text-emerald-300 mt-1">0 บาท</h3>
+            <p class="text-[10px] text-indigo-300 mt-1">ยอดรวมที่ได้รับการอนุมัติ</p>
+          </div>
+        </div>
+
+        <!-- Dashboard Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg lg:col-span-1">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">สัดส่วนสถานะการอนุมัติทุน</h3>
+            <div class="relative h-60 flex items-center justify-center">
+              <canvas id="statusDoughnutChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg lg:col-span-2">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">จัดสรรงบประมาณแยกตามสังกัด/หน่วยงาน</h3>
+            <div class="relative h-60">
+              <canvas id="deptBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Management Table Card -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">ตารางข้อมูลผู้ยื่นคำขอรับทุนปี 2569</h3>
+              <p class="text-xs text-slate-500 mt-0.5">ค้นหา แก้ไข เปลี่ยนสถานะ หรือลบรายการของสมาชิก</p>
+            </div>
+
+            <!-- Filter Options -->
+            <div class="flex flex-wrap items-center gap-2">
+              <input 
+                id="adminSearchInput" 
+                type="text" 
+                placeholder="🔍 ค้นหาเลขสมาชิก / ชื่อ..."
+                oninput="filterAdminTable()" 
+                class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-indigo-500 w-48"
+              />
+              
+              <select id="adminStatusFilter" onchange="filterAdminTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-indigo-500">
+                <option value="ALL">สถานะทั้งหมด</option>
+                <option value="ยื่นเอกสารสำเร็จ">ยื่นเอกสารสำเร็จ</option>
+                <option value="อยู่ระหว่างตรวจสอบเอกสาร">อยู่ระหว่างตรวจสอบเอกสาร</option>
+                <option value="อยู่ระหว่างการพิจารณา">อยู่ระหว่างการพิจารณา</option>
+                <option value="ได้รับการอนุมัติ">ได้รับการอนุมัติ</option>
+                <option value="เอกสารไม่ถูกต้อง">เอกสารไม่ถูกต้อง</option>
+                <option value="ไม่ได้รับการอนุมัติ">ไม่ได้รับการอนุมัติ</option>
+                <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Responsive Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
+                  <th class="px-4 py-3.5 text-center">ลำดับ</th>
+                  <th class="px-4 py-3.5">เลขสมาชิก</th>
+                  <th class="px-4 py-3.5">ชื่อ-สกุล สมาชิก</th>
+                  <th class="px-4 py-3.5">สังกัด</th>
+                  <th class="px-4 py-3.5">ชื่อบุตรผู้รับทุน</th>
+                  <th class="px-4 py-3.5 text-center">ชั้นปี</th>
+                  <th class="px-4 py-3.5 text-right">จำนวนเงิน</th>
+                  <th class="px-4 py-3.5">เลขบัญชีโอน</th>
+                  <th class="px-4 py-3.5 text-center">สถานะการยื่น</th>
+                  <th class="px-4 py-3.5">หมายเหตุ/เหตุผล</th>
+                  <th class="px-4 py-3.5 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody" class="divide-y divide-slate-100">
+                <!-- Rows injected dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
 
     </main>
 
     <!-- Hidden Printable Slip Area -->
     <div id="printSlipArea" class="hidden p-8 bg-white text-slate-900"></div>
 
+    <!-- Modal: Add / Edit Record -->
+    <div id="recordModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200">
+        <div class="bg-gradient-to-r from-indigo-900 to-indigo-950 text-white p-6 flex justify-between items-center">
+          <h3 id="modalTitle" class="text-base font-bold">เพิ่มรายการผู้ยื่นขอทุนใหม่</h3>
+          <button onclick="closeRecordModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <form id="recordForm" onsubmit="saveRecord(event)" class="p-6 space-y-4 text-xs">
+          <input type="hidden" id="editIndex" value="-1" />
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">เลขที่สมาชิก (5 หลัก) *</label>
+              <input type="text" id="formMemberId" maxlength="5" required placeholder="เช่น 00463" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none font-mono font-bold" />
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">ลำดับแสดงผล *</label>
+              <input type="text" id="formIndex" required placeholder="เช่น 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">ชื่อ - สกุล สมาชิก *</label>
+            <input type="text" id="formMemberName" required placeholder="นาย/นาง/นางสาว..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">ชื่อบุตรผู้รับทุน *</label>
+              <input type="text" id="formChildName" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">ระดับชั้นปี *</label>
+              <input type="text" id="formLevel" required placeholder="เช่น ป.6, ม.3, ป.ตรี" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">จำนวนเงินทุน (บาท) *</label>
+              <input type="number" id="formAmount" required placeholder="เช่น 1000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none font-bold text-emerald-700" />
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">สังกัด / หน่วยงาน</label>
+              <input type="text" id="formDepartment" placeholder="เช่น สสอ.เมือง, รพ.ทุ่งหว้า" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">เลขที่บัญชีเงินฝากสหกรณ์</label>
+            <input type="text" id="formCoopAccount" placeholder="เช่น 123-45678-9" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none font-mono" />
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">สถานะการยื่นเอกสาร *</label>
+            <select id="formDocStatus" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-500 outline-none font-semibold">
+              <option value="ยื่นเอกสารสำเร็จ">1. ยื่นเอกสารสำเร็จ</option>
+              <option value="อยู่ระหว่างตรวจสอบเอกสาร">2. อยู่ระหว่างตรวจสอบเอกสาร</option>
+              <option value="เอกสารไม่ถูกต้อง">2.1 เอกสารไม่ถูกต้อง (ต้องแก้ไข)</option>
+              <option value="อยู่ระหว่างการพิจารณา">3. อยู่ระหว่างการพิจารณา</option>
+              <option value="ได้รับการอนุมัติ">4. ได้รับการอนุมัติสิทธิ์</option>
+              <option value="ไม่ได้รับการอนุมัติ">4.1 ไม่ได้รับการอนุมัติ</option>
+              <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">5. อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-bold text-rose-600 block mb-1">หมายเหตุ / เหตุผลการไม่อนุมัติ (ถ้ามี)</label>
+            <textarea id="formRemark" rows="2" placeholder="ระบุเหตุผลกรณีเอกสารไม่ถูกต้อง หรือไม่ผ่านอนุมัติ..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-rose-400 outline-none"></textarea>
+          </div>
+
+          <div class="pt-3 flex justify-end gap-2">
+            <button type="button" onclick="closeRecordModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold">ยกเลิก</button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-900 hover:bg-indigo-950 text-white font-bold shadow-md">บันทึกข้อมูล</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Shareable Member Link Generator -->
+    <div id="shareLinkModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200">
+        <div class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white p-6 flex justify-between items-center">
+          <h3 class="text-base font-bold flex items-center gap-2">
+            <span>🔗</span>
+            <span>ลิงก์ระบบติดตามสถานะสำหรับสมาชิก</span>
+          </h3>
+          <button onclick="closeShareLinkModal()" class="text-slate-300 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <div class="p-6 text-center space-y-4">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            ท่านสามารถคัดลอกลิงก์ด้านล่างนี้ไปแปะบนหน้าเว็บไซต์สหกรณ์ฯ กลุ่มไลน์ หรือเพจเฟซบุ๊ก เพื่อให้สมาชิกกดเข้ามาตรวจสถานะได้โดยตรง
+          </p>
+
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-2 text-xs font-mono">
+            <input id="shareUrlInput" type="text" readonly class="bg-transparent w-full outline-none text-slate-700 font-semibold" />
+            <button onclick="copyShareUrl()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl font-bold hover:bg-emerald-700 shrink-0">
+              คัดลอก
+            </button>
+          </div>
+
+          <p id="copyAlert" class="text-[11px] font-bold text-emerald-600 hidden">✓ คัดลอกลิงก์ลงคลิปบอร์ดสำเร็จแล้ว!</p>
+
+          <div class="pt-2 border-t text-[10px] text-slate-400">
+            ระบบทำงานอัตโนมัติบนสถาปัตยกรรมแบบ Single-Page ไม่ต้องล็อกอินสำหรับสมาชิก
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer Section -->
-    <footer class="bg-slate-950 text-slate-500 py-10 border-t border-white/5">
-      <div class="max-w-4xl mx-auto px-4 text-center space-y-2">
+    <footer class="bg-slate-950 text-slate-500 py-10 border-t border-white/5 mt-10">
+      <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
         <p class="text-xs">© 2569 สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด. สงวนลิขสิทธิ์ตามกฎหมาย</p>
         <p class="text-[10px] text-slate-600">ระบบประมวลผลข้อมูลผ่านระบบความปลอดภัย Sandbox-Proof และการคุ้มครองสิทธิ์ PDPA</p>
         <div class="pt-2">
@@ -160,7 +420,7 @@
   </div>
 
   <script>
-    // ฐานข้อมูลตัวอย่างสำหรับกรณีเชื่อมโยงล้มเหลว (Fallback Database)
+    // Initial Database State
     const defaultData = [
       {
         index: "1",
@@ -185,13 +445,47 @@
         department: "รพ.ทุ่งหว้า",
         docStatus: "เอกสารไม่ถูกต้อง",
         remark: "หนังสือรับรองผลการเรียนไม่ประทับตราโรงเรียน และแนบสำเนาทะเบียนบ้านไม่ครบถ้วน"
+      },
+      {
+        index: "3",
+        memberId: "01297",
+        memberName: "นางสาวมลิวัลย์ สุวรรณมาโชติ",
+        childName: "ด.ญ.กัญญารัตน์ สุวรรณมาโชติ",
+        amount: 1500,
+        level: "ม.2",
+        coopAccount: "555-88899-0",
+        department: "รพ.สตูล",
+        docStatus: "ได้รับการอนุมัติ",
+        remark: ""
       }
     ];
 
-    let dbData = [...defaultData];
-    let pdpaMaskMode = true; // สถานะการบดบังข้อมูลตามข้อกฎหมาย PDPA
+    let dbData = [];
+    let pdpaMaskMode = true;
+    let activeView = 'member';
+    let chartInstanceDoughnut = null;
+    let chartInstanceBar = null;
 
-    // ฟังก์ชันสร้างวันเวลาภาษาไทยแบบไดนามิก ณ ตอนดึงข้อมูลสำเร็จ
+    // Local Storage Helpers
+    function loadLocalStorageData() {
+      const saved = localStorage.getItem('coop_scholarship_db_2569');
+      if (saved) {
+        try {
+          dbData = JSON.parse(saved);
+        } catch(e) {
+          dbData = [...defaultData];
+        }
+      } else {
+        dbData = [...defaultData];
+        saveLocalStorageData();
+      }
+    }
+
+    function saveLocalStorageData() {
+      localStorage.setItem('coop_scholarship_db_2569', JSON.stringify(dbData));
+    }
+
+    // Thai Date Time Formatter
     function formatThaiDateTime() {
       const d = new Date();
       const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
@@ -202,7 +496,7 @@
       return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543} เวลา ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} น.`;
     }
 
-    // ฟังก์ชันช่วยปิดบังข้อมูล PDPA
+    // PDPA Masking Utilities
     function maskName(name) {
       if (!pdpaMaskMode || !name) return name;
       const parts = name.trim().split(/\s+/);
@@ -228,256 +522,32 @@
       }
     }
 
-    // ฟังก์ชันอัปเดตสเตตัสออนไลน์ของหัวตาราง
-    function updateSyncStatus(type, msg) {
-      const container = document.getElementById('syncStatusContainer');
-      const diagnosticBox = document.getElementById('diagnosticHelpBox');
-      if (!container) return;
+    // Switch between Member View and Admin View
+    function switchView(viewName) {
+      activeView = viewName;
+      const memberView = document.getElementById('memberPortalView');
+      const adminView = document.getElementById('adminPortalView');
+      const tabMemberBtn = document.getElementById('tabMemberBtn');
+      const tabAdminBtn = document.getElementById('tabAdminBtn');
 
-      let bgClass = 'bg-white shadow-sm border-slate-200 text-slate-700';
-      let dotClass = 'bg-amber-500 animate-pulse ring-amber-500/20';
+      if (viewName === 'member') {
+        memberView.classList.remove('hidden');
+        adminView.classList.add('hidden');
 
-      if (type === 'success') {
-        bgClass = 'bg-emerald-50 text-emerald-900 border-emerald-200 shadow-sm shadow-emerald-100/50';
-        dotClass = 'bg-emerald-500 animate-ping ring-emerald-500/30';
-        if (diagnosticBox) diagnosticBox.classList.add('hidden');
-      } else if (type === 'error') {
-        bgClass = 'bg-rose-50 text-rose-900 border-rose-200 shadow-sm shadow-rose-100/50';
-        dotClass = 'bg-rose-500 animate-pulse ring-rose-500/30';
-        if (diagnosticBox) diagnosticBox.classList.remove('hidden');
+        tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
+        tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+      } else {
+        memberView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+
+        tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
+        tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+
+        renderAdminDashboard();
       }
-
-      container.className = `flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border ${bgClass}`;
-      
-      const parts = msg.split('|');
-      const statusText = parts[0] ? parts[0].trim() : msg;
-      const timeText = parts[1] ? parts[1].trim() : '';
-
-      container.innerHTML = `
-        <div class="flex items-center gap-2.5">
-          <span class="w-3 h-3 rounded-full ring-4 ${dotClass}"></span>
-          <span class="font-bold">${statusText}</span>
-        </div>
-        ${timeText ? `
-          <span class="hidden sm:inline text-slate-300">|</span>
-          <span class="font-normal opacity-80">${timeText}</span>
-        ` : ''}
-      `;
     }
 
-    function parseCSV(text) {
-      let p = '', c = '', r = [];
-      let q = false;
-      let row = [''];
-      for (let i = 0; i < text.length; i++) {
-        c = text[i];
-        let next = text[i+1];
-        if (c === '"') {
-          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
-          else { q = !q; }
-        } else if (c === ',' && !q) {
-          row.push('');
-        } else if ((c === '\r' || c === '\n') && !q) {
-          if (c === '\r' && next === '\n') { i++; }
-          r.push(row);
-          row = [''];
-        } else {
-          row[row.length - 1] += c;
-        }
-      }
-      if (row.length > 1 || row[0] !== '') {
-        r.push(row);
-      }
-      return r;
-    }
-
-    function parseDynamicCSV(rows) {
-      let memberIdCol = -1;
-      let memberNameCol = -1;
-      let childNameCol = -1;
-      let amountCol = -1;
-      let levelCol = -1;
-      let indexCol = -1;
-      let deptCol = -1;
-      let coopAccCol = -1;
-      let docStatusCol = -1;
-      let remarkCol = -1;
-
-      let headerRowIndex = -1;
-      for (let r = 0; r < rows.length; r++) {
-        const row = rows[r].map(c => (c || '').toString().replace(/[\u00a0\s]/g, '').trim());
-        const hasMemberId = row.some(c => c.includes('เลขที่สมาชิก') || c.includes('เลขสมาชิก') || c.includes('รหัสสมาชิก'));
-        const hasMemberName = row.some(c => c.includes('ชื่อ') && (c.includes('สกุล') || c.includes('สมาชิก') || c.includes('ผู้ขอ') || c.includes('ผู้ยื่น')));
-        if (hasMemberId && hasMemberName) {
-          headerRowIndex = r;
-          break;
-        }
-      }
-
-      if (headerRowIndex === -1) {
-        for (let r = 0; r < Math.min(rows.length, 25); r++) {
-          const row = rows[r];
-          if (row.length >= 4) {
-            const col1 = (row[1] || '').toString().trim();
-            const col2 = (row[2] || '').toString().trim();
-            if (/^\d+$/.test(col1) && col1.length >= 2 && col2.length > 2) {
-              headerRowIndex = r - 1;
-              break;
-            }
-          }
-        }
-      }
-
-      if (headerRowIndex !== -1 && headerRowIndex < rows.length) {
-        const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
-        for (let i = 0; i < header.length; i++) {
-          const val = header[i].replace(/[\u00a0\s]/g, '');
-          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) {
-            memberIdCol = i;
-          } else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) {
-            memberNameCol = i;
-          } else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง' || val.includes('ชื่อบุตร')) {
-            childNameCol = i;
-          } else if (val.includes('จำนวนเงิน') || val.includes('บาท') || val.includes('เงิน')) {
-            amountCol = i;
-          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) {
-            levelCol = i;
-          } else if (val.includes('ลำดับ') || val.includes('ที่')) {
-            indexCol = i;
-          } else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) {
-            deptCol = i;
-          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) {
-            coopAccCol = i;
-          } else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('สถานะการยื่น') || val.includes('สถานะการยื่นเอกสาร')) {
-            docStatusCol = i;
-          } else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) {
-            remarkCol = i;
-          }
-        }
-      }
-
-      if (memberIdCol === -1) memberIdCol = 1;
-      if (memberNameCol === -1) memberNameCol = 2;
-      if (childNameCol === -1) childNameCol = 4;
-      if (amountCol === -1) amountCol = 5;
-      if (levelCol === -1) levelCol = 6;
-      if (indexCol === -1) indexCol = 0;
-      if (deptCol === -1) deptCol = 3;
-
-      const parsedRecords = [];
-      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
-
-      for (let r = startRow; r < rows.length; r++) {
-        const row = rows[r];
-        if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
-
-        let memberId = (row[memberIdCol] || '').toString().trim();
-        memberId = memberId.replace(/[\s\u00a0\r\n]/g, '');
-
-        if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
-        if (!/\d/.test(memberId)) continue;
-
-        if (/^\d+$/.test(memberId)) {
-          memberId = memberId.padStart(5, '0');
-        }
-
-        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
-        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
-        
-        let amount = 0;
-        if (amountCol < row.length) {
-          const rawAmount = (row[amountCol] || '').toString().trim();
-          const cleanAmountStr = rawAmount.replace(/[^0-9.]/g, '');
-          amount = parseFloat(cleanAmountStr) || 0;
-        }
-
-        const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
-        const indexVal = (indexCol !== -1 && indexCol < row.length && (row[indexCol] || '').toString().trim() !== '') 
-          ? (row[indexCol] || '').toString().trim() 
-          : (parsedRecords.length + 1).toString();
-          
-        const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
-        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
-        
-        let docStatus = 'ยื่นเอกสารสำเร็จ';
-        if (docStatusCol !== -1 && docStatusCol < row.length) {
-          const val = (row[docStatusCol] || '').toString().trim();
-          if (val && val !== '-') {
-            docStatus = val;
-          }
-        }
-
-        let remark = '';
-        if (remarkCol !== -1 && remarkCol < row.length) {
-          remark = (row[remarkCol] || '').toString().trim();
-        }
-
-        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
-
-        parsedRecords.push({
-          index: indexVal,
-          memberId,
-          memberName,
-          childName,
-          amount,
-          level,
-          department,
-          coopAccount,
-          docStatus,
-          remark
-        });
-      }
-
-      return parsedRecords;
-    }
-
-    async function loadDataOnline() {
-      updateSyncStatus('syncing', 'กำลังเชื่อมต่อฐานข้อมูลออนไลน์...');
-      
-      // ID ของ Google Sheet ของสหกรณ์ฯ ปี 2569: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
-      const SHEET_ID = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
-      const urls = [
-        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`
-      ];
-
-      let csvText = null;
-
-      for (const url of urls) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 วินาทีสำหรับ Timeout
-
-          const response = await fetch(url, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const text = await response.text();
-            if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
-              csvText = text;
-              break;
-            }
-          }
-        } catch (e) {
-          console.warn('Attempt failed for:', url, e);
-        }
-      }
-
-      if (csvText) {
-        const rows = parseCSV(csvText);
-        const parsed = parseDynamicCSV(rows);
-        if (parsed && parsed.length > 0) {
-          dbData = parsed;
-          updateSyncStatus('success', `เชื่อมต่อข้อมูลออนไลน์แบบเรียลไทม์ (Real-time) | ข้อมูล ณ ${formatThaiDateTime()}`);
-          return;
-        }
-      }
-
-      // กรณีดึงออนไลน์ล้มเหลวให้แสดงสเตตัสแจ้งเตือน และใช้ข้อมูลสำรอง
-      console.warn('Online sync unsuccessful. Falling back to default data structure.');
-      updateSyncStatus('error', `ไม่สามารถดึงข้อมูลออนไลน์ได้ (กำลังใช้ระบบฐานข้อมูลสำรอง) | ข้อมูล ณ ${formatThaiDateTime()}`);
-    }
-
+    // Evaluate Progress Steps (5 Steps)
     function evaluateProgress(status) {
       const statusStr = (status || '').toString().trim();
       
@@ -502,8 +572,9 @@
       return { step: 1, label: 'ยื่นเอกสารเข้าระบบสำเร็จแล้ว', color: 'blue', percent: 'w-1/5', isFailed: false };
     }
 
+    // Print Printable Slip
     function printSlip(index) {
-      const record = dbData.find(item => item.index === index.toString());
+      const record = dbData.find(item => item.index.toString() === index.toString());
       if (!record) return;
 
       const printArea = document.getElementById('printSlipArea');
@@ -536,6 +607,7 @@
       window.print();
     }
 
+    // Render Member Tracking Dashboard
     function renderTrackingDashboard(records) {
       const resultsArea = document.getElementById('resultsArea');
       if (!resultsArea) return;
@@ -617,7 +689,7 @@
         <div class="space-y-6 animate-fadeIn">
           
           <!-- Visual Step Progress Tracker Card -->
-          <section class="bg-white rounded-[2rem] border border-slate-200 shadow-xl p-6 md:p-8 relative overflow-hidden">
+          <section class="bg-white rounded-3xl border border-slate-200 shadow-xl p-6 md:p-8 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
             
             <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
@@ -637,7 +709,7 @@
                 <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-700 ${prog.percent}"></div>
 
                 <div class="relative z-10 flex justify-between">
-                  <!-- ขั้นที่ 1 -->
+                  <!-- Step 1 -->
                   <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${prog.step >= 1 ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
                       1
@@ -645,7 +717,7 @@
                     <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 1 ? 'text-indigo-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
                   </div>
 
-                  <!-- ขั้นที่ 2 -->
+                  <!-- Step 2 -->
                   <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${
                       prog.isDocError 
@@ -661,7 +733,7 @@
                     </span>
                   </div>
 
-                  <!-- ขั้นที่ 3 -->
+                  <!-- Step 3 -->
                   <div class="flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${prog.step >= 3 ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
                       3
@@ -669,7 +741,7 @@
                     <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 3 ? 'text-indigo-900' : 'text-slate-400'}">การพิจารณา</span>
                   </div>
 
-                  <!-- ขั้นที่ 4 -->
+                  <!-- Step 4 -->
                   <div class="flex flex-col items-center">
                     <div class="relative">
                       ${prog.step === 4 ? '<span class="absolute -inset-1.5 rounded-full bg-indigo-500/30 animate-pulse-ring"></span>' : ''}
@@ -690,7 +762,7 @@
                     </span>
                   </div>
 
-                  <!-- ขั้นที่ 5 -->
+                  <!-- Step 5 -->
                   <div class="flex flex-col items-center">
                     <div class="relative">
                       ${prog.step === 5 ? '<span class="absolute -inset-1.5 rounded-full bg-emerald-500/30 animate-pulse-ring"></span>' : ''}
@@ -764,7 +836,7 @@
               </div>
             </div>
 
-            <!-- กล่องสรุปสถานะพร้อมดึงเหตุผลจากช่องหมายเหตุมาแสดงด้วยตัวอักษรสีแดง -->
+            <!-- Status Result Box with Remark Reason -->
             <div class="${bgAlertClass} rounded-2xl p-5 border transition-all duration-300 shadow-sm">
               <div class="flex items-start justify-between">
                 <div class="flex-grow pr-4">
@@ -790,7 +862,7 @@
           </section>
 
           <!-- Detail Table Section -->
-          <section class="bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden">
+          <section class="bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
             <div class="p-6 md:p-8">
               <h4 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">ประวัติรายละเอียดการยื่นคำขอรับสิทธิ์สวัสดิการของท่าน</h4>
               
@@ -833,12 +905,13 @@
       resultsArea.classList.remove('hidden');
     }
 
+    // Render Not Submitted Result State
     function renderNotSubmitted(attemptedId) {
       const resultsArea = document.getElementById('resultsArea');
       if (!resultsArea) return;
 
       resultsArea.innerHTML = `
-        <section class="bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden animate-fadeIn">
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden animate-fadeIn">
           <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-6 flex items-center gap-4">
             <div class="bg-white/20 p-2.5 rounded-2xl">
               <span class="text-lg">⚠️</span>
@@ -881,6 +954,7 @@
       resultsArea.classList.remove('hidden');
     }
 
+    // Search Submit Handler
     function handleSearchSubmit(e) {
       if (e) e.preventDefault();
 
@@ -930,7 +1004,280 @@
       }
     }
 
+    // Admin Dashboard Render & Table Management
+    function renderAdminDashboard() {
+      // 1. Calculate Stat KPIs
+      const totalCount = dbData.length;
+      const approvedList = dbData.filter(d => d.docStatus.includes('อนุมัติ') || d.docStatus.includes('โอน'));
+      const approvedCount = approvedList.length;
+      const pendingCount = dbData.filter(d => d.docStatus.includes('ตรวจสอบ') || d.docStatus.includes('พิจารณา') || d.docStatus.includes('ยื่นเอกสารสำเร็จ')).length;
+      const rejectCount = dbData.filter(d => d.docStatus.includes('ไม่ถูกต้อง') || d.docStatus.includes('ไม่อนุมัติ') || d.docStatus.includes('แก้ไข')).length;
+      const totalAmount = approvedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+
+      document.getElementById('statTotalCount').textContent = `${totalCount} ราย`;
+      document.getElementById('statApprovedCount').textContent = `${approvedCount} ราย`;
+      document.getElementById('statPendingCount').textContent = `${pendingCount} ราย`;
+      document.getElementById('statRejectCount').textContent = `${rejectCount} ราย`;
+      document.getElementById('statTotalAmount').textContent = `${totalAmount.toLocaleString()} บาท`;
+
+      // 2. Render Charts
+      renderAdminCharts(approvedCount, pendingCount, rejectCount);
+
+      // 3. Render Data Table
+      filterAdminTable();
+    }
+
+    function renderAdminCharts(approved, pending, reject) {
+      // Doughnut Status Chart
+      const ctxDoughnut = document.getElementById('statusDoughnutChart');
+      if (ctxDoughnut) {
+        if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
+
+        chartInstanceDoughnut = new Chart(ctxDoughnut, {
+          type: 'doughnut',
+          data: {
+            labels: ['อนุมัติสำเร็จ/โอนเงิน', 'อยู่ระหว่างพิจารณา/ตรวจ', 'ไม่ถูกต้อง/ไม่อนุมัติ'],
+            datasets: [{
+              data: [approved, pending, reject],
+              backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } }
+            }
+          }
+        });
+      }
+
+      // Bar Chart by Department
+      const ctxBar = document.getElementById('deptBarChart');
+      if (ctxBar) {
+        if (chartInstanceBar) chartInstanceBar.destroy();
+
+        const deptMap = {};
+        dbData.forEach(d => {
+          const dept = d.department || 'ไม่ระบุ';
+          deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
+        });
+
+        const labels = Object.keys(deptMap);
+        const dataValues = Object.values(deptMap);
+
+        chartInstanceBar = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'วงเงินอนุมัติ (บาท)',
+              data: dataValues,
+              backgroundColor: '#4f46e5',
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { ticks: { font: { family: 'Prompt', size: 10 } } },
+              y: { ticks: { font: { family: 'Prompt', size: 10 } } }
+            }
+          }
+        });
+      }
+    }
+
+    function filterAdminTable() {
+      const tbody = document.getElementById('adminTableBody');
+      if (!tbody) return;
+
+      const searchVal = document.getElementById('adminSearchInput').value.trim().toLowerCase();
+      const statusFilterVal = document.getElementById('adminStatusFilter').value;
+
+      const filtered = dbData.filter(item => {
+        const matchSearch = item.memberId.includes(searchVal) || 
+                            item.memberName.toLowerCase().includes(searchVal) || 
+                            item.childName.toLowerCase().includes(searchVal);
+        
+        const matchStatus = statusFilterVal === 'ALL' || item.docStatus.includes(statusFilterVal);
+
+        return matchSearch && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="11" class="text-center py-8 text-slate-400">ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((item) => {
+        const realIndex = dbData.indexOf(item);
+        const prog = evaluateProgress(item.docStatus);
+
+        let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
+        if (prog.isFailed) {
+          badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold';
+        } else if (item.docStatus.includes('อนุมัติ')) {
+          badgeClass = 'bg-emerald-50 text-emerald-800 border border-emerald-200';
+        } else if (item.docStatus.includes('โอน')) {
+          badgeClass = 'bg-indigo-50 text-indigo-800 border border-indigo-200';
+        } else if (item.docStatus.includes('ตรวจสอบ') || item.docStatus.includes('พิจารณา')) {
+          badgeClass = 'bg-amber-50 text-amber-800 border border-amber-200';
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-4 py-3 text-center font-mono font-semibold text-slate-400">${item.index}</td>
+            <td class="px-4 py-3 font-mono font-bold text-indigo-700">${item.memberId}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${item.memberName}</td>
+            <td class="px-4 py-3 text-slate-600">${item.department || '-'}</td>
+            <td class="px-4 py-3 text-slate-900 font-medium">${item.childName}</td>
+            <td class="px-4 py-3 text-center"><span class="bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-[10px]">${item.level}</span></td>
+            <td class="px-4 py-3 text-right font-bold text-emerald-600">${Number(item.amount).toLocaleString()} บาท</td>
+            <td class="px-4 py-3 font-mono text-slate-600">${item.coopAccount || '-'}</td>
+            <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] ${badgeClass}">${item.docStatus}</span></td>
+            <td class="px-4 py-3 text-slate-500 max-w-xs truncate">${item.remark || '-'}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openEditModal(${realIndex})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-1.5 rounded-lg font-bold text-[11px] transition-all" title="แก้ไขข้อมูล">✏️</button>
+                <button onclick="deleteRecord(${realIndex})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 rounded-lg font-bold text-[11px] transition-all" title="ลบรายการ">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Operations (Add / Edit / Delete)
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'เพิ่มรายการผู้ยื่นขอทุนใหม่';
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('recordForm').reset();
+      document.getElementById('formIndex').value = (dbData.length + 1).toString();
+      document.getElementById('recordModal').classList.remove('hidden');
+    }
+
+    function openEditModal(index) {
+      const item = dbData[index];
+      if (!item) return;
+
+      document.getElementById('modalTitle').textContent = `แก้ไขข้อมูลสมาชิก : ${item.memberId} (${item.memberName})`;
+      document.getElementById('editIndex').value = index;
+      document.getElementById('formMemberId').value = item.memberId;
+      document.getElementById('formIndex').value = item.index;
+      document.getElementById('formMemberName').value = item.memberName;
+      document.getElementById('formChildName').value = item.childName;
+      document.getElementById('formLevel').value = item.level;
+      document.getElementById('formAmount').value = item.amount;
+      document.getElementById('formDepartment').value = item.department || '';
+      document.getElementById('formCoopAccount').value = item.coopAccount || '';
+      document.getElementById('formDocStatus').value = item.docStatus;
+      document.getElementById('formRemark').value = item.remark || '';
+
+      document.getElementById('recordModal').classList.remove('hidden');
+    }
+
+    function closeRecordModal() {
+      document.getElementById('recordModal').classList.add('hidden');
+    }
+
+    function saveRecord(e) {
+      e.preventDefault();
+
+      const editIndex = parseInt(document.getElementById('editIndex').value);
+      const newRecord = {
+        index: document.getElementById('formIndex').value.trim(),
+        memberId: document.getElementById('formMemberId').value.trim().padStart(5, '0'),
+        memberName: document.getElementById('formMemberName').value.trim(),
+        childName: document.getElementById('formChildName').value.trim(),
+        level: document.getElementById('formLevel').value.trim(),
+        amount: parseFloat(document.getElementById('formAmount').value) || 0,
+        department: document.getElementById('formDepartment').value.trim() || 'ไม่ระบุสังกัด',
+        coopAccount: document.getElementById('formCoopAccount').value.trim() || '-',
+        docStatus: document.getElementById('formDocStatus').value,
+        remark: document.getElementById('formRemark').value.trim()
+      };
+
+      if (editIndex >= 0 && editIndex < dbData.length) {
+        dbData[editIndex] = newRecord;
+      } else {
+        dbData.unshift(newRecord);
+      }
+
+      saveLocalStorageData();
+      closeRecordModal();
+      renderAdminDashboard();
+
+      // Refresh Member Search View if active
+      const searchInput = document.getElementById('searchId');
+      if (searchInput && searchInput.value) {
+        handleSearchSubmit();
+      }
+    }
+
+    function deleteRecord(index) {
+      const item = dbData[index];
+      if (!item) return;
+
+      if (confirm(`คุณต้องการลบรายการของ ${item.memberName} (บุตร: ${item.childName}) ใช่หรือไม่?`)) {
+        dbData.splice(index, 1);
+        saveLocalStorageData();
+        renderAdminDashboard();
+      }
+    }
+
+    // Export CSV Helper
+    function exportToCSV() {
+      let csvContent = "\uFEFFลำดับ,เลขที่สมาชิก,ชื่อ-สกุล สมาชิก,สังกัด,ชื่อบุตร,ชั้นปี,จำนวนเงิน,เลขที่บัญชีสหกรณ์,สถานะการยื่นเอกสาร,หมายเหตุ\n";
+      
+      dbData.forEach(d => {
+        csvContent += `"${d.index}","${d.memberId}","${d.memberName}","${d.department}","${d.childName}","${d.level}","${d.amount}","${d.coopAccount}","${d.docStatus}","${d.remark}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ทุนการศึกษาบุตร_2569_ส่งออก_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    // Share Modal Link Generator
+    function openShareLinkModal() {
+      const shareUrlInput = document.getElementById('shareUrlInput');
+      shareUrlInput.value = window.location.href.split('#')[0];
+      document.getElementById('copyAlert').classList.add('hidden');
+      document.getElementById('shareLinkModal').classList.remove('hidden');
+    }
+
+    function closeShareLinkModal() {
+      document.getElementById('shareLinkModal').classList.add('hidden');
+    }
+
+    function copyShareUrl() {
+      const shareUrlInput = document.getElementById('shareUrlInput');
+      shareUrlInput.select();
+      document.execCommand('copy');
+      
+      const copyAlert = document.getElementById('copyAlert');
+      copyAlert.classList.remove('hidden');
+      setTimeout(() => copyAlert.classList.add('hidden'), 3000);
+    }
+
+    // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
+      loadLocalStorageData();
+
       const searchForm = document.getElementById('searchForm');
       const searchInput = document.getElementById('searchId');
       const checkBadge = document.getElementById('checkBadge');
@@ -950,8 +1297,6 @@
           }
         });
       }
-      
-      loadDataOnline();
     });
   </script>
 </body>
