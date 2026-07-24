@@ -596,8 +596,10 @@ function doPost(e) {
         }
       } else {
         dbData = [...defaultData];
-        saveLocalStorageData();
       }
+
+      reIndexDbData();
+      saveLocalStorageData();
 
       const maintenance = localStorage.getItem('coop_maintenance_mode');
       if (maintenance !== null) {
@@ -612,6 +614,13 @@ function doPost(e) {
 
     function saveLocalStorageData() {
       localStorage.setItem('coop_scholarship_db_2569', JSON.stringify(dbData));
+    }
+
+    // Helper to sequentially re-index all records starting from 1 onwards
+    function reIndexDbData() {
+      dbData.forEach((item, idx) => {
+        item.index = (idx + 1).toString();
+      });
     }
 
     // CSV Parsing Utilities
@@ -772,10 +781,8 @@ function doPost(e) {
 
         const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
         
-        // Exact Index Extraction from Google Sheets
-        const indexVal = (indexCol !== -1 && indexCol < row.length && (row[indexCol] || '').toString().trim() !== '') 
-          ? (row[indexCol] || '').toString().trim() 
-          : (parsedRecords.length + 1).toString();
+        // Sequentially assign index starting from 1 onwards
+        const indexVal = (parsedRecords.length + 1).toString();
           
         const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
         const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
@@ -842,6 +849,7 @@ function doPost(e) {
           const parsed = parseDynamicCSV(rows);
           if (parsed && parsed.length > 0) {
             dbData = parsed;
+            reIndexDbData();
             saveLocalStorageData();
             updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สดเรียลไทม์ | ข้อมูล ณ ${formatThaiDateTime()}`);
             
@@ -1658,6 +1666,7 @@ function doPost(e) {
         dbData.unshift(newRecord);
       }
 
+      reIndexDbData();
       saveLocalStorageData();
       closeRecordModal();
       renderAdminDashboard();
@@ -1692,6 +1701,7 @@ function doPost(e) {
       const index = parseInt(document.getElementById('deleteTargetIndex').value);
       if (index >= 0 && index < dbData.length) {
         dbData.splice(index, 1);
+        reIndexDbData();
         saveLocalStorageData();
         renderAdminDashboard();
         showToast('🗑️ ลบรายการสำเร็จเรียบร้อยแล้ว', 'info');
