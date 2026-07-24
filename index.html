@@ -46,7 +46,6 @@
     <div class="h-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-emerald-500"></div>
 
     <!-- Header & Mode Selector -->
-    <!-- STREAMING_CHUNK: Building header with responsive layout... -->
     <header class="bg-gradient-to-b from-indigo-950 via-slate-950 to-indigo-950 text-white py-6 px-4 shadow-xl border-b border-white/10 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -94,10 +93,9 @@
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (หน้าสำหรับสมาชิก)   -->
       <!-- ========================================== -->
-      <!-- STREAMING_CHUNK: Rendering Member View Portal... -->
       <div id="memberPortalView" class="space-y-6">
         
-        <!-- System Maintenance Banner (จะปรากฏเฉพาะเมื่อปิดระบบ) -->
+        <!-- System Maintenance Banner -->
         <div id="maintenanceBanner" class="hidden bg-gradient-to-r from-rose-600 via-red-600 to-orange-600 text-white rounded-3xl p-6 md:p-8 shadow-2xl border border-rose-400/30 text-center animate-fadeIn">
           <div class="inline-block bg-white/20 p-4 rounded-full mb-3 backdrop-blur-md">
             <span class="text-4xl">🛠️</span>
@@ -170,7 +168,6 @@
       <!-- ==================================================== -->
       <!-- PART 2: STAFF & BOARD PORTAL (ระบบคณะกรรมการ/ฝ่ายจัดการ) -->
       <!-- ==================================================== -->
-      <!-- STREAMING_CHUNK: Rendering Admin View Portal... -->
       <div id="adminPortalView" class="hidden space-y-6">
         
         <!-- Admin Header Actions -->
@@ -518,7 +515,6 @@ function doPost(e) {
 
   </div>
 
-  <!-- STREAMING_CHUNK: Initializing JavaScript logic and state handlers... -->
   <script>
     // Initial Fallback Database State
     const defaultData = [
@@ -849,7 +845,6 @@ function doPost(e) {
       return parsedRecords;
     }
 
-    // STREAMING_CHUNK: Fetching live data from Google Sheets...
     // Google Sheets Online Data Sync - Strictly for Sheet ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
     async function loadDataOnline() {
       const targetSheetId = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
@@ -879,7 +874,17 @@ function doPost(e) {
         if (rows && rows.length >= 2) {
           const parsed = parseDynamicCSV(rows);
           if (parsed && parsed.length > 0) {
-            dbData = parsed;
+            // Smart Merge: Preserve locally added/edited items that aren't in online Google Sheet yet
+            const onlineMap = new Map();
+            parsed.forEach(p => onlineMap.set(`${p.memberId}_${p.childName}`, p));
+
+            const localAdditions = dbData.filter(local => {
+              const key = `${local.memberId}_${local.childName}`;
+              return local.isLocalOnly || !onlineMap.has(key);
+            });
+
+            // Combine online parsed data with local additions
+            dbData = [...parsed, ...localAdditions];
             reIndexDbData();
             saveLocalStorageData();
             updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สดเรียลไทม์ | ข้อมูล ณ ${formatThaiDateTime()}`);
@@ -963,7 +968,6 @@ function doPost(e) {
       }
     }
 
-    // STREAMING_CHUNK: Handling View Switcher and Member Isolation Guard...
     // Switch between Member View and Admin View
     function switchView(viewName) {
       if (viewName === 'admin' && isMemberOnlyUrl) {
@@ -1064,7 +1068,6 @@ function doPost(e) {
       return { step: 1, label: 'ยื่นเอกสารเข้าระบบสำเร็จแล้ว', color: 'blue', percent: 'w-1/5', isFailed: false };
     }
 
-    // STREAMING_CHUNK: Printing E-Slip generator...
     // Print Printable Slip
     function printSlip(index) {
       const record = dbData.find(item => item.index.toString() === index.toString());
@@ -1100,7 +1103,6 @@ function doPost(e) {
       window.print();
     }
 
-    // STREAMING_CHUNK: Rendering Member Stepper Dashboard UI...
     // Render Member Tracking Dashboard
     function renderTrackingDashboard(records) {
       const resultsArea = document.getElementById('resultsArea');
@@ -1448,7 +1450,7 @@ function doPost(e) {
       resultsArea.classList.remove('hidden');
     }
 
-    // Search Submit Handler
+    // Flexible Search Submit Handler with Smart ID Matching
     function handleSearchSubmit(e) {
       if (e) e.preventDefault();
 
@@ -1463,33 +1465,39 @@ function doPost(e) {
 
       if (!searchInput || !errorEl || !resultsArea) return;
 
-      let targetId = searchInput.value.trim();
-      targetId = targetId.replace(/[\s\u00a0\r\n]/g, '');
+      let rawTargetId = searchInput.value.trim().replace(/[\s\u00a0\r\n]/g, '');
 
-      if (/^\d+$/.test(targetId)) {
-        targetId = targetId.padStart(5, '0');
-        searchInput.value = targetId;
-      }
-
-      if (!targetId) {
+      if (!rawTargetId) {
         showInputError('กรุณาระบุเลขที่สมาชิกของคุณ');
         return;
       }
 
-      if (!/^\d{5}$/.test(targetId)) {
-        showInputError('รูปแบบไม่ถูกต้อง! เลขที่สมาชิกต้องเป็นตัวเลข 5 หลักเท่านั้น (เช่น 01297 หรือ 00463)');
-        return;
+      let formattedTargetId = rawTargetId;
+      if (/^\d+$/.test(rawTargetId)) {
+        formattedTargetId = rawTargetId.padStart(5, '0');
+        searchInput.value = formattedTargetId;
       }
 
       errorEl.classList.add('hidden');
       errorEl.textContent = '';
 
-      const matchedRecords = dbData.filter(item => item.memberId === targetId);
+      // Flexible Matching: Match padded 5-digit ID or unpadded digits
+      const matchedRecords = dbData.filter(item => {
+        if (!item || !item.memberId) return false;
+        const cleanItemMemberId = item.memberId.toString().trim().replace(/\D/g, '');
+        const cleanTargetId = rawTargetId.replace(/\D/g, '');
+
+        if (!cleanItemMemberId || !cleanTargetId) return false;
+
+        return cleanItemMemberId === cleanTargetId ||
+               cleanItemMemberId.padStart(5, '0') === formattedTargetId ||
+               item.memberId.toString().trim() === formattedTargetId;
+      });
 
       if (matchedRecords.length > 0) {
         renderTrackingDashboard(matchedRecords);
       } else {
-        renderNotSubmitted(targetId);
+        renderNotSubmitted(formattedTargetId);
       }
     }
 
@@ -1503,7 +1511,6 @@ function doPost(e) {
       }
     }
 
-    // STREAMING_CHUNK: Rendering Admin Table and Analytics Charts...
     // Admin Dashboard Render & Table Management
     function renderAdminDashboard() {
       // 1. Calculate Stat KPIs
@@ -1705,7 +1712,8 @@ function doPost(e) {
         department: document.getElementById('formDepartment').value.trim() || 'ไม่ระบุสังกัด',
         coopAccount: document.getElementById('formCoopAccount').value.trim() || '-',
         docStatus: document.getElementById('formDocStatus').value,
-        remark: document.getElementById('formRemark').value.trim()
+        remark: document.getElementById('formRemark').value.trim(),
+        isLocalOnly: true
       };
 
       if (editIndex >= 0 && editIndex < dbData.length) {
@@ -1847,7 +1855,6 @@ function doPost(e) {
       showToast('📋 คัดลอกโค้ด Apps Script ลงคลิปบอร์ดแล้ว', 'info');
     }
 
-    // STREAMING_CHUNK: Binding Event Listeners on DOM Load...
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
       enforceMemberViewRestriction();
@@ -1886,3 +1893,6 @@ function doPost(e) {
   </script>
 </body>
 </html>
+```eof
+
+ไฟล์ `index.html` ได้รับการปรับปรุงแก้ไขเรียบร้อยแล้วครับ คุณสามารถนำไฟล์นี้ไปอัปเดตบน Vercel หรือ GitHub Pages ได้เลยทันทีครับ! รายชื่อที่เพิ่มผ่านหน้าคณะกรรมการจะคงอยู่และสืบค้นเจอในหน้าสมาชิกได้ตลอดเวลาครับ
