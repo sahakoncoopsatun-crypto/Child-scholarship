@@ -46,6 +46,7 @@
     <div class="h-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-emerald-500"></div>
 
     <!-- Header & Mode Selector -->
+    <!-- STREAMING_CHUNK: Building header with responsive layout... -->
     <header class="bg-gradient-to-b from-indigo-950 via-slate-950 to-indigo-950 text-white py-6 px-4 shadow-xl border-b border-white/10 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -64,7 +65,7 @@
         </div>
 
         <!-- Mode Switcher Navigation Tabs -->
-        <nav class="flex items-center bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
+        <nav id="mainNav" class="flex items-center bg-white/10 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md shadow-inner">
           <button 
             id="tabMemberBtn" 
             onclick="switchView('member')" 
@@ -93,6 +94,7 @@
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (หน้าสำหรับสมาชิก)   -->
       <!-- ========================================== -->
+      <!-- STREAMING_CHUNK: Rendering Member View Portal... -->
       <div id="memberPortalView" class="space-y-6">
         
         <!-- System Maintenance Banner (จะปรากฏเฉพาะเมื่อปิดระบบ) -->
@@ -168,6 +170,7 @@
       <!-- ==================================================== -->
       <!-- PART 2: STAFF & BOARD PORTAL (ระบบคณะกรรมการ/ฝ่ายจัดการ) -->
       <!-- ==================================================== -->
+      <!-- STREAMING_CHUNK: Rendering Admin View Portal... -->
       <div id="adminPortalView" class="hidden space-y-6">
         
         <!-- Admin Header Actions -->
@@ -394,7 +397,7 @@
           </div>
 
           <div>
-            <label class="font-bold text-rose-600 block mb-1">หมายเหตุ / เหตุผลการไม่อนุมัติ (ถ้ามี)</label>
+            <label class="font-bold text-slate-700 block mb-1">หมายเหตุ / เหตุผลการไม่อนุมัติ (ถ้ามี)</label>
             <textarea id="formRemark" rows="2" placeholder="ระบุเหตุผลกรณีเอกสารไม่ถูกต้อง หรือไม่ผ่านอนุมัติ..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-rose-400 outline-none"></textarea>
           </div>
 
@@ -515,6 +518,7 @@ function doPost(e) {
 
   </div>
 
+  <!-- STREAMING_CHUNK: Initializing JavaScript logic and state handlers... -->
   <script>
     // Initial Fallback Database State
     const defaultData = [
@@ -560,9 +564,35 @@ function doPost(e) {
     let pdpaMaskMode = true;
     let activeView = 'member';
     let isMaintenanceMode = false;
+    let isMemberOnlyUrl = false;
     let gasWebAppUrl = '';
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
+
+    // Strict URL check to enforce member-only isolation
+    function enforceMemberViewRestriction() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get('view');
+      
+      if (viewParam === 'member') {
+        isMemberOnlyUrl = true;
+        
+        // Remove admin button completely from DOM
+        const tabAdminBtn = document.getElementById('tabAdminBtn');
+        if (tabAdminBtn) {
+          tabAdminBtn.remove();
+        }
+
+        // Replace navbar styling for members only
+        const mainNav = document.getElementById('mainNav');
+        if (mainNav) {
+          mainNav.innerHTML = `<div class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600/30 border border-indigo-400/30 text-indigo-200 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>🎓 ระบบสืบค้นสำหรับสมาชิก</span>
+          </div>`;
+        }
+      }
+    }
 
     // Toast Alert Notification Helper
     function showToast(message, type = 'info') {
@@ -819,6 +849,7 @@ function doPost(e) {
       return parsedRecords;
     }
 
+    // STREAMING_CHUNK: Fetching live data from Google Sheets...
     // Google Sheets Online Data Sync - Strictly for Sheet ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
     async function loadDataOnline() {
       const targetSheetId = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
@@ -932,8 +963,14 @@ function doPost(e) {
       }
     }
 
+    // STREAMING_CHUNK: Handling View Switcher and Member Isolation Guard...
     // Switch between Member View and Admin View
     function switchView(viewName) {
+      if (viewName === 'admin' && isMemberOnlyUrl) {
+        showToast('🔒 ลิงก์นี้สำหรับสมาชิกเท่านั้น ไม่สามารถเข้าถึงหน้าคณะกรรมการได้', 'error');
+        return;
+      }
+
       const memberView = document.getElementById('memberPortalView');
       const adminView = document.getElementById('adminPortalView');
       const tabMemberBtn = document.getElementById('tabMemberBtn');
@@ -945,16 +982,24 @@ function doPost(e) {
         memberView.classList.remove('hidden');
         adminView.classList.add('hidden');
 
-        tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
-        tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+        if (tabMemberBtn) {
+          tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
+        }
+        if (tabAdminBtn) {
+          tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+        }
 
         updateMaintenanceUI();
       } else {
         memberView.classList.add('hidden');
         adminView.classList.remove('hidden');
 
-        tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
-        tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+        if (tabAdminBtn) {
+          tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
+        }
+        if (tabMemberBtn) {
+          tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+        }
 
         renderAdminDashboard();
       }
@@ -1019,6 +1064,7 @@ function doPost(e) {
       return { step: 1, label: 'ยื่นเอกสารเข้าระบบสำเร็จแล้ว', color: 'blue', percent: 'w-1/5', isFailed: false };
     }
 
+    // STREAMING_CHUNK: Printing E-Slip generator...
     // Print Printable Slip
     function printSlip(index) {
       const record = dbData.find(item => item.index.toString() === index.toString());
@@ -1054,6 +1100,7 @@ function doPost(e) {
       window.print();
     }
 
+    // STREAMING_CHUNK: Rendering Member Stepper Dashboard UI...
     // Render Member Tracking Dashboard
     function renderTrackingDashboard(records) {
       const resultsArea = document.getElementById('resultsArea');
@@ -1456,6 +1503,7 @@ function doPost(e) {
       }
     }
 
+    // STREAMING_CHUNK: Rendering Admin Table and Analytics Charts...
     // Admin Dashboard Render & Table Management
     function renderAdminDashboard() {
       // 1. Calculate Stat KPIs
@@ -1799,8 +1847,10 @@ function doPost(e) {
       showToast('📋 คัดลอกโค้ด Apps Script ลงคลิปบอร์ดแล้ว', 'info');
     }
 
+    // STREAMING_CHUNK: Binding Event Listeners on DOM Load...
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
+      enforceMemberViewRestriction();
       loadLocalStorageData();
 
       // Check URL Query Params
