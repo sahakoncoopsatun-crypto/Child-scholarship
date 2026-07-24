@@ -37,6 +37,9 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-900/5">
 
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
   <div id="app" class="flex-grow flex flex-col justify-between">
     
     <!-- Top Decorative Bar -->
@@ -76,8 +79,8 @@
             onclick="switchView('admin')" 
             class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5"
           >
-            <span>🔐</span>
-            <span>เจ้าหน้าที่ / คณะกรรมการ</span>
+            <span>📊</span>
+            <span>คณะกรรมการ / ฝ่ายจัดการ</span>
           </button>
         </nav>
 
@@ -92,71 +95,99 @@
       <!-- ========================================== -->
       <div id="memberPortalView" class="space-y-6">
         
-        <!-- Live Sync Status Bar -->
-        <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border bg-white shadow-sm border-slate-200 transition-all duration-300">
-          <div class="flex items-center gap-2.5">
-            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></span>
-            <span class="font-bold text-slate-700">เชื่อมต่อฐานข้อมูลออนไลน์เรียลไทม์ พร้อมสืบค้นสิทธิ์</span>
+        <!-- System Maintenance Banner (จะปรากฏเฉพาะเมื่อปิดระบบ) -->
+        <div id="maintenanceBanner" class="hidden bg-gradient-to-r from-rose-600 via-red-600 to-orange-600 text-white rounded-3xl p-6 md:p-8 shadow-2xl border border-rose-400/30 text-center animate-fadeIn">
+          <div class="inline-block bg-white/20 p-4 rounded-full mb-3 backdrop-blur-md">
+            <span class="text-4xl">🛠️</span>
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold tracking-tight">อยู่ในระหว่างการปรับปรุงข้อมูลระบบ</h2>
+          <p class="text-xs md:text-sm text-rose-100 mt-2 max-w-xl mx-auto leading-relaxed">
+            คณะกรรมการและเจ้าหน้าที่กำลังดำเนินการอัปเดตข้อมูลและประมวลผลสิทธิ์ทุนการศึกษา ประจำปี 2569 <br />
+            ระบบจะเปิดให้บริการสืบค้นข้อมูลแก่สมาชิกอีกครั้งในเร็วๆ นี้ ขออภัยในความไม่สะดวกครับ
+          </p>
+          <div class="mt-4 pt-4 border-t border-white/20 text-xs font-semibold text-rose-200">
+            📞 สอบถามข้อมูลเพิ่มเติม: โทร. 074-721930 หรือ 095-3937696 (งานธุรการ)
           </div>
         </div>
 
-        <!-- Search Input Box Card -->
-        <section class="bg-white/90 backdrop-blur-lg rounded-3xl border border-slate-200 shadow-xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 hover:border-indigo-300">
-          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
-          
-          <div class="text-center mb-8">
-            <span class="px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs">
-              ส่วนบริการสมาชิกออนไลน์
-            </span>
-            <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-snug mt-3">
-              ศูนย์ติดตามสถานะการยื่นขอรับทุนการศึกษาบุตร ประจำปี 2569
-            </h2>
-            <p class="text-xs text-slate-500 mt-2 max-w-xl mx-auto leading-relaxed">
-              กรุณาระบุหมายเลขสมาชิกสหกรณ์ 5 หลัก เพื่อเรียกเอกสารความคืบหน้า รายละเอียดวงเงินช่วยเหลือจัดสรร และผลการพิจารณาจากระบบส่วนกลาง
-            </p>
+        <!-- Live Sync Status Bar -->
+        <div id="memberContentArea" class="space-y-6">
+          <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border bg-white shadow-sm border-slate-200 transition-all duration-300">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></span>
+              <span class="font-bold text-slate-700">กำลังเชื่อมโยงฐานข้อมูล Google Sheets...</span>
+            </div>
           </div>
 
-          <form id="searchForm" class="max-w-md mx-auto">
-            <div class="flex flex-col sm:flex-row gap-3">
-              <div class="relative flex-grow">
-                <input 
-                  id="searchId"
-                  type="text"
-                  maxlength="5"
-                  placeholder="ระบุเลขที่สมาชิก 5 หลัก"
-                  class="w-full px-6 py-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-center text-xl font-bold tracking-widest placeholder:tracking-normal placeholder:font-normal placeholder:text-sm transition-all shadow-inner"
-                />
-                <div id="checkBadge" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 hidden text-xl">✓</div>
-              </div>
-              <button
-                type="submit"
-                class="bg-gradient-to-r from-indigo-900 to-indigo-950 hover:from-indigo-950 hover:to-slate-950 text-white font-bold px-8 py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-base shrink-0 flex items-center justify-center gap-2 group border border-white/5"
-              >
-                <span>สืบค้นสถานะ</span>
-                <span class="transition-transform group-hover:translate-x-1">🚀</span>
-              </button>
+          <!-- Search Input Box Card -->
+          <section class="bg-white/90 backdrop-blur-lg rounded-3xl border border-slate-200 shadow-xl p-6 md:p-10 relative overflow-hidden transition-all duration-300 hover:border-indigo-300">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-blue-600 to-emerald-500"></div>
+            
+            <div class="text-center mb-8">
+              <span class="px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs">
+                ส่วนบริการสมาชิกออนไลน์
+              </span>
+              <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-snug mt-3">
+                ศูนย์ติดตามสถานะการยื่นขอรับทุนการศึกษาบุตร ประจำปี 2569
+              </h2>
+              <p class="text-xs text-slate-500 mt-2 max-w-xl mx-auto leading-relaxed">
+                กรุณาระบุหมายเลขสมาชิกสหกรณ์ 5 หลัก เพื่อเรียกเอกสารความคืบหน้า รายละเอียดวงเงินช่วยเหลือจัดสรร และผลการพิจารณาจากระบบส่วนกลาง
+              </p>
             </div>
-            <p id="inputError" class="text-xs text-rose-600 font-semibold text-center mt-3 hidden animate-pulse"></p>
-          </form>
-        </section>
 
-        <!-- Dynamic Results Area for Member -->
-        <div id="resultsArea" class="hidden"></div>
+            <form id="searchForm" class="max-w-md mx-auto">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                  <input 
+                    id="searchId"
+                    type="text"
+                    maxlength="5"
+                    placeholder="ระบุเลขที่สมาชิก 5 หลัก"
+                    class="w-full px-6 py-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none text-center text-xl font-bold tracking-widest placeholder:tracking-normal placeholder:font-normal placeholder:text-sm transition-all shadow-inner"
+                  />
+                  <div id="checkBadge" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 hidden text-xl">✓</div>
+                </div>
+                <button
+                  type="submit"
+                  class="bg-gradient-to-r from-indigo-900 to-indigo-950 hover:from-indigo-950 hover:to-slate-950 text-white font-bold px-8 py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-base shrink-0 flex items-center justify-center gap-2 group border border-white/5"
+                >
+                  <span>สืบค้นสถานะ</span>
+                  <span class="transition-transform group-hover:translate-x-1">🚀</span>
+                </button>
+              </div>
+              <p id="inputError" class="text-xs text-rose-600 font-semibold text-center mt-3 hidden animate-pulse"></p>
+            </form>
+          </section>
+
+          <!-- Dynamic Results Area for Member -->
+          <div id="resultsArea" class="hidden"></div>
+        </div>
 
       </div>
 
       <!-- ==================================================== -->
-      <!-- PART 2: STAFF & ADMIN PORTAL (ระบบคณะกรรมการ/เจ้าหน้าที่) -->
+      <!-- PART 2: STAFF & BOARD PORTAL (ระบบคณะกรรมการ/ฝ่ายจัดการ) -->
       <!-- ==================================================== -->
       <div id="adminPortalView" class="hidden space-y-6">
         
-        <!-- Admin Sub Header & Actions -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-6 rounded-3xl shadow-xl border border-slate-800">
+        <!-- Admin Header Actions -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900 text-white p-6 rounded-3xl shadow-xl border border-slate-800">
           <div>
-            <div class="flex items-center gap-2">
-              <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
-                🔒 เจ้าหน้าที่เข้าสู่ระบบแล้ว
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+                📊 ส่วนงานคณะกรรมการ และฝ่ายจัดการ
               </span>
+
+              <!-- Maintenance Mode Toggle -->
+              <button 
+                id="maintenanceToggleBtn"
+                onclick="toggleMaintenanceMode()"
+                class="px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95"
+              >
+                <span id="maintenanceStatusIcon">🟢</span>
+                <span id="maintenanceStatusText">สถานะหน้าสมาชิก: เปิดปกติ</span>
+              </button>
             </div>
             <h2 class="text-xl font-bold mt-2">ศูนย์บริหารจัดการข้อมูลทุนการศึกษาบุตร 2569</h2>
             <p class="text-xs text-slate-400 mt-1">เพิ่ม แก้ไขสถานะ อนุมัติทุน และตรวจสอบภาพรวมรายงานสำหรับคณะกรรมการ</p>
@@ -169,7 +200,11 @@
             </button>
             <button onclick="openShareLinkModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
               <span>🔗</span>
-              <span>ลิงก์ให้สมาชิก</span>
+              <span>คัดลอกลิงก์ให้สมาชิก</span>
+            </button>
+            <button onclick="openGasSettingsModal()" class="bg-violet-700 hover:bg-violet-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
+              <span>⚙️</span>
+              <span>ตั้งค่า Google Sheets</span>
             </button>
             <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
               <span>📥</span>
@@ -278,7 +313,7 @@
                 </tr>
               </thead>
               <tbody id="adminTableBody" class="divide-y divide-slate-100">
-                <!-- Rows injected dynamically by JS -->
+                <!-- Dynamic Rows -->
               </tbody>
             </table>
           </div>
@@ -384,7 +419,7 @@
 
         <div class="p-6 text-center space-y-4">
           <p class="text-xs text-slate-600 leading-relaxed">
-            ท่านสามารถคัดลอกลิงก์ด้านล่างนี้ไปแปะบนหน้าเว็บไซต์สหกรณ์ฯ กลุ่มไลน์ หรือเพจเฟซบุ๊ก เพื่อให้สมาชิกกดเข้ามาตรวจสถานะได้โดยตรง
+            ท่านสามารถคัดลอกลิงก์เฉพาะสำหรับสมาชิกด้านล่างนี้ไปแปะบนหน้าเว็บไซต์สหกรณ์ฯ กลุ่มไลน์ หรือเพจเฟซบุ๊ก โดยสมาชิกจะสามารถเข้าถึงได้เฉพาะหน้าติดตามสิทธิ์เท่านั้น
           </p>
 
           <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-2 text-xs font-mono">
@@ -394,11 +429,72 @@
             </button>
           </div>
 
-          <p id="copyAlert" class="text-[11px] font-bold text-emerald-600 hidden">✓ คัดลอกลิงก์ลงคลิปบอร์ดสำเร็จแล้ว!</p>
+          <p id="copyAlert" class="text-[11px] font-bold text-emerald-600 hidden">✓ คัดลอกลิงก์สำหรับสมาชิกเรียบร้อยแล้ว!</p>
 
           <div class="pt-2 border-t text-[10px] text-slate-400">
-            ระบบทำงานอัตโนมัติบนสถาปัตยกรรมแบบ Single-Page ไม่ต้องล็อกอินสำหรับสมาชิก
+            🔒 ระบบแยกสิทธิ์ชัดเจน สมาชิกจะไม่เห็นเมนูของคณะกรรมการ
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Google Sheets Web App Config -->
+    <div id="gasConfigModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200">
+        <div class="bg-gradient-to-r from-violet-800 to-indigo-900 text-white p-6 flex justify-between items-center">
+          <h3 class="text-base font-bold flex items-center gap-2">
+            <span>⚙️</span>
+            <span>ตั้งค่าซิงค์ข้อมูล Google Sheets (Apps Script)</span>
+          </h3>
+          <button onclick="closeGasSettingsModal()" class="text-slate-300 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <div class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">URL ของ Google Apps Script Web App</label>
+            <input 
+              type="text" 
+              id="gasUrlInput" 
+              placeholder="https://script.google.com/macros/s/.../exec" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-violet-500 outline-none font-mono text-[11px]"
+            />
+            <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จากการ Deploy Google Apps Script ในแผ่นงาน Google Sheets</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <h4 class="font-bold text-slate-800">🛠️ โค้ดสำหรับวางใน Google Apps Script (GAS):</h4>
+            <textarea readonly class="w-full h-28 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([data.index, data.memberId, data.memberName, data.department, data.childName, data.amount, data.level, data.coopAccount, data.docStatus, data.remark]);
+  return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+}</textarea>
+            <button onclick="copyGasScript()" class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-3 py-1.5 rounded-lg text-[10px]">
+              คัดลอกโค้ด Apps Script
+            </button>
+          </div>
+
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeGasSettingsModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold">ปิด</button>
+            <button type="button" onclick="saveGasSettings()" class="px-6 py-2.5 rounded-xl bg-violet-700 hover:bg-violet-800 text-white font-bold shadow-md">บันทึกการตั้งค่า</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Delete Confirmation -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden animate-fadeIn border border-slate-200 text-center p-6 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto">
+          🗑️
+        </div>
+        <h3 class="text-base font-bold text-slate-900">ยืนยันการลบรายการ</h3>
+        <p id="deleteConfirmText" class="text-xs text-slate-500 leading-relaxed"></p>
+        <input type="hidden" id="deleteTargetIndex" value="-1" />
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeDeleteConfirmModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">ยกเลิก</button>
+          <button onclick="executeDeleteRecord()" class="w-1/2 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md">ยืนยันลบข้อมูล</button>
         </div>
       </div>
     </div>
@@ -420,7 +516,7 @@
   </div>
 
   <script>
-    // Initial Database State
+    // Initial Fallback Database State
     const defaultData = [
       {
         index: "1",
@@ -463,8 +559,31 @@
     let dbData = [];
     let pdpaMaskMode = true;
     let activeView = 'member';
+    let isMaintenanceMode = false;
+    let gasWebAppUrl = '';
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
+
+    // Toast Alert Notification Helper
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      let bgColor = 'bg-slate-900 text-white border-slate-700';
+      if (type === 'success') bgColor = 'bg-emerald-900 text-emerald-100 border-emerald-700';
+      if (type === 'error') bgColor = 'bg-rose-900 text-rose-100 border-rose-700';
+      if (type === 'warning') bgColor = 'bg-amber-900 text-amber-100 border-amber-700';
+
+      toast.className = `${bgColor} border px-4 py-3 rounded-2xl shadow-xl text-xs font-bold pointer-events-auto flex items-center gap-2 animate-fadeIn transform transition-all`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
 
     // Local Storage Helpers
     function loadLocalStorageData() {
@@ -479,10 +598,267 @@
         dbData = [...defaultData];
         saveLocalStorageData();
       }
+
+      const maintenance = localStorage.getItem('coop_maintenance_mode');
+      if (maintenance !== null) {
+        isMaintenanceMode = maintenance === 'true';
+      }
+
+      const savedGasUrl = localStorage.getItem('coop_gas_webapp_url');
+      if (savedGasUrl) {
+        gasWebAppUrl = savedGasUrl;
+      }
     }
 
     function saveLocalStorageData() {
       localStorage.setItem('coop_scholarship_db_2569', JSON.stringify(dbData));
+    }
+
+    // CSV Parsing Utilities
+    function parseCSV(text) {
+      let p = '', c = '', r = [];
+      let q = false;
+      let row = [''];
+      for (let i = 0; i < text.length; i++) {
+        c = text[i];
+        let next = text[i+1];
+        if (c === '"') {
+          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { q = !q; }
+        } else if (c === ',' && !q) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !q) {
+          if (c === '\r' && next === '\n') { i++; }
+          r.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') {
+        r.push(row);
+      }
+      return r;
+    }
+
+    // Dynamic Column Mapper including Remark extraction
+    function parseDynamicCSV(rows) {
+      let memberIdCol = -1;
+      let memberNameCol = -1;
+      let childNameCol = -1;
+      let amountCol = -1;
+      let levelCol = -1;
+      let indexCol = -1;
+      let deptCol = -1;
+      let coopAccCol = -1;
+      let docStatusCol = -1;
+      let remarkCol = -1;
+
+      let headerRowIndex = -1;
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r].map(c => (c || '').toString().replace(/[\u00a0\s]/g, '').trim());
+        const hasMemberId = row.some(c => c.includes('เลขที่สมาชิก') || c.includes('เลขสมาชิก') || c.includes('รหัสสมาชิก'));
+        const hasMemberName = row.some(c => c.includes('ชื่อ') && (c.includes('สกุล') || c.includes('สมาชิก') || c.includes('ผู้ขอ') || c.includes('ผู้ยื่น')));
+        if (hasMemberId && hasMemberName) {
+          headerRowIndex = r;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) {
+        for (let r = 0; r < Math.min(rows.length, 25); r++) {
+          const row = rows[r];
+          if (row.length >= 4) {
+            const col1 = (row[1] || '').toString().trim();
+            const col2 = (row[2] || '').toString().trim();
+            if (/^\d+$/.test(col1) && col1.length >= 2 && col2.length > 2) {
+              headerRowIndex = r - 1;
+              break;
+            }
+          }
+        }
+      }
+
+      if (headerRowIndex !== -1 && headerRowIndex < rows.length) {
+        const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
+        for (let i = 0; i < header.length; i++) {
+          const val = header[i].replace(/[\u00a0\s]/g, '');
+          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) {
+            memberIdCol = i;
+          } else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) {
+            memberNameCol = i;
+          } else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') {
+            childNameCol = i;
+          } else if (val.includes('จำนวนเงิน') || val.includes('บาท') || val.includes('เงิน') || val.includes('ยอดเงิน')) {
+            amountCol = i;
+          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) {
+            levelCol = i;
+          } else if (val.includes('ลำดับ') || val.includes('ที่')) {
+            indexCol = i;
+          } else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) {
+            deptCol = i;
+          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) {
+            coopAccCol = i;
+          } else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('สถานะการยื่น')) {
+            docStatusCol = i;
+          } else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) {
+            remarkCol = i;
+          }
+        }
+      }
+
+      // Smart Account Column Finder
+      if (coopAccCol === -1) {
+        let colVotes = {};
+        const scanRowsLimit = Math.min(rows.length, 30);
+        const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+        for (let r = startRow; r < scanRowsLimit; r++) {
+          const row = rows[r];
+          if (!row) continue;
+          for (let c = 0; c < row.length; c++) {
+            const val = (row[c] || '').toString().trim().replace(/[\s\u00a0-]/g, '');
+            if (/^\d{7,15}$/.test(val)) {
+              colVotes[c] = (colVotes[c] || 0) + 1;
+            }
+          }
+        }
+        let maxVotes = 0;
+        let bestCol = -1;
+        for (let c in colVotes) {
+          if (colVotes[c] > maxVotes) {
+            maxVotes = colVotes[c];
+            bestCol = parseInt(c);
+          }
+        }
+        if (maxVotes >= 1) {
+          coopAccCol = bestCol;
+        }
+      }
+
+      if (memberIdCol === -1) memberIdCol = 1;
+      if (memberNameCol === -1) memberNameCol = 2;
+      if (childNameCol === -1) childNameCol = 4;
+      if (amountCol === -1) amountCol = 5;
+      if (levelCol === -1) levelCol = 6;
+      if (indexCol === -1) indexCol = 0;
+      if (deptCol === -1) deptCol = 3;
+
+      const parsedRecords = [];
+      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+
+      for (let r = startRow; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
+
+        let memberId = (row[memberIdCol] || '').toString().trim();
+        memberId = memberId.replace(/[\s\u00a0\r\n]/g, '');
+
+        if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
+        if (!/\d/.test(memberId)) continue;
+
+        if (/^\d+$/.test(memberId)) {
+          memberId = memberId.padStart(5, '0');
+        }
+
+        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
+        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+        
+        let amount = 0;
+        if (amountCol < row.length) {
+          const rawAmount = (row[amountCol] || '').toString().trim();
+          const cleanAmountStr = rawAmount.replace(/[^0-9.]/g, '');
+          amount = parseFloat(cleanAmountStr) || 0;
+        }
+
+        const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
+        
+        // Exact Index Extraction from Google Sheets
+        const indexVal = (indexCol !== -1 && indexCol < row.length && (row[indexCol] || '').toString().trim() !== '') 
+          ? (row[indexCol] || '').toString().trim() 
+          : (parsedRecords.length + 1).toString();
+          
+        const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
+        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
+        
+        let docStatus = 'ยื่นเอกสารสำเร็จ';
+        if (docStatusCol !== -1 && docStatusCol < row.length) {
+          const val = (row[docStatusCol] || '').toString().trim();
+          if (val && val !== '-') {
+            docStatus = val;
+          }
+        }
+
+        let remark = '';
+        if (remarkCol !== -1 && remarkCol < row.length) {
+          remark = (row[remarkCol] || '').toString().trim();
+        }
+
+        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
+
+        parsedRecords.push({
+          index: indexVal,
+          memberId,
+          memberName,
+          childName,
+          amount,
+          level,
+          department,
+          coopAccount,
+          docStatus,
+          remark
+        });
+      }
+
+      return parsedRecords;
+    }
+
+    // Google Sheets Online Data Sync - Strictly for Sheet ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
+    async function loadDataOnline() {
+      const targetSheetId = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
+      const endpoints = [
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
+      ];
+
+      let csvText = null;
+      for (const url of endpoints) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (response.ok) {
+            csvText = await response.text();
+            if (csvText && csvText.trim().length > 0) break;
+          }
+        } catch (err) {
+          console.warn('Google Sheets Fetch Attempt Failed:', url, err);
+        }
+      }
+
+      if (csvText) {
+        const rows = parseCSV(csvText);
+        if (rows && rows.length >= 2) {
+          const parsed = parseDynamicCSV(rows);
+          if (parsed && parsed.length > 0) {
+            dbData = parsed;
+            saveLocalStorageData();
+            updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สดเรียลไทม์ | ข้อมูล ณ ${formatThaiDateTime()}`);
+            
+            if (activeView === 'admin') {
+              renderAdminDashboard();
+            } else {
+              const searchInput = document.getElementById('searchId');
+              if (searchInput && searchInput.value) {
+                handleSearchSubmit();
+              }
+            }
+            return;
+          }
+        }
+      }
+
+      updateSyncStatus('error', `ดึงข้อมูลออนไลน์ขัดข้อง (กรุณาเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ข้อมูล ณ ${formatThaiDateTime()}`);
     }
 
     // Thai Date Time Formatter
@@ -494,6 +870,32 @@
         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
       ];
       return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543} เวลา ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} น.`;
+    }
+
+    // Live Sync Indicator Updates
+    function updateSyncStatus(type, msg) {
+      const container = document.getElementById('syncStatusContainer');
+      if (!container) return;
+
+      let bgClass = 'bg-white shadow-sm border-slate-200';
+      let dotClass = 'bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20';
+
+      if (type === 'success') {
+        bgClass = 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-sm';
+        dotClass = 'bg-emerald-500 ring-4 ring-emerald-500/30';
+      } else if (type === 'error') {
+        bgClass = 'bg-rose-50 text-rose-800 border-rose-200 shadow-sm';
+        dotClass = 'bg-rose-500 ring-4 ring-rose-500/30';
+      }
+
+      container.className = `flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-semibold border ${bgClass} transition-all duration-300`;
+      
+      container.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full ${dotClass}"></span>
+          <span class="font-bold text-slate-800">${msg}</span>
+        </div>
+      `;
     }
 
     // PDPA Masking Utilities
@@ -524,11 +926,12 @@
 
     // Switch between Member View and Admin View
     function switchView(viewName) {
-      activeView = viewName;
       const memberView = document.getElementById('memberPortalView');
       const adminView = document.getElementById('adminPortalView');
       const tabMemberBtn = document.getElementById('tabMemberBtn');
       const tabAdminBtn = document.getElementById('tabAdminBtn');
+
+      activeView = viewName;
 
       if (viewName === 'member') {
         memberView.classList.remove('hidden');
@@ -536,6 +939,8 @@
 
         tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 bg-indigo-600 text-white shadow-md";
         tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5";
+
+        updateMaintenanceUI();
       } else {
         memberView.classList.add('hidden');
         adminView.classList.remove('hidden');
@@ -547,7 +952,41 @@
       }
     }
 
-    // Evaluate Progress Steps (5 Steps)
+    // Toggle Maintenance Mode
+    function toggleMaintenanceMode() {
+      isMaintenanceMode = !isMaintenanceMode;
+      localStorage.setItem('coop_maintenance_mode', isMaintenanceMode ? 'true' : 'false');
+      updateMaintenanceUI();
+      showToast(isMaintenanceMode ? '🛑 ปิดระบบฝั่งสมาชิกเรียบร้อยแล้ว' : '🟢 เปิดบริการหน้าสมาชิกตามปกติแล้ว', isMaintenanceMode ? 'warning' : 'success');
+    }
+
+    function updateMaintenanceUI() {
+      const banner = document.getElementById('maintenanceBanner');
+      const content = document.getElementById('memberContentArea');
+      const toggleBtn = document.getElementById('maintenanceToggleBtn');
+      const statusIcon = document.getElementById('maintenanceStatusIcon');
+      const statusText = document.getElementById('maintenanceStatusText');
+
+      if (isMaintenanceMode) {
+        banner.classList.remove('hidden');
+        content.classList.add('hidden');
+        if (toggleBtn) {
+          toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/20 border-rose-400/40 text-rose-300 hover:bg-rose-500/30 active:scale-95";
+        }
+        if (statusIcon) statusIcon.textContent = '🛑';
+        if (statusText) statusText.textContent = 'สถานะหน้าสมาชิก: ปิดปรับปรุง';
+      } else {
+        banner.classList.add('hidden');
+        content.classList.remove('hidden');
+        if (toggleBtn) {
+          toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95";
+        }
+        if (statusIcon) statusIcon.textContent = '🟢';
+        if (statusText) statusText.textContent = 'สถานะหน้าสมาชิก: เปิดปกติ';
+      }
+    }
+
+    // Evaluate Progress Steps (5 Steps with Correct Sequence)
     function evaluateProgress(status) {
       const statusStr = (status || '').toString().trim();
       
@@ -958,6 +1397,11 @@
     function handleSearchSubmit(e) {
       if (e) e.preventDefault();
 
+      if (isMaintenanceMode) {
+        showToast('⚠️ ระบบกำลังอยู่ในระหว่างการปรับปรุงข้อมูลสิทธิ์', 'warning');
+        return;
+      }
+
       const searchInput = document.getElementById('searchId');
       const errorEl = document.getElementById('inputError');
       const resultsArea = document.getElementById('resultsArea');
@@ -1150,7 +1594,7 @@
             <td class="px-4 py-3 text-center">
               <div class="flex items-center justify-center gap-1.5">
                 <button onclick="openEditModal(${realIndex})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-1.5 rounded-lg font-bold text-[11px] transition-all" title="แก้ไขข้อมูล">✏️</button>
-                <button onclick="deleteRecord(${realIndex})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 rounded-lg font-bold text-[11px] transition-all" title="ลบรายการ">🗑️</button>
+                <button onclick="confirmDeleteRecord(${realIndex})" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 rounded-lg font-bold text-[11px] transition-all" title="ลบรายการ">🗑️</button>
               </div>
             </td>
           </tr>
@@ -1217,6 +1661,12 @@
       saveLocalStorageData();
       closeRecordModal();
       renderAdminDashboard();
+      showToast('✓ บันทึกข้อมูลสำเร็จเรียบร้อยแล้ว', 'success');
+
+      // Sync to Google Sheets if Web App URL is configured
+      if (gasWebAppUrl) {
+        syncToGoogleSheets(newRecord);
+      }
 
       // Refresh Member Search View if active
       const searchInput = document.getElementById('searchId');
@@ -1225,14 +1675,43 @@
       }
     }
 
-    function deleteRecord(index) {
+    function confirmDeleteRecord(index) {
       const item = dbData[index];
       if (!item) return;
 
-      if (confirm(`คุณต้องการลบรายการของ ${item.memberName} (บุตร: ${item.childName}) ใช่หรือไม่?`)) {
+      document.getElementById('deleteTargetIndex').value = index;
+      document.getElementById('deleteConfirmText').innerHTML = `คุณต้องการลบรายการของ <strong>${item.memberName}</strong><br/>(บุตร: ${item.childName}) ใช่หรือไม่?`;
+      document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    }
+
+    function closeDeleteConfirmModal() {
+      document.getElementById('deleteConfirmModal').classList.add('hidden');
+    }
+
+    function executeDeleteRecord() {
+      const index = parseInt(document.getElementById('deleteTargetIndex').value);
+      if (index >= 0 && index < dbData.length) {
         dbData.splice(index, 1);
         saveLocalStorageData();
         renderAdminDashboard();
+        showToast('🗑️ ลบรายการสำเร็จเรียบร้อยแล้ว', 'info');
+      }
+      closeDeleteConfirmModal();
+    }
+
+    // Google Apps Script Sync
+    async function syncToGoogleSheets(recordData) {
+      if (!gasWebAppUrl) return;
+      try {
+        await fetch(gasWebAppUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(recordData)
+        });
+        showToast('📡 ซิงค์ข้อมูลตรงไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
+      } catch (err) {
+        console.error('GAS Sync Error:', err);
       }
     }
 
@@ -1250,12 +1729,14 @@
       a.href = url;
       a.download = `ทุนการศึกษาบุตร_2569_ส่งออก_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
+      showToast('📥 ส่งออกไฟล์ CSV สำเร็จเรียบร้อยแล้ว', 'success');
     }
 
-    // Share Modal Link Generator
+    // Share Modal Link Generator for Members Only
     function openShareLinkModal() {
       const shareUrlInput = document.getElementById('shareUrlInput');
-      shareUrlInput.value = window.location.href.split('#')[0];
+      const baseUrl = window.location.href.split('?')[0].split('#')[0];
+      shareUrlInput.value = `${baseUrl}?view=member`;
       document.getElementById('copyAlert').classList.add('hidden');
       document.getElementById('shareLinkModal').classList.remove('hidden');
     }
@@ -1271,12 +1752,53 @@
       
       const copyAlert = document.getElementById('copyAlert');
       copyAlert.classList.remove('hidden');
+      showToast('🔗 คัดลอกลิงก์สำหรับสมาชิกสำเร็จแล้ว', 'success');
       setTimeout(() => copyAlert.classList.add('hidden'), 3000);
+    }
+
+    // GAS Config Modal
+    function openGasSettingsModal() {
+      document.getElementById('gasUrlInput').value = gasWebAppUrl;
+      document.getElementById('gasConfigModal').classList.remove('hidden');
+    }
+
+    function closeGasSettingsModal() {
+      document.getElementById('gasConfigModal').classList.add('hidden');
+    }
+
+    function saveGasSettings() {
+      gasWebAppUrl = document.getElementById('gasUrlInput').value.trim();
+      localStorage.setItem('coop_gas_webapp_url', gasWebAppUrl);
+      closeGasSettingsModal();
+      showToast('⚙️ บันทึกการตั้งค่า Google Sheets เรียบร้อยแล้ว', 'success');
+    }
+
+    function copyGasScript() {
+      const scriptCode = `function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([data.index, data.memberId, data.memberName, data.department, data.childName, data.amount, data.level, data.coopAccount, data.docStatus, data.remark]);
+  return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+}`;
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = scriptCode;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+      showToast('📋 คัดลอกโค้ด Apps Script ลงคลิปบอร์ดแล้ว', 'info');
     }
 
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
       loadLocalStorageData();
+
+      // Check URL Query Params
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get('view');
+      if (viewParam === 'member') {
+        switchView('member');
+      }
 
       const searchForm = document.getElementById('searchForm');
       const searchInput = document.getElementById('searchId');
@@ -1297,6 +1819,9 @@
           }
         });
       }
+
+      // Automatically fetch live Google Sheets data from ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
+      loadDataOnline();
     });
   </script>
 </body>
