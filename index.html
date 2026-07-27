@@ -1004,269 +1004,104 @@ function doPost(e) {
       return parsedRecords;
     }
 
-    // Google Sheets Online Data Sync - Robust Failover Fetcher
+    // Google Sheets Online Data Sync
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
-      
-      const targetExportUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`;
-      const targetGvizUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`;
-
       const endpoints = [
-        targetGvizUrl,
-        targetExportUrl,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetExportUrl)}`
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
       ];
 
       let csvText = null;
+      let isSuccess = false;
 
       for (const url of endpoints) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 6000);
-          
           const response = await fetch(url, { signal: controller.signal });
           clearTimeout(timeoutId);
-
           if (response.ok) {
             const text = await response.text();
+            // ตรวจสอบว่าได้ไฟล์ CSV จริงๆ ไม่ใช่หน้าเว็บ Login ของ Google (กรณีติดล็อกสิทธิ์)
             if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
               csvText = text;
               break;
             }
           }
         } catch (err) {
-          console.warn('Endpoint Fetch Failed:', url, err);
+          console.warn('Google Sheets Fetch Attempt Failed:', url, err);
         }
       }
 
       if (csvText) {
-        try {
-          const rows = parseCSV(csvText);
-          if (rows && rows.length >= 2) {
-            const parsed = parseDynamicCSV(rows);
-            if (parsed && parsed.length > 0) {
-              dbData = parsed;
-              reIndexDbData();
-              saveLocalStorageData();
-              updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-              
-              if (activeView === 'admin') {
-                renderAdminDashboard();
-              } else {
-                const searchInput = document.getElementById('searchId');
-                if (searchInput && searchInput.value) {
-                  handleSearchSubmit();
-                }
-              }
-              
-              // Load survey data async
-              loadSurveyDataOnline();
-              return;
-            }
-          }
-        } catch (parseErr) {
-          console.error('Data Parsing Error:', parseErr);
-        }
-      }
-
-      if (dbData && dbData.length > 0) {
-        updateSyncStatus('warning', `ใช้งานข้อมูลล่าสุดในระบบ | เชื่อมต่อออนไลน์ไม่ได้ (โปรดตรวจสอบการตั้งค่าแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์")`);
-        if (activeView === 'admin') {
-          renderAdminDashboard();
-        }
-      } else {
-        updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
-      }
-    }
-
-    // Survey Data Loader
-    async function loadSurveyDataOnline() {
-      const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
-      const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv&sheet=Surveys`;
-      
-      try {
-        const response = await fetch(surveyUrl);
-        if (response.ok) {
-          const text = await response.text();
-          if (text && !text.includes('<!DOCTYPE')) {
-            const rows = parseCSV(text);
-            surveyDbData = [];
-            for (let i = 1; i < rows.length; i++) {
-              const r = rows[i];
-              if (r && r.length >= 3) {
-                surveyDbData.push({
-                  date: r[0] || '',
-                  ip: r[1] || '',
-                  rating: parseInt(r[2]) || 0,
-                  comment: r[3] || ''
-                });
+        const rows = parseCSV(csvText);
+        if (rows && rows.length >= 2) {
+          const parsed = parseDynamicCSV(rows);
+          if (parsed && parsed.length > 0) {
+            dbData = parsed;
+            reIndexDbData();
+            saveLocalStorageData();
+            updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+            isSuccess = true;
+            
+            if (activeView === 'admin') {
+              renderAdminDashboard();
+            } else {
+              const searchInput = document.getElementById('searchId');
+              if (searchInput && searchInput.value) {
+                handleSearchSubmit();
               }
             }
-            saveSurveyToLocalStorage();
-            if (activeView === 'admin') renderSurveyAdmin();
+            
+            // ป้องกัน Error กรณีโค้ดโหลด Survey ไม่มี
+            if(typeof loadSurveyDataOnline === 'function') {
+               loadSurveyDataOnline();
+            }
+            return;
           }
         }
-      } catch (err) {
-        console.warn('Could not load online survey data, using local storage.');
+      }
+
+      // หากดึงข้อมูลล้มเหลว (มักเกิดจากติด Permission) จะแสดงหน้าต่างช่วยเหลือ
+      if (!isSuccess) {
+        updateSyncStatus('error', `ระบบถูกบล็อก! กรุณาเปิดแชร์ไฟล์ Google Sheets เป็น "ทุกคนที่มีลิงก์"`);
+        showShareHelpBanner();
       }
     }
 
-    // Survey Submitting Logic
-    async function initSurveySystem() {
-      const surveySection = document.getElementById('surveySection');
-      if (!surveySection || activeView !== 'member') return;
-
-      surveySection.classList.remove('hidden');
-
-      try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        clientIP = data.ip || 'unknown';
-      } catch (e) {
-        clientIP = 'local_' + Math.random().toString(36).substr(2, 9);
-      }
-
-      const hasSubmitted = localStorage.getItem(`coop_survey_done_${clientIP}`);
-      if (hasSubmitted) {
-        document.getElementById('surveyFormArea').classList.add('hidden');
-        document.getElementById('surveySuccessArea').classList.remove('hidden');
-      }
-    }
-
-    function hoverRating(stars) {
-      if (currentRating > 0) return;
-      const btns = document.querySelectorAll('.star-btn');
-      btns.forEach((btn, idx) => {
-        btn.classList.toggle('text-amber-400', idx < stars);
-        btn.classList.toggle('text-slate-200', idx >= stars);
-      });
-    }
-
-    function resetHover() {
-      if (currentRating > 0) return;
-      const btns = document.querySelectorAll('.star-btn');
-      btns.forEach(btn => {
-        btn.classList.remove('text-amber-400');
-        btn.classList.add('text-slate-200');
-      });
-    }
-
-    function setRating(stars) {
-      currentRating = stars;
-      const btns = document.querySelectorAll('.star-btn');
-      const textEl = document.getElementById('ratingText');
+    // ฟังก์ชันแสดงหน้าต่างช่วยเหลือกรณีลืมเปิดแชร์ไฟล์
+    function showShareHelpBanner() {
+      const html = `
+        <div class="bg-rose-50 border border-rose-200 rounded-3xl p-6 md:p-8 text-center animate-fadeIn mt-6 max-w-2xl mx-auto shadow-sm">
+           <div class="text-5xl mb-4">🔒</div>
+           <h2 class="text-lg md:text-xl font-bold text-rose-700 mb-2">ระบบถูกบล็อก ไม่สามารถดึงข้อมูลมาแสดงผลได้</h2>
+           <p class="text-xs md:text-sm text-slate-700 leading-relaxed mb-6">
+             การตั้งค่า <strong>Google Apps Script</strong> ที่ท่านทำไปนั้นใช้สำหรับ <strong>"บันทึกข้อมูลกลับ"</strong> เท่านั้น<br/>
+             แต่การ <strong>"ดึงข้อมูลมาแสดง"</strong> ไฟล์ Google Sheets จะต้องถูกตั้งค่าสิทธิ์ให้เปิดเผยเสียก่อน
+           </p>
+           <div class="bg-white p-5 rounded-2xl text-left text-xs md:text-sm border border-rose-100 shadow-inner">
+             <p class="font-bold text-slate-900 mb-3 text-center border-b pb-2 border-slate-100">🛠️ วิธีแก้ไขด่วนใน 3 คลิก:</p>
+             <ol class="list-decimal pl-5 space-y-2.5 text-slate-700 font-medium">
+               <li>เปิดไฟล์ Google Sheets ของสหกรณ์</li>
+               <li>คลิกปุ่ม <strong class="text-blue-600">"แชร์ (Share)"</strong> สีน้ำเงิน มุมขวาบน</li>
+               <li>ตรงหัวข้อ 'การเข้าถึงทั่วไป' ให้เปลี่ยนสิทธิ์จาก 'จำกัด' เป็น <strong class="text-emerald-600">"ทุกคนที่มีลิงก์ (Anyone with the link)"</strong></li>
+               <li>ตรวจสอบให้สิทธิ์ด้านขวาเป็น "ผู้มีสิทธิ์อ่าน (Viewer)" แล้วกด <strong>เสร็จสิ้น (Done)</strong></li>
+               <li class="text-indigo-600 font-bold">รีเฟรชหน้าเว็บนี้อีกครั้ง ข้อมูลตารางทั้งหมดจะโหลดขึ้นมาทันที!</li>
+             </ol>
+           </div>
+        </div>
+      `;
       
-      btns.forEach((btn, idx) => {
-        btn.classList.toggle('text-amber-500', idx < stars);
-        btn.classList.toggle('text-slate-200', idx >= stars);
-      });
-
-      const ratingLabels = ["", "ควรปรับปรุงระบบ", "พอใช้", "ปานกลาง", "ดี", "ดีมาก ยอดเยี่ยม!"];
-      textEl.textContent = ratingLabels[stars];
-    }
-
-    async function submitSurvey() {
-      if (currentRating === 0) {
-        showToast('กรุณาเลือกให้คะแนนดาวก่อนส่งประเมิน', 'warning');
-        return;
+      const resultsArea = document.getElementById('resultsArea');
+      if (resultsArea && activeView === 'member') {
+        resultsArea.innerHTML = html;
+        resultsArea.classList.remove('hidden');
       }
 
-      const comment = document.getElementById('surveyComment').value.trim();
-      const btn = document.getElementById('submitSurveyBtn');
-      btn.disabled = true;
-      btn.textContent = 'กำลังบันทึกข้อมูล...';
-
-      localStorage.setItem(`coop_survey_done_${clientIP}`, 'true');
-
-      const surveyObj = {
-        action: 'survey',
-        ip: clientIP,
-        rating: currentRating,
-        comment: comment,
-        date: new Date().toISOString()
-      };
-
-      surveyDbData.push(surveyObj);
-      saveSurveyToLocalStorage();
-
-      if (gasWebAppUrl) {
-        try {
-          await fetch(gasWebAppUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(surveyObj)
-          });
-        } catch(e) { console.warn('Survey sync issue'); }
-      }
-
-      setTimeout(() => {
-        document.getElementById('surveyFormArea').classList.add('hidden');
-        document.getElementById('surveySuccessArea').classList.remove('hidden');
-        showToast('ส่งแบบประเมินเรียบร้อยแล้ว ขอบคุณครับ', 'success');
-      }, 800);
-    }
-
-    // Render Survey on Admin Dashboard
-    function renderSurveyAdmin() {
-      const avgArea = document.getElementById('surveyAvgArea');
-      const commentsArea = document.getElementById('surveyCommentsArea');
-      const totalCount = document.getElementById('surveyTotalCount');
-
-      if (!surveyDbData || surveyDbData.length === 0) {
-        if(avgArea) avgArea.innerHTML = `
-          <h2 class="text-5xl font-extrabold text-slate-300 my-3">0.0</h2>
-          <div class="text-3xl text-slate-200 tracking-widest mb-2">★★★★★</div>
-          <p class="text-xs text-slate-400">ยังไม่มีผู้ประเมิน</p>
-        `;
-        if(commentsArea) commentsArea.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>`;
-        if(totalCount) totalCount.textContent = '0';
-        return;
-      }
-
-      const totalRating = surveyDbData.reduce((sum, item) => sum + (item.rating || 0), 0);
-      const avgRating = (totalRating / surveyDbData.length).toFixed(1);
-
-      if (totalCount) totalCount.textContent = surveyDbData.length;
-
-      let starsHtml = '';
-      for (let i=1; i<=5; i++) {
-        starsHtml += `<span class="${i <= Math.round(avgRating) ? 'text-amber-400' : 'text-slate-200'}">★</span>`;
-      }
-
-      if (avgArea) {
-        avgArea.innerHTML = `
-          <h2 class="text-5xl font-extrabold text-slate-900 my-3">${avgRating}</h2>
-          <div class="text-3xl tracking-widest mb-2">${starsHtml}</div>
-          <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span class="font-bold text-indigo-600">${surveyDbData.length}</span> ราย</p>
-        `;
-      }
-
-      if (commentsArea) {
-        const validComments = surveyDbData.filter(item => item.comment && item.comment.trim() !== '').reverse();
-        if (validComments.length === 0) {
-          commentsArea.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">มีการให้คะแนนดาว แต่ยังไม่มีข้อเสนอแนะแบบข้อความ</div>`;
-        } else {
-          commentsArea.innerHTML = validComments.map(item => {
-            const d = new Date(item.date);
-            const dateStr = isNaN(d.getTime()) ? item.date : `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
-            let itemStars = '';
-            for (let i=1; i<=5; i++) {
-              itemStars += `<span class="${i <= item.rating ? 'text-amber-400' : 'text-slate-200'}">★</span>`;
-            }
-            return `
-              <div class="mb-3 pb-3 border-b border-slate-100 last:border-0 last:mb-0 last:pb-0 text-left pl-3">
-                <div class="flex items-center justify-between mb-1">
-                  <div class="text-[10px] text-slate-500">${dateStr}</div>
-                  <div class="text-xs">${itemStars}</div>
-                </div>
-                <p class="text-xs font-medium text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                  "${item.comment}"
-                </p>
-              </div>
-            `;
-          }).join('');
-        }
+      const adminTableBody = document.getElementById('adminTableBody');
+      if (adminTableBody && activeView === 'admin') {
+         adminTableBody.innerHTML = `<tr><td colspan="11">${html}</td></tr>`;
       }
     }
 
