@@ -1623,7 +1623,18 @@ function doPost(e) {
                             item.memberName.toLowerCase().includes(searchVal) || 
                             item.childName.toLowerCase().includes(searchVal);
         
-        const matchStatus = statusFilterVal === 'ALL' || item.docStatus.includes(statusFilterVal);
+        let matchStatus = false;
+        if (statusFilterVal === 'ALL') {
+          matchStatus = true;
+        } else if (statusFilterVal === 'ได้รับการอนุมัติ') {
+          matchStatus = isApprovedStatus(item.docStatus);
+        } else if (statusFilterVal === 'ไม่ได้รับการอนุมัติ') {
+          matchStatus = isRejectedStatus(item.docStatus) && !item.docStatus.includes('เอกสารไม่ถูกต้อง');
+        } else if (statusFilterVal === 'เอกสารไม่ถูกต้อง') {
+          matchStatus = item.docStatus.includes('เอกสารไม่ถูกต้อง') || item.docStatus.includes('ไม่ถูกต้อง');
+        } else {
+          matchStatus = item.docStatus.trim() === statusFilterVal;
+        }
 
         return matchSearch && matchStatus;
       });
@@ -1642,13 +1653,13 @@ function doPost(e) {
         const prog = evaluateProgress(item.docStatus);
 
         let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
-        if (prog.isFailed) {
+        if (prog.isFailed || isRejectedStatus(item.docStatus)) {
           badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold';
-        } else if (item.docStatus.includes('อนุมัติ')) {
+        } else if (isApprovedStatus(item.docStatus)) {
           badgeClass = 'bg-emerald-50 text-emerald-800 border border-emerald-200';
         } else if (item.docStatus.includes('โอน')) {
           badgeClass = 'bg-indigo-50 text-indigo-800 border border-indigo-200';
-        } else if (item.docStatus.includes('ตรวจสอบ') || item.docStatus.includes('พิจารณา')) {
+        } else if (isPendingStatus(item.docStatus)) {
           badgeClass = 'bg-amber-50 text-amber-800 border border-amber-200';
         }
 
