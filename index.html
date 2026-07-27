@@ -635,15 +635,17 @@ function doPost(e) {
       if (saved) {
         try {
           dbData = JSON.parse(saved);
+          if (!Array.isArray(dbData)) {
+            dbData = [];
+          }
         } catch(e) {
-          dbData = [...defaultData];
+          dbData = [];
         }
       } else {
-        dbData = [...defaultData];
+        dbData = [];
       }
 
       reIndexDbData();
-      saveLocalStorageData();
 
       const maintenance = localStorage.getItem('coop_maintenance_mode');
       if (maintenance !== null) {
@@ -656,14 +658,11 @@ function doPost(e) {
       }
     }
 
-    function saveLocalStorageData() {
-      localStorage.setItem('coop_scholarship_db_2569', JSON.stringify(dbData));
-    }
-
     // Helper to sequentially re-index all records starting from 1 onwards
     function reIndexDbData() {
+      if (!Array.isArray(dbData)) dbData = [];
       dbData.forEach((item, idx) => {
-        item.index = (idx + 1).toString();
+        if (item) item.index = (idx + 1).toString();
       });
     }
 
@@ -846,79 +845,79 @@ function doPost(e) {
         }
 
         let remark = '';
-        if (remarkCol !== -1 && remarkCol < row.length) {
-          remark = (row[remarkCol] || '').toString().trim();
-        }
-
-        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
-
-        parsedRecords.push({
-          index: indexVal,
-          memberId,
-          memberName,
-          childName,
-          amount,
-          level,
-          department,
-          coopAccount,
-          docStatus,
-          remark
-        });
-      }
-
-      return parsedRecords;
-    }
-
-    // Google Sheets Online Data Sync - Strictly for Sheet ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
+    // Google Sheets Online Data Sync
     async function loadDataOnline() {
       const targetSheetId = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
+      
+      // Use gviz as the primary and most reliable CSV endpoint for Google Sheets
+      const targetGvizUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`;
+      const targetExportUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`;
+
       const endpoints = [
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
+        targetGvizUrl,
+        targetExportUrl,
+        `https://corsproxy.io/?${encodeURIComponent(targetGvizUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetGvizUrl)}`
       ];
 
       let csvText = null;
+
       for (const url of endpoints) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          
           const response = await fetch(url, { signal: controller.signal });
           clearTimeout(timeoutId);
+
           if (response.ok) {
-            csvText = await response.text();
-            if (csvText && csvText.trim().length > 0) break;
+            const text = await response.text();
+            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+              csvText = text;
+              break;
+            }
           }
         } catch (err) {
-          console.warn('Google Sheets Fetch Attempt Failed:', url, err);
+          console.warn('Fetch attempt failed for:', url);
         }
       }
 
       if (csvText) {
-        const rows = parseCSV(csvText);
-        if (rows && rows.length >= 2) {
-          const parsed = parseDynamicCSV(rows);
-          if (parsed && parsed.length > 0) {
-            // บังคับใช้ข้อมูลจาก Google Sheets เป็นหลักเท่านั้น (Single Source of Truth)
-            // เลิกการนำข้อมูลใน Local Storage มาผสม เพื่อป้องกันข้อมูลที่ไม่ได้มาจาก Sheet ขึ้นแทรก
-            dbData = parsed;
-            reIndexDbData();
-            saveLocalStorageData();
-            updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สดเรียลไทม์ | ข้อมูล ณ ${formatThaiDateTime()}`);
-            
-            if (activeView === 'admin') {
-              renderAdminDashboard();
-            } else {
-              const searchInput = document.getElementById('searchId');
-              if (searchInput && searchInput.value) {
-                handleSearchSubmit();
+        try {
+          const rows = parseCSV(csvText);
+          if (rows && rows.length >= 2) {
+            const parsed = parseDynamicCSV(rows);
+            if (parsed && parsed.length > 0) {
+              dbData = parsed;
+              reIndexDbData();
+              saveLocalStorageData();
+              updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+              
+              if (activeView === 'admin') {
+                renderAdminDashboard();
+              } else {
+                const searchInput = document.getElementById('searchId');
+                if (searchInput && searchInput.value) {
+                  handleSearchSubmit();
+                }
               }
+              return;
             }
-            return;
           }
+        } catch (parseErr) {
+          console.error('Data Parsing Error:', parseErr);
         }
       }
 
-      updateSyncStatus('error', `ดึงข้อมูลออนไลน์ขัดข้อง (กรุณาเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ข้อมูล ณ ${formatThaiDateTime()}`);
+      // If online fetch fails completely, fallback to local data and update UI safely
+      if (Array.isArray(dbData) && dbData.length > 0) {
+        updateSyncStatus('warning', `ใช้งานข้อมูลล่าสุดในระบบ | ไม่สามารถเชื่อมต่อออนไลน์ได้ (โปรดตรวจสอบสิทธิ์ไฟล์เป็น "ทุกคนที่มีลิงก์")`);
+        if (activeView === 'admin') {
+          renderAdminDashboard();
+        }
+      } else {
+        updateSyncStatus('error', `ไม่สามารถดึงข้อมูลออนไลน์ได้ (โปรดตั้งค่าการแชร์ใน Google Drive ให้เป็น "ทุกคนที่มีลิงก์") | ข้อมูล ณ ${formatThaiDateTime()}`);
+      }
     }
 
     // Thai Date Time Formatter
@@ -1551,82 +1550,82 @@ function doPost(e) {
     }
 
     function renderAdminCharts(approved, pending, reject) {
-      // Doughnut Status Chart
-      const ctxDoughnut = document.getElementById('statusDoughnutChart');
-      if (ctxDoughnut) {
-        if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
+      try {
+        if (typeof Chart === 'undefined') {
+          console.warn("Chart.js library is not loaded. Charts will not be rendered.");
+          return;
+        }
 
-        chartInstanceDoughnut = new Chart(ctxDoughnut, {
-          type: 'doughnut',
-          data: {
-            labels: ['อนุมัติสำเร็จ/โอนเงิน', 'อยู่ระหว่างพิจารณา/ตรวจ', 'ไม่ถูกต้อง/ไม่อนุมัติ'],
-            datasets: [{
-              data: [approved, pending, reject],
-              backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-              borderWidth: 2,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } }
-            }
-          }
-        });
-      }
+        const ctxDoughnut = document.getElementById('statusDoughnutChart');
+        if (ctxDoughnut) {
+          if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
 
-      // Bar Chart by Department
-      const ctxBar = document.getElementById('deptBarChart');
-      if (ctxBar) {
-        if (chartInstanceBar) chartInstanceBar.destroy();
-
-        const deptMap = {};
-        dbData.forEach(d => {
-          const dept = d.department || 'ไม่ระบุ';
-          deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
-        });
-
-        const labels = Object.keys(deptMap);
-        const dataValues = Object.values(deptMap);
-
-        chartInstanceBar = new Chart(ctxBar, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'วงเงินอนุมัติ (บาท)',
-              data: dataValues,
-              backgroundColor: '#4f46e5',
-              borderRadius: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+          chartInstanceDoughnut = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+              labels: ['อนุมัติสำเร็จ / โอนเงิน', 'อยู่ระหว่างพิจารณา / ตรวจสอบ', 'เอกสารไม่ถูกต้อง / ไม่อนุมัติ'],
+              datasets: [{
+                data: [approved, pending, reject],
+                backgroundColor: ['#059669', '#d97706', '#dc2626'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+              }]
             },
-            scales: {
-              x: { ticks: { font: { family: 'Prompt', size: 10 } } },
-              y: { ticks: { font: { family: 'Prompt', size: 10 } } }
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } }
+              }
             }
-          }
-        });
+          });
+        }
+
+        const ctxBar = document.getElementById('deptBarChart');
+        if (ctxBar) {
+          if (chartInstanceBar) chartInstanceBar.destroy();
+
+          const deptMap = {};
+          dbData.forEach(d => {
+            if (isApprovedOrTransferredStatus(d.docStatus)) {
+              const dept = d.department || 'ไม่ระบุสังกัด';
+              deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
+            }
+          });
+
+          const labels = Object.keys(deptMap);
+          const dataValues = Object.values(deptMap);
+
+          chartInstanceBar = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'วงเงินอนุมัติ (บาท)',
+                data: dataValues,
+                backgroundColor: '#312e81',
+                borderRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: { ticks: { font: { family: 'Prompt', size: 10 } } },
+                y: { ticks: { font: { family: 'Prompt', size: 10 } } }
+              }
+            }
+          });
+        }
+      } catch (chartErr) {
+        console.error("Error rendering charts:", chartErr);
       }
     }
 
-    function filterAdminTable() {
-      const tbody = document.getElementById('adminTableBody');
-      if (!tbody) return;
-
-      const searchVal = document.getElementById('adminSearchInput').value.trim().toLowerCase();
-      const statusFilterVal = document.getElementById('adminStatusFilter').value;
-
-      const filtered = dbData.filter(item => {
-        const matchSearch = item.memberId.includes(searchVal) || 
-                            item.memberName.toLowerCase().includes(searchVal) || 
+    // Filter Admin Table Procedure
                             item.childName.toLowerCase().includes(searchVal);
         
         let matchStatus = false;
@@ -1935,38 +1934,41 @@ function doPost(e) {
 
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      enforceMemberViewRestriction();
-      loadLocalStorageData();
+      try {
+        enforceMemberViewRestriction();
+        loadLocalStorageData();
 
-      // Check URL Query Params
-      const urlParams = new URLSearchParams(window.location.search);
-      const viewParam = urlParams.get('view');
-      if (viewParam === 'member') {
-        switchView('member');
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view');
+        if (viewParam === 'member') {
+          switchView('member');
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchId');
+        const checkBadge = document.getElementById('checkBadge');
+
+        if (searchForm) {
+          searchForm.addEventListener('submit', handleSearchSubmit);
+        }
+
+        if (searchInput && checkBadge) {
+          searchInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            e.target.value = val;
+            if (val.length === 5) {
+              checkBadge.classList.remove('hidden');
+            } else {
+              checkBadge.classList.add('hidden');
+            }
+          });
+        }
+
+        loadDataOnline();
+      } catch (initErr) {
+        console.error("Initialization Error:", initErr);
+        updateSyncStatus('error', 'เกิดข้อผิดพลาดในการโหลดระบบ โปรดล้างแคชหรือรีเฟรชหน้าเว็บอีกครั้ง');
       }
-
-      const searchForm = document.getElementById('searchForm');
-      const searchInput = document.getElementById('searchId');
-      const checkBadge = document.getElementById('checkBadge');
-
-      if (searchForm) {
-        searchForm.addEventListener('submit', handleSearchSubmit);
-      }
-
-      if (searchInput && checkBadge) {
-        searchInput.addEventListener('input', (e) => {
-          let val = e.target.value.replace(/\D/g, '');
-          e.target.value = val;
-          if (val.length === 5) {
-            checkBadge.classList.remove('hidden');
-          } else {
-            checkBadge.classList.add('hidden');
-          }
-        });
-      }
-
-      // Automatically fetch live Google Sheets data from ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
-      loadDataOnline();
     });
   </script>
 </body>
