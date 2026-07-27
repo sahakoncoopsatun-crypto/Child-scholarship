@@ -46,6 +46,7 @@
     <div class="h-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-emerald-500"></div>
 
     <!-- Header & Mode Selector -->
+    <!-- STREAMING_CHUNK: Building header with responsive navigation... -->
     <header class="bg-gradient-to-b from-indigo-950 via-slate-950 to-indigo-950 text-white py-6 px-4 shadow-xl border-b border-white/10 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -93,6 +94,7 @@
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (หน้าสำหรับสมาชิก)   -->
       <!-- ========================================== -->
+      <!-- STREAMING_CHUNK: Setting up Member Portal view... -->
       <div id="memberPortalView" class="space-y-6">
         
         <!-- System Maintenance Banner -->
@@ -168,6 +170,7 @@
       <!-- ==================================================== -->
       <!-- PART 2: STAFF & BOARD PORTAL (ระบบคณะกรรมการ/ฝ่ายจัดการ) -->
       <!-- ==================================================== -->
+      <!-- STREAMING_CHUNK: Setting up Admin Portal view... -->
       <div id="adminPortalView" class="hidden space-y-6">
         
         <!-- Admin Header Actions -->
@@ -213,6 +216,7 @@
           </div>
         </div>
 
+        <!-- STREAMING_CHUNK: Displaying Dashboard Analytics Cards... -->
         <!-- Dashboard Analytics Stat Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -240,9 +244,9 @@
           </div>
 
           <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 p-5 rounded-2xl text-white shadow-md">
-            <p class="text-xs font-semibold text-indigo-200">งบประมาณรวมจัดสรร</p>
+            <p class="text-xs font-semibold text-indigo-200">งบประมาณอนุมัติ / ยื่นขอรวม</p>
             <h3 id="statTotalAmount" class="text-xl font-bold text-emerald-300 mt-1">0 บาท</h3>
-            <p class="text-[10px] text-indigo-300 mt-1">ยอดรวมที่ได้รับการอนุมัติ</p>
+            <p id="statTotalRequested" class="text-[10px] text-indigo-300 mt-1">งบยื่นขอรวม: 0 บาท</p>
           </div>
         </div>
 
@@ -263,6 +267,7 @@
           </div>
         </div>
 
+        <!-- STREAMING_CHUNK: Building Admin Data Management Table... -->
         <!-- Data Management Table Card -->
         <section class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
           <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -570,6 +575,7 @@ function doPost(e) {
 
   </div>
 
+  <!-- STREAMING_CHUNK: Initializing JavaScript State and Helper Functions... -->
   <script>
     // Initial Fallback Database State
     const defaultData = [
@@ -619,6 +625,27 @@ function doPost(e) {
     let gasWebAppUrl = '';
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
+
+    // Strict Status Helper Functions
+    function isApprovedStatus(status) {
+      if (!status) return false;
+      const s = status.toString().trim();
+      if (s.includes('ไม่') || s.includes('แก้ไข') || s.includes('ไม่ถูกต้อง')) return false;
+      return s.includes('อนุมัติ') || s.includes('โอน');
+    }
+
+    function isRejectedStatus(status) {
+      if (!status) return false;
+      const s = status.toString().trim();
+      return s.includes('ไม่') || s.includes('แก้ไข') || s.includes('ไม่ถูกต้อง');
+    }
+
+    function isPendingStatus(status) {
+      if (!status) return false;
+      const s = status.toString().trim();
+      if (isApprovedStatus(s) || isRejectedStatus(s)) return false;
+      return true;
+    }
 
     // Strict URL check to enforce member-only isolation
     function enforceMemberViewRestriction() {
@@ -704,6 +731,7 @@ function doPost(e) {
       });
     }
 
+    // STREAMING_CHUNK: Processing CSV Data Parsing and Sanitation...
     // CSV Parsing Utilities
     function parseCSV(text) {
       let p = '', c = '', r = [];
@@ -731,7 +759,7 @@ function doPost(e) {
       return r;
     }
 
-    // Dynamic Column Mapper including Remark extraction
+    // Dynamic Column Mapper including Data Sanitization and Summary Row Detection
     function parseDynamicCSV(rows) {
       let memberIdCol = -1;
       let memberNameCol = -1;
@@ -779,8 +807,10 @@ function doPost(e) {
             memberNameCol = i;
           } else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') {
             childNameCol = i;
-          } else if (val.includes('จำนวนเงิน') || val.includes('บาท') || val.includes('เงิน') || val.includes('ยอดเงิน')) {
-            amountCol = i;
+          } else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
+            if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) {
+              amountCol = i;
+            }
           } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) {
             levelCol = i;
           } else if (val.includes('ลำดับ') || val.includes('ที่')) {
@@ -843,16 +873,30 @@ function doPost(e) {
         let memberId = (row[memberIdCol] || '').toString().trim();
         memberId = memberId.replace(/[\s\u00a0\r\n]/g, '');
 
+        // Ignore headers or non-digit rows
         if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
         if (!/\d/.test(memberId)) continue;
+
+        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
+        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+
+        // Detect and filter out Summary / Footer Rows (e.g. "รวมทั้งสิ้น", "รวม", "ผู้รับรอง", "หมายเหตุ")
+        const combinedText = (memberId + ' ' + memberName + ' ' + childName).toLowerCase();
+        if (
+          combinedText.includes('รวม') || 
+          combinedText.includes('รวมทั้งสิ้น') || 
+          combinedText.includes('ยอดรวม') || 
+          combinedText.includes('ผู้ตรวจ') || 
+          combinedText.includes('ลงชื่อ')
+        ) {
+          continue; // Skip summary row
+        }
 
         if (/^\d+$/.test(memberId)) {
           memberId = memberId.padStart(5, '0');
         }
 
-        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
-        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
-        
+        // Clean and parse exact numerical amount
         let amount = 0;
         if (amountCol < row.length) {
           const rawAmount = (row[amountCol] || '').toString().trim();
@@ -900,6 +944,7 @@ function doPost(e) {
       return parsedRecords;
     }
 
+    // STREAMING_CHUNK: Synchronizing with online Google Sheets database...
     // Google Sheets Online Data Sync - Strictly for Sheet ID: 1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3
     async function loadDataOnline() {
       const targetSheetId = '1LppNcLb1ZreQxOnMf_KXVAOngWlFdyp3';
@@ -1102,16 +1147,16 @@ function doPost(e) {
     function evaluateProgress(status) {
       const statusStr = (status || '').toString().trim();
       
-      if (statusStr.includes('เอกสารไม่ถูกต้อง') || statusStr.includes('เอกสารไม่สมบูรณ์') || statusStr.includes('แก้ไข')) {
+      if (isRejectedStatus(statusStr) && (statusStr.includes('เอกสาร') || statusStr.includes('ไม่ถูกต้อง'))) {
         return { step: 2, label: 'เอกสารไม่ถูกต้อง (กรุณาติดต่อแก้ไขเอกสาร)', color: 'rose', percent: 'w-2/5', isFailed: true, isDocError: true };
       }
-      if (statusStr.includes('ไม่ได้รับการอนุมัติ') || statusStr.includes('ไม่ผ่าน') || statusStr.includes('ไม่อนุมัติ')) {
+      if (isRejectedStatus(statusStr)) {
         return { step: 4, label: 'ไม่ได้รับการอนุมัติเอกสาร', color: 'rose', percent: 'w-4/5', isFailed: true, isRejected: true };
       }
       if (statusStr.includes('อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก') || statusStr.includes('โอนเข้าบัญชี') || statusStr.includes('โอนเงิน')) {
         return { step: 5, label: 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝากเรียบร้อย', color: 'indigo', percent: 'w-full', isFailed: false };
       }
-      if (statusStr.includes('ได้รับการอนุมัติ') || statusStr.includes('อนุมัติ')) {
+      if (isApprovedStatus(statusStr)) {
         return { step: 4, label: 'ได้รับการอนุมัติสิทธิ์ทุนการศึกษาสำเร็จ', color: 'emerald', percent: 'w-4/5', isFailed: false };
       }
       if (statusStr.includes('อยู่ระหว่างการพิจารณา') || statusStr.includes('การพิจารณา')) {
@@ -1123,6 +1168,7 @@ function doPost(e) {
       return { step: 1, label: 'ยื่นเอกสารเข้าระบบสำเร็จแล้ว', color: 'blue', percent: 'w-1/5', isFailed: false };
     }
 
+    // STREAMING_CHUNK: Managing Printable Slip Rendering...
     // Print Printable Slip
     function printSlip(index) {
       const record = dbData.find(item => item.index.toString() === index.toString());
@@ -1196,11 +1242,11 @@ function doPost(e) {
         let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
         if (itemProg.isFailed) {
           badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold animate-pulse';
-        } else if (item.docStatus.includes('อนุมัติ')) {
+        } else if (isApprovedStatus(item.docStatus)) {
           badgeClass = 'bg-emerald-50 text-emerald-800 border border-emerald-200';
         } else if (item.docStatus.includes('โอน')) {
           badgeClass = 'bg-indigo-50 text-indigo-800 border border-indigo-200';
-        } else if (item.docStatus.includes('ตรวจสอบ') || item.docStatus.includes('พิจารณา')) {
+        } else if (isPendingStatus(item.docStatus)) {
           badgeClass = 'bg-amber-50 text-amber-800 border border-amber-200';
         }
 
@@ -1566,21 +1612,31 @@ function doPost(e) {
       }
     }
 
+    // STREAMING_CHUNK: Computing KPI Summaries and Admin Dashboard...
     // Admin Dashboard Render & Table Management
     function renderAdminDashboard() {
-      // 1. Calculate Stat KPIs
+      // 1. Calculate Accurate Stat KPIs
       const totalCount = dbData.length;
-      const approvedList = dbData.filter(d => d.docStatus.includes('อนุมัติ') || d.docStatus.includes('โอน'));
+      
+      const approvedList = dbData.filter(d => isApprovedStatus(d.docStatus));
       const approvedCount = approvedList.length;
-      const pendingCount = dbData.filter(d => d.docStatus.includes('ตรวจสอบ') || d.docStatus.includes('พิจารณา') || d.docStatus.includes('ยื่นเอกสารสำเร็จ')).length;
-      const rejectCount = dbData.filter(d => d.docStatus.includes('ไม่ถูกต้อง') || d.docStatus.includes('ไม่อนุมัติ') || d.docStatus.includes('แก้ไข')).length;
-      const totalAmount = approvedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      
+      const pendingList = dbData.filter(d => isPendingStatus(d.docStatus));
+      const pendingCount = pendingList.length;
+      
+      const rejectList = dbData.filter(d => isRejectedStatus(d.docStatus));
+      const rejectCount = rejectList.length;
+
+      const approvedTotalAmount = approvedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const allRequestedTotalAmount = dbData.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
       document.getElementById('statTotalCount').textContent = `${totalCount} ราย`;
       document.getElementById('statApprovedCount').textContent = `${approvedCount} ราย`;
       document.getElementById('statPendingCount').textContent = `${pendingCount} ราย`;
       document.getElementById('statRejectCount').textContent = `${rejectCount} ราย`;
-      document.getElementById('statTotalAmount').textContent = `${totalAmount.toLocaleString()} บาท`;
+      
+      document.getElementById('statTotalAmount').textContent = `${approvedTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statTotalRequested').textContent = `งบยื่นขอรวมทั้งหมด: ${allRequestedTotalAmount.toLocaleString()} บาท`;
 
       // 2. Render Charts
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
@@ -1689,11 +1745,11 @@ function doPost(e) {
         let badgeClass = 'bg-blue-50 text-blue-800 border border-blue-200';
         if (prog.isFailed) {
           badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold';
-        } else if (item.docStatus.includes('อนุมัติ')) {
+        } else if (isApprovedStatus(item.docStatus)) {
           badgeClass = 'bg-emerald-50 text-emerald-800 border border-emerald-200';
         } else if (item.docStatus.includes('โอน')) {
           badgeClass = 'bg-indigo-50 text-indigo-800 border border-indigo-200';
-        } else if (item.docStatus.includes('ตรวจสอบ') || item.docStatus.includes('พิจารณา')) {
+        } else if (isPendingStatus(item.docStatus)) {
           badgeClass = 'bg-amber-50 text-amber-800 border border-amber-200';
         }
 
@@ -1999,3 +2055,9 @@ function doPost(e) {
   </script>
 </body>
 </html>
+```eof
+
+### 🎯 Key Improvements Applied:
+- **Strict Status Classification:** Fixed substring matching so "ไม่ได้รับการอนุมัติ" is correctly counted as Rejected and not confused with Approved.
+- **Data Sanitation:** Automatically filters out summary/total rows (e.g. "รวมทั้งสิ้น", "ยอดรวม") from Google Sheets to ensure exact counts.
+- **Budget Metrics:** Displays both the Approved Budget and Total Requested Budget in the admin KPI cards.
