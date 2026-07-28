@@ -1023,9 +1023,21 @@ function doPost(e) {
     // Parser for Google Sheets Tab 'Surveys'
     function parseSurveyCSV(rows) {
       if (!rows || rows.length <= 1) return [];
+      
+      // Strict Check: If rows contain main scholarship sheet headers, ABORT parsing to avoid corrupting surveys!
+      const firstRowText = rows[0].join(' ').toLowerCase();
+      if (
+        firstRowText.includes('เลขที่สมาชิก') || 
+        firstRowText.includes('ชื่อบุตร') || 
+        firstRowText.includes('สังกัด') || 
+        firstRowText.includes('ระดับชั้น') ||
+        firstRowText.includes('จำนวนเงิน')
+      ) {
+        return []; // This is Sheet 1 (Scholarship), not the Surveys tab
+      }
+
       const parsedSurveys = [];
       
-      // Expected structure: ID, Date, Rating, Comment (or Date, Rating, Comment)
       for (let r = 1; r < rows.length; r++) {
         const row = rows[r];
         if (!row || row.length === 0) continue;
@@ -1044,7 +1056,8 @@ function doPost(e) {
           id = 'srv_' + r + '_' + Date.now();
         }
 
-        if (rating > 0 || comment !== '') {
+        // Only accept valid survey ratings (1 to 5)
+        if (rating >= 1 && rating <= 5) {
           if (!id) id = 'srv_' + r;
           parsedSurveys.push({ id, date, rating, comment });
         }
@@ -1052,35 +1065,45 @@ function doPost(e) {
 
       return parsedSurveys;
     }
+    // Local Storage Helpers
+    function loadLocalStorageData() {
+      try {
+        const saved = localStorage.getItem('coop_scholarship_db_2569');
+        if (saved) dbData = JSON.parse(saved);
+        else dbData = [];
 
-    // Google Sheets Online Data Sync (Scholarship + Surveys)
-    async function loadDataOnline() {
-      const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
-      
-      // 1. Fetch Scholarship Data
-      const mainEndpoints = [
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
-      ];
+        const savedSurvey = localStorage.getItem('coop_survey_db_2569');
+        if (savedSurvey) {
+          const rawSurveys = JSON.parse(savedSurvey);
+          // Filter out contaminated legacy data (like department names)
+          if (Array.isArray(rawSurveys)) {
+            surveyDbData = rawSurveys.filter(s => {
+              const r = Number(s.rating);
+              const c = (s.comment || '').toLowerCase();
+              return r >= 1 && r <= 5 && !c.startsWith('สสอ.') && !c.startsWith('รพ.');
+            });
+          } else {
+            surveyDbData = [];
+          }
+        } else {
+          surveyDbData = [];
+        }
+      } catch(e) {
+        dbData = [];
+        surveyDbData = [];
+      }
 
-      for (const url of mainEndpoints) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000);
-          const response = await fetch(url, { signal: controller.signal });
-          clearTimeout(timeoutId);
-          if (response.ok) {
-            const text = await response.text();
-            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE')) {
-              const rows = parseCSV(text);
-              const parsed = parseDynamicCSV(rows);
-              if (parsed && parsed.length > 0) {
-                dbData = parsed;
-                reIndexDbData();
-                saveLocalStorageData();
-                updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-                break;
-              }
+      if (!Array.isArray(dbData)) dbData = [];
+      if (!Array.isArray(surveyDbData)) surveyDbData = [];
+
+      reIndexDbData();
+
+      const maintenance = localStorage.getItem('coop_maintenance_mode');
+      if (maintenance !== null) isMaintenanceMode = maintenance === 'true';
+
+      const savedGasUrl = localStorage.getItem('coop_gas_webapp_url');
+      if (savedGasUrl) gasWebAppUrl = savedGasUrl;
+    }
             }
           }
         } catch (err) {
