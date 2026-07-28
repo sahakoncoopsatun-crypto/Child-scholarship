@@ -255,31 +255,31 @@
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold text-slate-500">จำนวนคำขอทั้งหมด</p>
             <h3 id="statTotalCount" class="text-2xl font-bold text-slate-900 mt-1">0 ราย</h3>
-            <p class="text-[10px] text-slate-400 mt-1">ผู้ยื่นคำขอในปี 2569</p>
+            <p id="statTotalRequested" class="text-[11px] font-bold text-blue-700 mt-1">ประมาณการจ่าย: 0 บาท</p>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
             <p class="text-xs font-semibold text-emerald-700">อนุมัติสำเร็จ / โอนเงิน</p>
             <h3 id="statApprovedCount" class="text-2xl font-bold text-emerald-700 mt-1">0 ราย</h3>
-            <p class="text-[10px] text-emerald-600 mt-1">ผ่านคุณสมบัติเรียบร้อย</p>
+            <p id="statApprovedAmount" class="text-[11px] font-bold text-emerald-800 mt-1">วงเงินอนุมัติจ่าย: 0 บาท</p>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-amber-100 bg-amber-50/20 shadow-sm">
             <p class="text-xs font-semibold text-amber-700">อยู่ระหว่างตรวจสอบ / พิจารณา</p>
             <h3 id="statPendingCount" class="text-2xl font-bold text-amber-700 mt-1">0 ราย</h3>
-            <p class="text-[10px] text-amber-600 mt-1">รอการดำเนินการ</p>
+            <p id="statPendingAmount" class="text-[11px] font-bold text-amber-800 mt-1">ประมาณการ: 0 บาท</p>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
             <p class="text-xs font-semibold text-rose-700">เอกสารไม่ถูกต้อง / ไม่อนุมัติ</p>
             <h3 id="statRejectCount" class="text-2xl font-bold text-rose-700 mt-1">0 ราย</h3>
-            <p class="text-[10px] text-rose-600 mt-1">ต้องแก้ไขหรือไม่อนุมัติ</p>
+            <p id="statRejectAmount" class="text-[11px] font-bold text-rose-800 mt-1">วงเงินไม่อนุมัติ: 0 บาท</p>
           </div>
 
           <div class="bg-indigo-950 p-5 rounded-2xl text-white shadow-sm border border-indigo-900">
-            <p class="text-xs font-semibold text-indigo-200">งบประมาณอนุมัติรวม</p>
+            <p class="text-xs font-semibold text-indigo-200">สรุปการจัดสรรงบประมาณ</p>
             <h3 id="statTotalAmount" class="text-xl font-bold text-emerald-300 mt-1">0 บาท</h3>
-            <p id="statTotalRequested" class="text-[10px] text-indigo-300 mt-1">งบยื่นขอรวม: 0 บาท</p>
+            <p id="statSummaryComparison" class="text-[10px] text-indigo-300 mt-1">ผู้ยื่นรวม 0 บ. | อนุมัติแล้ว 0 บ.</p>
           </div>
         </div>
 
@@ -293,7 +293,7 @@
                 <span>📊</span>
                 <span>สรุปการจัดสรรงบประมาณตามระดับการศึกษา (4 ประเภท)</span>
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5">จำแนกผู้รับทุน วงเงินจัดสรร และสัดส่วนแยกตามเกณฑ์ระดับชั้นปีการศึกษา</p>
+              <p class="text-xs text-slate-500 mt-0.5">เปรียบเทียบ <strong class="text-blue-700">"ประมาณการจ่าย (ผู้ยื่นทั้งหมด)"</strong> กับ <strong class="text-emerald-700">"วงเงินจ่ายทั้งหมด (ได้รับอนุมัติ)"</strong></p>
             </div>
             <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 font-bold text-xs rounded-full self-start sm:self-auto">
               💰 เกณฑ์ทุนสวัสดิการ 2569
@@ -313,13 +313,14 @@
                 </div>
                 <span class="text-2xl">🏫</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-blue-100 flex items-baseline justify-between">
-                <div>
-                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
-                  <span id="eduCountPrimary" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+              <div class="mt-4 pt-3 border-t border-blue-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-blue-50/80 p-1.5 rounded-lg border border-blue-100">
+                  <span class="text-blue-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="eduReqPrimary" class="font-extrabold text-blue-900">0 ราย (0 บ.)</span>
                 </div>
-                <div class="text-right">
-                  <span id="eduAmountPrimary" class="text-base font-extrabold text-blue-900">0 บาท</span>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="eduAmountPrimary" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
                 </div>
               </div>
             </div>
@@ -334,13 +335,14 @@
                 </div>
                 <span class="text-2xl">🎒</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-teal-100 flex items-baseline justify-between">
-                <div>
-                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
-                  <span id="eduCountJunior" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+              <div class="mt-4 pt-3 border-t border-teal-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-teal-50/80 p-1.5 rounded-lg border border-teal-100">
+                  <span class="text-teal-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="eduReqJunior" class="font-extrabold text-teal-900">0 ราย (0 บ.)</span>
                 </div>
-                <div class="text-right">
-                  <span id="eduAmountJunior" class="text-base font-extrabold text-teal-900">0 บาท</span>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="eduAmountJunior" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
                 </div>
               </div>
             </div>
@@ -355,13 +357,14 @@
                 </div>
                 <span class="text-2xl">📐</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-indigo-100 flex items-baseline justify-between">
-                <div>
-                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
-                  <span id="eduCountSenior" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+              <div class="mt-4 pt-3 border-t border-indigo-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-indigo-50/80 p-1.5 rounded-lg border border-indigo-100">
+                  <span class="text-indigo-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="eduReqSenior" class="font-extrabold text-indigo-900">0 ราย (0 บ.)</span>
                 </div>
-                <div class="text-right">
-                  <span id="eduAmountSenior" class="text-base font-extrabold text-indigo-900">0 บาท</span>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="eduAmountSenior" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
                 </div>
               </div>
             </div>
@@ -376,13 +379,14 @@
                 </div>
                 <span class="text-2xl">🎓</span>
               </div>
-              <div class="mt-4 pt-3 border-t border-violet-100 flex items-baseline justify-between">
-                <div>
-                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
-                  <span id="eduCountBachelor" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+              <div class="mt-4 pt-3 border-t border-violet-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-violet-50/80 p-1.5 rounded-lg border border-violet-100">
+                  <span class="text-violet-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="eduReqBachelor" class="font-extrabold text-violet-900">0 ราย (0 บ.)</span>
                 </div>
-                <div class="text-right">
-                  <span id="eduAmountBachelor" class="text-base font-extrabold text-violet-900">0 บาท</span>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="eduAmountBachelor" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
                 </div>
               </div>
             </div>
@@ -391,8 +395,8 @@
 
           <!-- Chart for Education Level Budget Breakdown -->
           <div class="pt-2">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">เปรียบเทียบงบประมาณอนุมัติแยกตามระดับการศึกษา</h4>
-            <div class="relative h-52 w-full">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">เปรียบเทียบงบประมาณประมาณการจ่ายกับวงเงินอนุมัติแยกตามระดับการศึกษา</h4>
+            <div class="relative h-56 w-full">
               <canvas id="eduLevelBarChart"></canvas>
             </div>
           </div>
@@ -802,7 +806,7 @@ function doPost(e) {
     var sheetApp = SpreadsheetApp.getActiveSpreadsheet();
     var data = JSON.parse(e.postData.contents);
     var action = data.action || 'save';
-    
+
     // 0. จัดการข้อมูลแผ่นงาน ผู้เข้าใช้งานระบบ (Visitors)
     if (action === 'visit_log') {
       var vSheet = sheetApp.getSheetByName('Visitors');
@@ -822,7 +826,7 @@ function doPost(e) {
       }
       return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
     }
-
+    
     // 1. จัดการข้อมูลแผ่นงาน แบบประเมินความพึงพอใจ (Surveys)
     if (action.indexOf('survey') === 0) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
@@ -1037,7 +1041,7 @@ function doPost(e) {
              matchStatusFilter(status, 'อยู่ระหว่างการพิจารณา');
     }
 
-    // Categorize Education Level into 4 Tiers (Handles separate eduType and level)
+    // Categorize Education Level into 4 Tiers (Robust Text & Amount Classification)
     function categorizeEducationLevel(levelStr, amountVal, eduTypeStr = '') {
       const lvl = (levelStr || '').toString().toLowerCase().trim();
       const edu = (eduTypeStr || '').toString().toLowerCase().trim();
@@ -1045,31 +1049,31 @@ function doPost(e) {
 
       const combined = (edu + ' ' + lvl).trim();
 
-      // Tier 1: Primary (1,000 Baht)
-      if (amt === 1000 || combined.includes('ประถม') || combined.includes('ป.') || combined.includes('ป1') || combined.includes('ป2') || combined.includes('ป3') || combined.includes('ป4') || combined.includes('ป5') || combined.includes('ป6')) {
-        return 'PRIMARY';
-      }
-      
-      // Tier 2: Junior High (1,200 Baht)
-      if (amt === 1200 || combined.includes('ม.ต้น') || combined.includes('มัธยมต้น') || combined.includes('ม.1') || combined.includes('ม.2') || combined.includes('ม.3')) {
-        return 'JUNIOR';
-      }
-
-      // Tier 3: Senior High / Vocational (1,400 Baht)
-      if (amt === 1400 || combined.includes('ม.ปลาย') || combined.includes('มัธยมปลาย') || combined.includes('ปวช') || combined.includes('ม.4') || combined.includes('ม.5') || combined.includes('ม.6')) {
-        return 'SENIOR';
-      }
-
       // Tier 4: Bachelor / High Vocational (1,600 Baht)
-      if (amt === 1600 || combined.includes('ป.ตรี') || combined.includes('ปริญญา') || combined.includes('ปวส') || combined.includes('อุดมศึกษา') || combined.includes('มหาวิทยาลัย')) {
+      if (combined.includes('ปริญญาตรี') || combined.includes('ป.ตรี') || combined.includes('ปวส') || combined.includes('อุดมศึกษา') || combined.includes('มหาวิทยาลัย')) {
         return 'BACHELOR';
       }
 
+      // Tier 3: Senior High / Vocational (1,400 Baht)
+      if (combined.includes('มัธยมศึกษาตอนปลาย') || combined.includes('ม.ปลาย') || combined.includes('ปวช') || combined.includes('ม.4') || combined.includes('ม.5') || combined.includes('ม.6')) {
+        return 'SENIOR';
+      }
+
+      // Tier 2: Junior High (1,200 Baht)
+      if (combined.includes('มัธยมศึกษาตอนต้น') || combined.includes('ม.ต้น') || combined.includes('ม.1') || combined.includes('ม.2') || combined.includes('ม.3')) {
+        return 'JUNIOR';
+      }
+
+      // Tier 1: Primary (1,000 Baht)
+      if (combined.includes('ประถมศึกษา') || combined.includes('ประถม') || combined.includes('ป.1') || combined.includes('ป.2') || combined.includes('ป.3') || combined.includes('ป.4') || combined.includes('ป.5') || combined.includes('ป.6')) {
+        return 'PRIMARY';
+      }
+
       // Fallback by Amount
-      if (amt <= 1000) return 'PRIMARY';
-      if (amt === 1200) return 'JUNIOR';
+      if (amt === 1600 || amt > 1400) return 'BACHELOR';
       if (amt === 1400) return 'SENIOR';
-      return 'BACHELOR';
+      if (amt === 1200) return 'JUNIOR';
+      return 'PRIMARY';
     }
 
     // Auto preset amount helper for Modal
@@ -1256,7 +1260,7 @@ function doPost(e) {
       return r;
     }
 
-    // Dynamic Column Mapper for Main Scholarship Sheet (Supports separated Category & Level)
+    // Dynamic Column Mapper for Main Scholarship Sheet
     function parseDynamicCSV(rows) {
       if (!rows || rows.length === 0) return [];
       let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, eduTypeCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
@@ -1290,19 +1294,70 @@ function doPost(e) {
         const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
         for (let i = 0; i < header.length; i++) {
           const val = header[i].replace(/[\u00a0\s]/g, '');
-          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) memberIdCol = i;
-          else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) memberNameCol = i;
-          else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') childNameCol = i;
-          else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
+
+          // Check coopAccCol FIRST before indexCol to prevent 'เลขที่บัญชี' matching 'ที่'
+          if (val.includes('บัญชี') || val.includes('account') || val.includes('acc')) {
+            coopAccCol = i;
+          }
+          else if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) {
+            memberIdCol = i;
+          }
+          else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) {
+            memberNameCol = i;
+          }
+          else if (val.includes('ชื่อบุตร') || val.includes('ผู้รับทุน') || val.includes('เด็ก')) {
+            childNameCol = i;
+          }
+          else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || (val.includes('จำนวน') && !val.includes('ลำดับ'))) {
             if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) amountCol = i;
           }
-          else if (val.includes('ประเภทการศึกษา') || val.includes('หมวดการศึกษา') || val.includes('ประเภททุน') || val.includes('หมวดทุน') || val.includes('ประเภท')) eduTypeCol = i;
-          else if (val.includes('ระดับชั้น') || val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ')) levelCol = i;
-          else if (val.includes('ลำดับ') || val.includes('ที่')) indexCol = i;
-          else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) deptCol = i;
-          else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) coopAccCol = i;
-          else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('ผลการพิจารณา') || val.includes('อนุมัติ')) docStatusCol = i;
-          else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) remarkCol = i;
+          else if (val.includes('ประเภทการศึกษา') || val.includes('หมวดการศึกษา') || val.includes('ประเภททุน') || val.includes('หมวดทุน') || val.includes('ประเภท')) {
+            eduTypeCol = i;
+          }
+          else if (val.includes('ระดับชั้น') || val.includes('ชั้นปี') || val === 'ระดับ' || val === 'ชั้น') {
+            levelCol = i;
+          }
+          else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('ที่ทำงาน') || val.includes('สถานพยาบาล')) {
+            deptCol = i;
+          }
+          else if (val.includes('สถานะ') || val.includes('ผลการพิจารณา') || val.includes('การอนุมัติ')) {
+            docStatusCol = i;
+          }
+          else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) {
+            remarkCol = i;
+          }
+          else if (val === 'ลำดับ' || val === 'ที่' || val === 'ลำดับที่' || val.includes('ลำดับ')) {
+            indexCol = i;
+          }
+        }
+      }
+
+      // Smart Pattern Detection if coopAccCol was not explicitly matched by header
+      if (coopAccCol === -1) {
+        let colVotes = {};
+        const scanRowsLimit = Math.min(rows.length, 35);
+        const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+        for (let r = startRow; r < scanRowsLimit; r++) {
+          const row = rows[r];
+          if (!row) continue;
+          for (let c = 0; c < row.length; c++) {
+            const rawVal = (row[c] || '').toString().trim();
+            const val = rawVal.replace(/[\s\u00a0-]/g, '');
+            if (/^\d{3}-\d{5}-\d{1,2}$/.test(rawVal) || (/^\d{7,15}$/.test(val) && c !== memberIdCol)) {
+              colVotes[c] = (colVotes[c] || 0) + 1;
+            }
+          }
+        }
+        let maxVotes = 0;
+        let bestCol = -1;
+        for (let c in colVotes) {
+          if (colVotes[c] > maxVotes) {
+            maxVotes = colVotes[c];
+            bestCol = parseInt(c);
+          }
+        }
+        if (maxVotes >= 1) {
+          coopAccCol = bestCol;
         }
       }
 
@@ -1343,7 +1398,12 @@ function doPost(e) {
         const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
         const indexVal = (parsedRecords.length + 1).toString();
         const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
-        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
+        
+        let coopAccount = '-';
+        if (coopAccCol !== -1 && coopAccCol < row.length) {
+          const rawAcc = (row[coopAccCol] || '').toString().trim();
+          if (rawAcc && rawAcc !== '-') coopAccount = rawAcc;
+        }
         
         let docStatus = 'ยื่นเอกสารสำเร็จ';
         if (docStatusCol !== -1 && docStatusCol < row.length) {
@@ -1481,15 +1541,16 @@ function doPost(e) {
       let isSuccess = false;
       let completed = false;
 
+      // Master Safety Timeout: Guarantee UI resolution within 5 seconds
       const masterTimer = setTimeout(() => {
         if (!completed && !isSuccess) {
           if (dbData && dbData.length > 0) {
             updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
           } else {
-            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ | ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดตรวจสอบสิทธิ์แชร์) | ณ ${formatThaiDateTime()}`);
           }
         }
-      }, 6000);
+      }, 5000);
 
       try {
         const mainEndpoints = [
@@ -1501,7 +1562,7 @@ function doPost(e) {
         for (const url of mainEndpoints) {
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3500);
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
             const response = await fetch(url, { signal: controller.signal });
             clearTimeout(timeoutId);
 
@@ -1529,7 +1590,7 @@ function doPost(e) {
         try {
           const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
           const response = await fetch(surveyUrl, { signal: controller.signal });
           clearTimeout(timeoutId);
 
@@ -1552,7 +1613,7 @@ function doPost(e) {
         try {
           const visitorUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Visitors&tqx=out:csv`;
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
           const response = await fetch(visitorUrl, { signal: controller.signal });
           clearTimeout(timeoutId);
 
@@ -1583,7 +1644,7 @@ function doPost(e) {
           if (dbData && dbData.length > 0) {
             updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
           } else {
-            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ | ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดตรวจสอบสิทธิ์แชร์) | ณ ${formatThaiDateTime()}`);
           }
         }
       } catch (globalErr) {
@@ -1776,6 +1837,7 @@ function doPost(e) {
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">รหัสอ้างอิง:</span><span class="font-mono font-bold text-slate-900">#69-${record.memberId}-${record.index}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ชื่อสมาชิก:</span><span class="font-bold text-slate-900">${record.memberName}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">เลขที่สมาชิก:</span><span class="font-mono font-bold text-slate-900">${record.memberId}</span></div>
+            <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">สังกัด / หน่วยงาน:</span><span class="font-bold text-slate-900">${record.department || '-'}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ชื่อบุตรผู้รับทุน:</span><span class="font-bold text-slate-900">${record.childName}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ระดับชั้น/การศึกษา:</span><span class="font-bold text-slate-900">${eduDisplay}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">จำนวนเงินทุนจัดสรร:</span><span class="font-bold text-emerald-700 text-base">${record.amount.toLocaleString()} บาท</span></div>
@@ -1838,7 +1900,6 @@ function doPost(e) {
           badgeClass = 'bg-amber-100 text-amber-800 border border-amber-200 font-bold';
         }
 
-        const canPrintSlip = itemProg.step >= 4 && !itemProg.isFailed;
         const levelBadge = item.eduType ? `${item.eduType} ${item.level}` : item.level;
 
         rowsHtml += `
@@ -1856,13 +1917,9 @@ function doPost(e) {
               <span class="px-3.5 py-1.5 rounded-full text-xs ${badgeClass}">${item.docStatus}</span>
             </td>
             <td class="px-5 py-4 text-center whitespace-nowrap">
-              ${canPrintSlip ? `
-                <button onclick="printSlip('${item.index}')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 mx-auto">
-                  <span>พิมพ์เอกสารยืนยัน</span>
-                </button>
-              ` : `
-                <span class="text-xs text-slate-400">-</span>
-              `}
+              <button onclick="printSlip('${item.index}')" class="bg-indigo-900 hover:bg-indigo-950 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1 mx-auto">
+                <span>🖨️ พิมพ์หลักฐาน</span>
+              </button>
             </td>
           </tr>
         `;
@@ -1878,12 +1935,20 @@ function doPost(e) {
             
             <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
               <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">ขั้นตอนการดำเนินงาน</h3>
-              <button 
-                onclick="togglePDPAMask()" 
-                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border ${pdpaMaskMode ? 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'} transition-all active:scale-95"
-              >
-                <span>${pdpaMaskMode ? '👁️ แสดงชื่อบัญชีเต็ม' : '🔒 ซ่อนชื่อบัญชี'}</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <button 
+                  onclick="printSlip('${primaryRecord.index}')"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all active:scale-95"
+                >
+                  <span>🖨️ พิมพ์หลักฐานการยื่นทุน</span>
+                </button>
+                <button 
+                  onclick="togglePDPAMask()" 
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border ${pdpaMaskMode ? 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'} transition-all active:scale-95"
+                >
+                  <span>${pdpaMaskMode ? '👁️ แสดงชื่อบัญชีเต็ม' : '🔒 ซ่อนชื่อบัญชี'}</span>
+                </button>
+              </div>
             </div>
             
             <!-- DESKTOP TIMELINE -->
@@ -2132,18 +2197,25 @@ function doPost(e) {
       const rejectCount = rejectList.length;
 
       const approvedTotalAmount = approvedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const pendingTotalAmount = pendingList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const rejectTotalAmount = rejectList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
       const allRequestedTotalAmount = dbData.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
       document.getElementById('statTotalCount').textContent = `${totalCount} ราย`;
       document.getElementById('statApprovedCount').textContent = `${approvedCount} ราย`;
       document.getElementById('statPendingCount').textContent = `${pendingCount} ราย`;
       document.getElementById('statRejectCount').textContent = `${rejectCount} ราย`;
+
+      document.getElementById('statTotalRequested').textContent = `ประมาณการจ่าย: ${allRequestedTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statApprovedAmount').textContent = `วงเงินอนุมัติจ่าย: ${approvedTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statPendingAmount').textContent = `ประมาณการ: ${pendingTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statRejectAmount').textContent = `วงเงินไม่อนุมัติ: ${rejectTotalAmount.toLocaleString()} บาท`;
       
       document.getElementById('statTotalAmount').textContent = `${approvedTotalAmount.toLocaleString()} บาท`;
-      document.getElementById('statTotalRequested').textContent = `งบยื่นขอรวมทั้งหมด: ${allRequestedTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statSummaryComparison').textContent = `ผู้ยื่นรวม ${allRequestedTotalAmount.toLocaleString()} บ. | อนุมัติแล้ว ${approvedTotalAmount.toLocaleString()} บ.`;
 
-      // 4 Education Level Budget Breakdown Calculations
-      renderEducationLevelBreakdown(approvedList);
+      // 4 Education Level Budget Breakdown Calculations across ALL and Approved requests
+      renderEducationLevelBreakdown(dbData, approvedList);
 
       updateAdminStatusDropdownOptions();
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
@@ -2154,42 +2226,67 @@ function doPost(e) {
     }
 
     // Calculate & Render Budget Allocations across 4 Education Tiers
-    function renderEducationLevelBreakdown(approvedList) {
-      let countPrimary = 0, sumPrimary = 0;
-      let countJunior = 0, sumJunior = 0;
-      let countSenior = 0, sumSenior = 0;
-      let countBachelor = 0, sumBachelor = 0;
+    function renderEducationLevelBreakdown(allRecords, approvedRecords) {
+      let reqCountPrimary = 0, reqSumPrimary = 0, appCountPrimary = 0, appSumPrimary = 0;
+      let reqCountJunior = 0, reqSumJunior = 0, appCountJunior = 0, appSumJunior = 0;
+      let reqCountSenior = 0, reqSumSenior = 0, appCountSenior = 0, appSumSenior = 0;
+      let reqCountBachelor = 0, reqSumBachelor = 0, appCountBachelor = 0, appSumBachelor = 0;
 
-      approvedList.forEach(item => {
+      // Process All Submitted Records
+      allRecords.forEach(item => {
         const cat = categorizeEducationLevel(item.level, item.amount, item.eduType);
         const amt = Number(item.amount) || 0;
 
         if (cat === 'PRIMARY') {
-          countPrimary++;
-          sumPrimary += amt || 1000;
+          reqCountPrimary++;
+          reqSumPrimary += amt || 1000;
         } else if (cat === 'JUNIOR') {
-          countJunior++;
-          sumJunior += amt || 1200;
+          reqCountJunior++;
+          reqSumJunior += amt || 1200;
         } else if (cat === 'SENIOR') {
-          countSenior++;
-          sumSenior += amt || 1400;
+          reqCountSenior++;
+          reqSumSenior += amt || 1400;
         } else if (cat === 'BACHELOR') {
-          countBachelor++;
-          sumBachelor += amt || 1600;
+          reqCountBachelor++;
+          reqSumBachelor += amt || 1600;
         }
       });
 
-      document.getElementById('eduCountPrimary').textContent = `${countPrimary} ราย`;
-      document.getElementById('eduAmountPrimary').textContent = `${sumPrimary.toLocaleString()} บาท`;
+      // Process Approved Records
+      approvedRecords.forEach(item => {
+        const cat = categorizeEducationLevel(item.level, item.amount, item.eduType);
+        const amt = Number(item.amount) || 0;
 
-      document.getElementById('eduCountJunior').textContent = `${countJunior} ราย`;
-      document.getElementById('eduAmountJunior').textContent = `${sumJunior.toLocaleString()} บาท`;
+        if (cat === 'PRIMARY') {
+          appCountPrimary++;
+          appSumPrimary += amt || 1000;
+        } else if (cat === 'JUNIOR') {
+          appCountJunior++;
+          appSumJunior += amt || 1200;
+        } else if (cat === 'SENIOR') {
+          appCountSenior++;
+          appSumSenior += amt || 1400;
+        } else if (cat === 'BACHELOR') {
+          appCountBachelor++;
+          appSumBachelor += amt || 1600;
+        }
+      });
 
-      document.getElementById('eduCountSenior').textContent = `${countSenior} ราย`;
-      document.getElementById('eduAmountSenior').textContent = `${sumSenior.toLocaleString()} บาท`;
+      // Update Category 1: Primary
+      document.getElementById('eduReqPrimary').textContent = `${reqCountPrimary} ราย (${reqSumPrimary.toLocaleString()} บ.)`;
+      document.getElementById('eduAmountPrimary').textContent = `${appCountPrimary} ราย (${appSumPrimary.toLocaleString()} บ.)`;
 
-      document.getElementById('eduCountBachelor').textContent = `${countBachelor} ราย`;
-      document.getElementById('eduAmountBachelor').textContent = `${sumBachelor.toLocaleString()} บาท`;
+      // Update Category 2: Junior High
+      document.getElementById('eduReqJunior').textContent = `${reqCountJunior} ราย (${reqSumJunior.toLocaleString()} บ.)`;
+      document.getElementById('eduAmountJunior').textContent = `${appCountJunior} ราย (${appSumJunior.toLocaleString()} บ.)`;
+
+      // Update Category 3: Senior High
+      document.getElementById('eduReqSenior').textContent = `${reqCountSenior} ราย (${reqSumSenior.toLocaleString()} บ.)`;
+      document.getElementById('eduAmountSenior').textContent = `${appCountSenior} ราย (${appSumSenior.toLocaleString()} บ.)`;
+
+      // Update Category 4: Bachelor Degree
+      document.getElementById('eduReqBachelor').textContent = `${reqCountBachelor} ราย (${reqSumBachelor.toLocaleString()} บ.)`;
+      document.getElementById('eduAmountBachelor').textContent = `${appCountBachelor} ราย (${appSumBachelor.toLocaleString()} บ.)`;
 
       // Render Education Level Bar Chart
       const ctxEdu = document.getElementById('eduLevelBarChart');
@@ -2202,17 +2299,15 @@ function doPost(e) {
             labels: ['1. ประถมศึกษา (1,000บ.)', '2. ม.ต้น (1,200บ.)', '3. ม.ปลาย/ปวช. (1,400บ.)', '4. ป.ตรี/ปวส. (1,600บ.)'],
             datasets: [
               {
-                label: 'จำนวนผู้ได้รับทุน (คน)',
-                data: [countPrimary, countJunior, countSenior, countBachelor],
+                label: 'ประมาณการจ่าย (ผู้ยื่นทั้งหมด) [บาท]',
+                data: [reqSumPrimary, reqSumJunior, reqSumSenior, reqSumBachelor],
                 backgroundColor: '#3b82f6',
-                yAxisID: 'yCount',
                 borderRadius: 6
               },
               {
-                label: 'งบประมาณรวม (บาท)',
-                data: [sumPrimary, sumJunior, sumSenior, sumBachelor],
+                label: 'วงเงินจ่ายทั้งหมด (อนุมัติแล้ว) [บาท]',
+                data: [appSumPrimary, appSumJunior, appSumSenior, appSumBachelor],
                 backgroundColor: '#059669',
-                yAxisID: 'yAmount',
                 borderRadius: 6
               }
             ]
@@ -2224,24 +2319,14 @@ function doPost(e) {
               legend: { position: 'top', labels: { font: { family: 'Prompt', size: 11 } } },
               tooltip: {
                 callbacks: {
-                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} ${ctx.datasetIndex === 0 ? 'ราย' : 'บาท'}`
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} บาท`
                 }
               }
             },
             scales: {
               x: { ticks: { font: { family: 'Prompt', size: 10 } } },
-              yCount: {
-                type: 'linear',
-                position: 'left',
+              y: {
                 beginAtZero: true,
-                title: { display: true, text: 'จำนวนผู้รับทุน (คน)', font: { family: 'Prompt', size: 10 } },
-                ticks: { precision: 0, font: { family: 'Prompt', size: 10 } }
-              },
-              yAmount: {
-                type: 'linear',
-                position: 'right',
-                beginAtZero: true,
-                grid: { drawOnChartArea: false },
                 title: { display: true, text: 'งบประมาณ (บาท)', font: { family: 'Prompt', size: 10 } },
                 ticks: { font: { family: 'Prompt', size: 10 } }
               }
@@ -2624,7 +2709,7 @@ function doPost(e) {
             <td class="px-4 py-3 text-slate-700 font-medium">${item.eduType || '-'}</td>
             <td class="px-4 py-3 text-center"><span class="bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-[10px]">${item.level}</span></td>
             <td class="px-4 py-3 text-right font-bold text-emerald-700">${Number(item.amount).toLocaleString()} บาท</td>
-            <td class="px-4 py-3 font-mono text-slate-600">${item.coopAccount || '-'}</td>
+            <td class="px-4 py-3 font-mono font-bold text-indigo-950">${item.coopAccount || '-'}</td>
             <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] ${badgeClass}">${item.docStatus}</span></td>
             <td class="px-4 py-3 text-slate-500 max-w-xs truncate">${item.remark || '-'}</td>
             <td class="px-4 py-3 text-center">
