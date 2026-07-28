@@ -52,6 +52,7 @@
     <div class="h-2 bg-gradient-to-r from-indigo-700 via-blue-800 to-emerald-600"></div>
 
     <!-- Header & Navigation -->
+    <!-- STREAMING_CHUNK: Rendering official top header and view mode tabs... -->
     <header class="bg-indigo-950 text-white py-6 px-4 shadow-md border-b border-indigo-900 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -99,6 +100,7 @@
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (สำหรับสมาชิก)       -->
       <!-- ========================================== -->
+      <!-- STREAMING_CHUNK: Rendering Member Portal Search & Survey Widget... -->
       <div id="memberPortalView" class="space-y-6">
         
         <!-- System Maintenance Banner -->
@@ -167,16 +169,14 @@
           <!-- Dynamic Results Area for Member -->
           <div id="resultsArea" class="hidden"></div>
 
-          <!-- แบบประเมินความพึงพอใจ (Survey Section) -->
+          <!-- แบบประเมินความพึงพอใจ (Member Survey Section) -->
           <section id="surveySection" class="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-8 mt-8 overflow-hidden relative transition-all duration-500">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500"></div>
             
-            <!-- กรณีที่ยังไม่ได้ประเมิน -->
             <div id="surveyFormArea" class="text-center transition-all duration-500">
               <h3 class="text-lg font-bold text-slate-900">⭐ แบบประเมินความพึงพอใจการใช้งานระบบ</h3>
-              <p class="text-xs text-slate-500 mt-1 mb-5">ความคิดเห็นของท่านจะช่วยให้เราพัฒนาระบบให้ดียิ่งขึ้น</p>
+              <p class="text-xs text-slate-500 mt-1 mb-5">ความคิดเห็นของท่านจะช่วยให้เราพัฒนาระบบการให้บริการให้ดียิ่งขึ้น</p>
               
-              <!-- ระบบดาว 1-5 -->
               <div class="flex justify-center gap-2 mb-2 star-rating" id="starContainer">
                 <button type="button" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseout="resetHover()" class="text-4xl text-slate-200 hover:text-amber-400 transition-colors star-btn focus:outline-none">★</button>
                 <button type="button" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseout="resetHover()" class="text-4xl text-slate-200 hover:text-amber-400 transition-colors star-btn focus:outline-none">★</button>
@@ -186,15 +186,13 @@
               </div>
               <p id="ratingText" class="text-xs font-bold text-amber-600 mb-4 h-4"></p>
 
-              <!-- กล่องข้อเสนอแนะ -->
               <textarea id="surveyComment" rows="2" placeholder="ข้อเสนอแนะเพิ่มเติม (ถ้ามี)..." class="w-full max-w-lg mx-auto px-4 py-3 rounded-2xl border border-slate-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 outline-none text-sm resize-none block transition-all mb-4"></textarea>
               
-              <button onclick="submitSurvey()" id="submitSurveyBtn" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-8 py-3 rounded-2xl shadow transition-all active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <button onclick="submitSurvey()" id="submitSurveyBtn" class="bg-indigo-900 hover:bg-indigo-950 text-white font-bold px-8 py-3 rounded-2xl shadow transition-all active:scale-95 text-sm">
                 ส่งแบบประเมิน
               </button>
             </div>
 
-            <!-- กรณีประเมินแล้ว (Thank you message) -->
             <div id="surveySuccessArea" class="hidden text-center py-4 animate-fadeIn">
               <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 text-2xl mb-3">✓</div>
               <h3 class="text-base font-bold text-slate-900">ขอขอบคุณสำหรับข้อเสนอแนะ</h3>
@@ -209,6 +207,7 @@
       <!-- ==================================================== -->
       <!-- PART 2: STAFF & BOARD PORTAL (ฝ่ายจัดการ/คณะกรรมการ) -->
       <!-- ==================================================== -->
+      <!-- STREAMING_CHUNK: Rendering Staff and Board Dashboard View with Survey Management... -->
       <div id="adminPortalView" class="hidden space-y-6">
         
         <!-- Admin Header Actions -->
@@ -304,10 +303,11 @@
           </div>
         </div>
 
-        <!-- Survey Summary Section for Admin -->
+        <!-- Survey Management Section for Admin -->
+        <!-- STREAMING_CHUNK: Rendering Admin Survey Summary and Management Table... -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1 flex flex-col justify-center items-center text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-amber-400"></div>
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-400"></div>
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">คะแนนความพึงพอใจเฉลี่ย</h3>
             <div id="surveyAvgArea">
               <h2 class="text-5xl font-extrabold text-slate-900 my-3">0.0</h2>
@@ -316,9 +316,16 @@
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">ข้อเสนอแนะล่าสุดจากสมาชิก</h3>
-            <div class="overflow-y-auto max-h-48 border border-slate-100 rounded-xl pr-2" id="surveyCommentsArea">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">จัดการข้อเสนอแนะและแบบประเมิน (แผ่นงาน Surveys)</h3>
+              <button onclick="openAddSurveyModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow transition-all active:scale-95 flex items-center gap-1">
+                <span>➕</span>
+                <span>เพิ่มรายการประเมิน</span>
+              </button>
+            </div>
+
+            <div class="overflow-y-auto max-h-60 border border-slate-100 rounded-xl divide-y divide-slate-100" id="surveyCommentsArea">
               <div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>
             </div>
           </div>
@@ -342,7 +349,6 @@
                 class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-medium outline-none focus:border-indigo-600 w-48"
               />
               
-              <!-- Dynamic Category Filter Dropdown -->
               <select id="adminStatusFilter" onchange="filterAdminTable()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium outline-none focus:border-indigo-600 bg-white">
                 <option value="ALL">สถานะทั้งหมด</option>
                 <option value="ยื่นเอกสารสำเร็จ">ยื่นเอกสารสำเร็จ</option>
@@ -388,7 +394,7 @@
     <!-- Hidden Printable Slip Area -->
     <div id="printSlipArea" class="hidden p-8 bg-white text-slate-900"></div>
 
-    <!-- Modal: Add / Edit Record -->
+    <!-- Modal: Add / Edit Record (Scholarship) -->
     <div id="recordModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
         <div class="bg-indigo-950 text-white p-6 flex justify-between items-center">
@@ -468,6 +474,45 @@
       </div>
     </div>
 
+    <!-- Modal: Add / Edit Survey (สำหรับเพิ่มหรือแก้ไขการประเมิน) -->
+    <!-- STREAMING_CHUNK: Building Survey Add/Edit Modal... -->
+    <div id="surveyModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
+        <div class="bg-amber-500 text-white p-6 flex justify-between items-center">
+          <h3 id="surveyModalTitle" class="text-base font-bold flex items-center gap-2">
+            <span>⭐</span>
+            <span>เพิ่ม / แก้ไข รายการประเมินความพึงพอใจ</span>
+          </h3>
+          <button onclick="closeSurveyModal()" class="text-amber-100 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <form id="surveyForm" onsubmit="saveSurveyRecord(event)" class="p-6 space-y-4 text-xs">
+          <input type="hidden" id="surveyEditId" value="" />
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1.5">ระดับดาวคะแนนความพึงพอใจ (1 - 5 ดาว) *</label>
+            <select id="surveyFormRating" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-amber-500 outline-none font-bold text-amber-600 text-sm">
+              <option value="5">★★★★★ (5 ดาว - ดีเยี่ยม)</option>
+              <option value="4">★★★★☆ (4 ดาว - ดีมาก)</option>
+              <option value="3">★★★☆☆ (3 ดาว - ปานกลาง)</option>
+              <option value="2">★★☆☆☆ (2 ดาว - พอใช้)</option>
+              <option value="1">★☆☆☆☆ (1 ดาว - ควรปรับปรุง)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">ข้อเสนอแนะเพิ่มเติม *</label>
+            <textarea id="surveyFormComment" required rows="3" placeholder="พิมพ์ข้อเสนอแนะเพื่อนำไปปรับปรุงการให้บริการ..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-amber-500 outline-none resize-none"></textarea>
+          </div>
+
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeSurveyModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold">ยกเลิก</button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow">บันทึกการประเมิน</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal: Shareable Member Link Generator -->
     <div id="shareLinkModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
@@ -506,7 +551,7 @@
         <div class="bg-indigo-950 text-white p-6 flex justify-between items-center shrink-0">
           <h3 class="text-base font-bold flex items-center gap-2">
             <span>⚙️</span>
-            <span>ตั้งค่าการเชื่อมโยงข้อมูล Google Sheets (พร้อมระบบประเมิน)</span>
+            <span>ตั้งค่าการเชื่อมโยงข้อมูล Google Sheets</span>
           </h3>
           <button onclick="closeGasSettingsModal()" class="text-slate-300 hover:text-white text-lg font-bold">✕</button>
         </div>
@@ -524,7 +569,7 @@
           </div>
 
           <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1 leading-relaxed">
-            <h5 class="font-bold">ขั้นตอนการติดตั้ง Google Apps Script (อัปเดตใหม่):</h5>
+            <h5 class="font-bold">ขั้นตอนการติดตั้ง Google Apps Script (อัปเดตใหม่รองรับแผ่นงาน Surveys):</h5>
             <ol class="list-decimal list-inside space-y-1">
               <li>เปิดไฟล์ Google Sheets ➔ ไปที่เมนู <strong class="text-slate-900">ส่วนขยาย (Extensions)</strong> ➔ เลือก <strong class="text-slate-900">Apps Script</strong></li>
               <li>นำโค้ดด้านล่างไปวางแทนที่โค้ดเดิมทั้งหมด</li>
@@ -536,25 +581,54 @@
 
           <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
             <h4 class="font-bold text-slate-800">โค้ดสำหรับ Google Apps Script:</h4>
-            <textarea readonly class="w-full h-36 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
+            <textarea readonly class="w-full h-40 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
 function doPost(e) {
   try {
     var sheetApp = SpreadsheetApp.getActiveSpreadsheet();
     var data = JSON.parse(e.postData.contents);
     var action = data.action || 'save';
     
-    // จัดการข้อมูลแบบประเมินความพึงพอใจ
-    if (action === 'survey') {
+    // 1. จัดการข้อมูลแผ่นงาน แบบประเมินความพึงพอใจ (Surveys)
+    if (action.indexOf('survey') === 0) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
       if (!surveySheet) {
         surveySheet = sheetApp.insertSheet('Surveys');
-        surveySheet.appendRow(['Date', 'Rating', 'Comment']);
+        surveySheet.appendRow(['ID', 'Date', 'Rating', 'Comment']);
       }
-      surveySheet.appendRow([data.date, data.rating, data.comment]);
+      var sRows = surveySheet.getDataRange().getValues();
+      var targetSRow = -1;
+      var reqId = String(data.id || '').trim();
+
+      for (var i = 1; i < sRows.length; i++) {
+        var rowId = String(sRows[i][0] || '').trim();
+        var rowDate = String(sRows[i][1] || '').trim();
+        if ((reqId && rowId === reqId) || (data.date && rowDate === String(data.date).trim())) {
+          targetSRow = i + 1;
+          break;
+        }
+      }
+
+      if (action === 'survey_delete') {
+        if (targetSRow > 1) {
+          surveySheet.deleteRow(targetSRow);
+        }
+      } else {
+        var sData = [
+          data.id || String(new Date().getTime()),
+          data.date || '',
+          data.rating || 0,
+          data.comment || ''
+        ];
+        if (targetSRow > 1) {
+          surveySheet.getRange(targetSRow, 1, 1, sData.length).setValues([sData]);
+        } else {
+          surveySheet.appendRow(sData);
+        }
+      }
       return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
     }
     
-    // จัดการข้อมูลทุนการศึกษา
+    // 2. จัดการข้อมูลแผ่นงาน ทุนการศึกษาหลัก
     var sheet = sheetApp.getActiveSheet();
     var rows = sheet.getDataRange().getValues();
     var targetRow = -1;
@@ -599,18 +673,34 @@ function doPost(e) {
       </div>
     </div>
 
-    <!-- Modal: Delete Confirmation -->
+    <!-- Modal: Scholarship Delete Confirmation -->
     <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-200 text-center p-6 space-y-4">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto">
           🗑️
         </div>
-        <h3 class="text-base font-bold text-slate-900">ยืนยันการลบรายการ</h3>
+        <h3 class="text-base font-bold text-slate-900">ยืนยันการลบรายการทุน</h3>
         <p id="deleteConfirmText" class="text-xs text-slate-500 leading-relaxed"></p>
         <input type="hidden" id="deleteTargetIndex" value="-1" />
         <div class="flex gap-2 pt-2">
           <button onclick="closeDeleteConfirmModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">ยกเลิก</button>
           <button onclick="executeDeleteRecord()" class="w-1/2 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow">ยืนยันการลบ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Survey Delete Confirmation -->
+    <div id="surveyDeleteModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-200 text-center p-6 space-y-4">
+        <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mx-auto">
+          🗑️
+        </div>
+        <h3 class="text-base font-bold text-slate-900">ยืนยันการลบแบบประเมิน</h3>
+        <p id="surveyDeleteConfirmText" class="text-xs text-slate-500 leading-relaxed"></p>
+        <input type="hidden" id="surveyDeleteTargetId" value="" />
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeSurveyDeleteModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">ยกเลิก</button>
+          <button onclick="executeDeleteSurvey()" class="w-1/2 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow">ยืนยันการลบ</button>
         </div>
       </div>
     </div>
@@ -631,6 +721,7 @@ function doPost(e) {
 
   </div>
 
+  <!-- STREAMING_CHUNK: Implementing Survey CRUD Logic & Dual-Sheet Fetching... -->
   <script>
     // System Data State
     let dbData = [];
@@ -643,7 +734,7 @@ function doPost(e) {
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
 
-    // Survey State
+    // Survey Rating Input State
     let currentRating = 0;
 
     /**
@@ -821,19 +912,10 @@ function doPost(e) {
       return r;
     }
 
-    // Dynamic Column Mapper including Data Sanitization
+    // Dynamic Column Mapper for Main Scholarship Sheet
     function parseDynamicCSV(rows) {
       if (!rows || rows.length === 0) return [];
-      let memberIdCol = -1;
-      let memberNameCol = -1;
-      let childNameCol = -1;
-      let amountCol = -1;
-      let levelCol = -1;
-      let indexCol = -1;
-      let deptCol = -1;
-      let coopAccCol = -1;
-      let docStatusCol = -1;
-      let remarkCol = -1;
+      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
 
       let headerRowIndex = -1;
       for (let r = 0; r < rows.length; r++) {
@@ -864,57 +946,17 @@ function doPost(e) {
         const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
         for (let i = 0; i < header.length; i++) {
           const val = header[i].replace(/[\u00a0\s]/g, '');
-          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) {
-            memberIdCol = i;
-          } else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) {
-            memberNameCol = i;
-          } else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') {
-            childNameCol = i;
-          } else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
-            if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) {
-              amountCol = i;
-            }
-          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) {
-            levelCol = i;
-          } else if (val.includes('ลำดับ') || val.includes('ที่')) {
-            indexCol = i;
-          } else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) {
-            deptCol = i;
-          } else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) {
-            coopAccCol = i;
-          } else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('ผลการพิจารณา') || val.includes('อนุมัติ')) {
-            docStatusCol = i;
-          } else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) {
-            remarkCol = i;
-          }
-        }
-      }
-
-      // Smart Account Column Finder
-      if (coopAccCol === -1) {
-        let colVotes = {};
-        const scanRowsLimit = Math.min(rows.length, 30);
-        const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
-        for (let r = startRow; r < scanRowsLimit; r++) {
-          const row = rows[r];
-          if (!row) continue;
-          for (let c = 0; c < row.length; c++) {
-            const val = (row[c] || '').toString().trim().replace(/[\s\u00a0-]/g, '');
-            if (/^\d{7,15}$/.test(val)) {
-              colVotes[c] = (colVotes[c] || 0) + 1;
-            }
-          }
-        }
-        let maxVotes = 0;
-        let bestCol = -1;
-        for (let c in colVotes) {
-          if (colVotes[c] > maxVotes) {
-            maxVotes = colVotes[c];
-            bestCol = parseInt(c);
-          }
-        }
-        if (maxVotes >= 1) {
-          coopAccCol = bestCol;
+          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) memberIdCol = i;
+          else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) memberNameCol = i;
+          else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') childNameCol = i;
+          else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
+            if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) amountCol = i;
+          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) levelCol = i;
+          else if (val.includes('ลำดับ') || val.includes('ที่')) indexCol = i;
+          else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) deptCol = i;
+          else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) coopAccCol = i;
+          else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('ผลการพิจารณา') || val.includes('อนุมัติ')) docStatusCol = i;
+          else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) remarkCol = i;
         }
       }
 
@@ -933,36 +975,22 @@ function doPost(e) {
         const row = rows[r];
         if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
 
-        let memberId = (row[memberIdCol] || '').toString().trim();
-        memberId = memberId.replace(/[\s\u00a0\r\n]/g, '');
-
+        let memberId = (row[memberIdCol] || '').toString().trim().replace(/[\s\u00a0\r\n]/g, '');
         if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
         if (!/\d/.test(memberId)) continue;
 
         const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
         const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
 
-        // Filter out Summary/Footer Rows
         const combinedText = (memberId + ' ' + memberName + ' ' + childName).toLowerCase();
-        if (
-          combinedText.includes('รวม') || 
-          combinedText.includes('รวมทั้งสิ้น') || 
-          combinedText.includes('ยอดรวม') || 
-          combinedText.includes('ผู้ตรวจ') || 
-          combinedText.includes('ลงชื่อ')
-        ) {
-          continue;
-        }
+        if (combinedText.includes('รวม') || combinedText.includes('รวมทั้งสิ้น') || combinedText.includes('ยอดรวม') || combinedText.includes('ผู้ตรวจ')) continue;
 
-        if (/^\d+$/.test(memberId)) {
-          memberId = memberId.padStart(5, '0');
-        }
+        if (/^\d+$/.test(memberId)) memberId = memberId.padStart(5, '0');
 
         let amount = 0;
         if (amountCol < row.length) {
           const rawAmount = (row[amountCol] || '').toString().trim();
-          const cleanAmountStr = rawAmount.replace(/[^0-9.]/g, '');
-          amount = parseFloat(cleanAmountStr) || 0;
+          amount = parseFloat(rawAmount.replace(/[^0-9.]/g, '')) || 0;
         }
 
         const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
@@ -973,48 +1001,65 @@ function doPost(e) {
         let docStatus = 'ยื่นเอกสารสำเร็จ';
         if (docStatusCol !== -1 && docStatusCol < row.length) {
           const val = (row[docStatusCol] || '').toString().trim();
-          if (val && val !== '-') {
-            docStatus = val;
-          }
+          if (val && val !== '-') docStatus = val;
         }
 
         let remark = '';
-        if (remarkCol !== -1 && remarkCol < row.length) {
-          remark = (row[remarkCol] || '').toString().trim();
-        }
+        if (remarkCol !== -1 && remarkCol < row.length) remark = (row[remarkCol] || '').toString().trim();
 
         if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
 
-        parsedRecords.push({
-          index: indexVal,
-          memberId,
-          memberName,
-          childName,
-          amount,
-          level,
-          department,
-          coopAccount,
-          docStatus,
-          remark
-        });
+        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, level, department, coopAccount, docStatus, remark });
       }
 
       return parsedRecords;
     }
 
-    // Google Sheets Online Data Sync
+    // STREAMING_CHUNK: Parsing Survey Tab CSV Data from Google Sheets...
+    // Parser for Google Sheets Tab 'Surveys'
+    function parseSurveyCSV(rows) {
+      if (!rows || rows.length <= 1) return [];
+      const parsedSurveys = [];
+      
+      // Expected structure: ID, Date, Rating, Comment (or Date, Rating, Comment)
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length === 0) continue;
+
+        let id = '', date = '', rating = 0, comment = '';
+
+        if (row.length >= 4) {
+          id = (row[0] || '').toString().trim();
+          date = (row[1] || '').toString().trim();
+          rating = Number(row[2]) || 0;
+          comment = (row[3] || '').toString().trim();
+        } else if (row.length === 3) {
+          date = (row[0] || '').toString().trim();
+          rating = Number(row[1]) || 0;
+          comment = (row[2] || '').toString().trim();
+          id = 'srv_' + r + '_' + Date.now();
+        }
+
+        if (rating > 0 || comment !== '') {
+          if (!id) id = 'srv_' + r;
+          parsedSurveys.push({ id, date, rating, comment });
+        }
+      }
+
+      return parsedSurveys;
+    }
+
+    // Google Sheets Online Data Sync (Scholarship + Surveys)
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
-      const endpoints = [
+      
+      // 1. Fetch Scholarship Data
+      const mainEndpoints = [
         `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`)}`
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
       ];
 
-      let csvText = null;
-      let isSuccess = false;
-
-      for (const url of endpoints) {
+      for (const url of mainEndpoints) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -1022,83 +1067,54 @@ function doPost(e) {
           clearTimeout(timeoutId);
           if (response.ok) {
             const text = await response.text();
-            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-              csvText = text;
-              break;
+            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE')) {
+              const rows = parseCSV(text);
+              const parsed = parseDynamicCSV(rows);
+              if (parsed && parsed.length > 0) {
+                dbData = parsed;
+                reIndexDbData();
+                saveLocalStorageData();
+                updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+                break;
+              }
             }
           }
         } catch (err) {
-          console.warn('Google Sheets Fetch Attempt Failed:', url, err);
+          console.warn('Main fetch failed:', err);
         }
       }
 
-      if (csvText) {
-        try {
-          const rows = parseCSV(csvText);
-          if (rows && rows.length >= 2) {
-            const parsed = parseDynamicCSV(rows);
-            if (parsed && parsed.length > 0) {
-              dbData = parsed; 
-              reIndexDbData();
-              saveLocalStorageData();
-              updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-              isSuccess = true;
-              
-              if (activeView === 'admin') {
-                renderAdminDashboard();
-              } else {
-                const searchInput = document.getElementById('searchId');
-                if (searchInput && searchInput.value) {
-                  handleSearchSubmit();
-                }
-              }
-              return;
+      // 2. Fetch Surveys Tab Data
+      try {
+        const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(surveyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.includes('<!DOCTYPE')) {
+            const sRows = parseCSV(text);
+            const parsedS = parseSurveyCSV(sRows);
+            if (parsedS && parsedS.length > 0) {
+              surveyDbData = parsedS;
+              saveSurveyToLocalStorage();
             }
           }
-        } catch(parseErr) {
-          console.error('Data parsing error:', parseErr);
+        }
+      } catch (sErr) {
+        console.warn('Surveys tab fetch note:', sErr);
+      }
+
+      if (activeView === 'admin') {
+        renderAdminDashboard();
+      } else {
+        const searchInput = document.getElementById('searchId');
+        if (searchInput && searchInput.value) {
+          handleSearchSubmit();
         }
       }
-
-      if (!isSuccess) {
-        updateSyncStatus('error', `ระบบถูกบล็อก! กรุณาเปิดแชร์ไฟล์ Google Sheets เป็น "ทุกคนที่มีลิงก์"`);
-        showShareHelpBanner();
-      }
-    }
-
-    // Helper banner for share help
-    function showShareHelpBanner() {
-      const html = `
-        <div class="bg-rose-50 border border-rose-200 rounded-3xl p-6 md:p-8 text-center animate-fadeIn mt-6 max-w-2xl mx-auto shadow-sm">
-           <div class="text-5xl mb-4">🔒</div>
-           <h2 class="text-lg md:text-xl font-bold text-rose-700 mb-2">ระบบถูกบล็อก ไม่สามารถดึงข้อมูลมาแสดงผลได้</h2>
-           <p class="text-xs md:text-sm text-slate-700 leading-relaxed mb-6">
-             การตั้งค่า <strong>Google Apps Script</strong> นั้นใช้สำหรับ <strong>"บันทึกข้อมูลกลับ"</strong> เท่านั้น<br/>
-             แต่การ <strong>"ดึงข้อมูลมาแสดง"</strong> ไฟล์ Google Sheets จะต้องถูกตั้งค่าสิทธิ์ให้เปิดเผยเสียก่อน
-           </p>
-           <div class="bg-white p-5 rounded-2xl text-left text-xs md:text-sm border border-rose-100 shadow-inner">
-             <p class="font-bold text-slate-900 mb-3 text-center border-b pb-2 border-slate-100">🛠️ วิธีแก้ไขง่ายๆ ใน 3 คลิก:</p>
-             <ol class="list-decimal pl-5 space-y-2.5 text-slate-700 font-medium">
-               <li>เปิดไฟล์ Google Sheets ของสหกรณ์</li>
-               <li>คลิกปุ่ม <strong class="text-blue-600">"แชร์ (Share)"</strong> สีน้ำเงิน มุมขวาบน</li>
-               <li>ตรงหัวข้อ 'การเข้าถึงทั่วไป' ให้เปลี่ยนสิทธิ์จาก 'จำกัด' เป็น <strong class="text-emerald-600">"ทุกคนที่มีลิงก์ (Anyone with the link)"</strong></li>
-               <li>ตรวจสอบให้สิทธิ์ด้านขวาเป็น "ผู้มีสิทธิ์อ่าน (Viewer)" แล้วกด <strong>เสร็จสิ้น (Done)</strong></li>
-               <li class="text-indigo-600 font-bold">รีเฟรชหน้าเว็บนี้อีกครั้ง ข้อมูลตารางทั้งหมดจะโหลดขึ้นมาทันที!</li>
-             </ol>
-           </div>
-        </div>
-      `;
-      
-      const resultsArea = document.getElementById('resultsArea');
-      if (resultsArea && activeView === 'member') {
-        resultsArea.innerHTML = html;
-        resultsArea.classList.remove('hidden');
-      }
-
-      const adminTableBody = document.getElementById('adminTableBody');
-      if (adminTableBody && activeView === 'admin') {
-         adminTableBody.innerHTML = `<tr><td colspan="11">${html}</td></tr>`;
-      }
+      initSurveySystem();
     }
 
     // Thai Date Time Formatter
@@ -1126,13 +1142,9 @@ function doPost(e) {
       } else if (type === 'error') {
         bgClass = 'bg-rose-50 text-rose-900 border-rose-200 shadow-sm';
         dotClass = 'bg-rose-600 ring-4 ring-rose-500/30';
-      } else if (type === 'warning') {
-        bgClass = 'bg-amber-50 text-amber-900 border-amber-200 shadow-sm';
-        dotClass = 'bg-amber-600 ring-4 ring-amber-500/30';
       }
 
       container.className = `flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border ${bgClass} transition-all duration-300`;
-      
       container.innerHTML = `
         <div class="flex items-center gap-2.5">
           <span class="w-2.5 h-2.5 rounded-full ${dotClass}"></span>
@@ -1162,9 +1174,7 @@ function doPost(e) {
     function togglePDPAMask() {
       pdpaMaskMode = !pdpaMaskMode;
       const searchInput = document.getElementById('searchId');
-      if (searchInput && searchInput.value) {
-        handleSearchSubmit();
-      }
+      if (searchInput && searchInput.value) handleSearchSubmit();
     }
 
     // Switch View Function
@@ -1184,27 +1194,15 @@ function doPost(e) {
       if (viewName === 'member') {
         memberView.classList.remove('hidden');
         adminView.classList.add('hidden');
-
-        if (tabMemberBtn) {
-          tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
-        }
-        if (tabAdminBtn) {
-          tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
-        }
-
+        if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
+        if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
         updateMaintenanceUI();
         initSurveySystem();
       } else {
         memberView.classList.add('hidden');
         adminView.classList.remove('hidden');
-
-        if (tabAdminBtn) {
-          tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
-        }
-        if (tabMemberBtn) {
-          tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
-        }
-
+        if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
+        if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
         renderAdminDashboard();
       }
     }
@@ -1227,17 +1225,13 @@ function doPost(e) {
       if (isMaintenanceMode) {
         banner.classList.remove('hidden');
         content.classList.add('hidden');
-        if (toggleBtn) {
-          toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/20 border-rose-400/40 text-rose-300 hover:bg-rose-500/30 active:scale-95";
-        }
+        if (toggleBtn) toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-rose-500/20 border-rose-400/40 text-rose-300 hover:bg-rose-500/30 active:scale-95";
         if (statusIcon) statusIcon.textContent = '🛑';
         if (statusText) statusText.textContent = 'ระบบฝั่งสมาชิก: ปิดปรับปรุง';
       } else {
         banner.classList.add('hidden');
         content.classList.remove('hidden');
-        if (toggleBtn) {
-          toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95";
-        }
+        if (toggleBtn) toggleBtn.className = "px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95";
         if (statusIcon) statusIcon.textContent = '🟢';
         if (statusText) statusText.textContent = 'ระบบฝั่งสมาชิก: เปิดบริการตามปกติ';
       }
@@ -1381,7 +1375,6 @@ function doPost(e) {
       resultsArea.innerHTML = `
         <div class="space-y-6 animate-fadeIn">
           
-          <!-- Visual Step Progress Tracker Card -->
           <section class="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-8 relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-indigo-900"></div>
             
@@ -1402,129 +1395,30 @@ function doPost(e) {
                 <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-500 ${prog.percent}"></div>
 
                 <div class="relative z-10 flex justify-between">
-                  <!-- Step 1 -->
                   <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 1 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
-                      1
-                    </div>
-                    <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 1 ? 'text-indigo-950' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 1 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">1</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 1 ? 'text-indigo-950' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</span>
                   </div>
 
-                  <!-- Step 2 -->
                   <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${
-                      prog.isDocError 
-                        ? 'bg-rose-600 text-white ring-4 ring-rose-200' 
-                        : (prog.step >= 2 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400')
-                    }">
-                      2
-                    </div>
-                    <span class="text-[11px] font-bold mt-3 transition-colors ${
-                      prog.isDocError ? 'text-rose-700' : (prog.step >= 2 ? 'text-indigo-950' : 'text-slate-400')
-                    }">
-                      ${prog.isDocError ? 'เอกสารไม่ถูกต้อง' : 'ตรวจสอบเอกสาร'}
-                    </span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.isDocError ? 'bg-rose-600 text-white ring-4 ring-rose-200' : (prog.step >= 2 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400')}">2</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.isDocError ? 'text-rose-700' : (prog.step >= 2 ? 'text-indigo-950' : 'text-slate-400')}">${prog.isDocError ? 'เอกสารไม่ถูกต้อง' : 'ตรวจสอบเอกสาร'}</span>
                   </div>
 
-                  <!-- Step 3 -->
                   <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 3 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">
-                      3
-                    </div>
-                    <span class="text-[11px] font-bold mt-3 transition-colors ${prog.step >= 3 ? 'text-indigo-950' : 'text-slate-400'}">การพิจารณา</span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 3 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">3</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 3 ? 'text-indigo-950' : 'text-slate-400'}">การพิจารณา</span>
                   </div>
 
-                  <!-- Step 4 -->
                   <div class="flex flex-col items-center">
-                    <div class="relative">
-                      ${prog.step === 4 ? '<span class="absolute -inset-1.5 rounded-full bg-indigo-500/20 animate-pulse-ring"></span>' : ''}
-                      <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${
-                        prog.step >= 4 
-                          ? (prog.isRejected ? 'bg-rose-600 text-white ring-4 ring-rose-200' : 'bg-indigo-900 text-white') 
-                          : 'bg-slate-100 text-slate-400'
-                      }">
-                        4
-                      </div>
-                    </div>
-                    <span class="text-[11px] font-bold mt-3 transition-colors ${
-                      prog.step >= 4 
-                        ? (prog.isRejected ? 'text-rose-700' : 'text-indigo-950') 
-                        : 'text-slate-400'
-                    }">
-                      ${prog.isRejected ? 'ไม่ได้รับการอนุมัติ' : 'อนุมัติเรียบร้อย'}
-                    </span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 4 ? (prog.isRejected ? 'bg-rose-600 text-white ring-4 ring-rose-200' : 'bg-indigo-900 text-white') : 'bg-slate-100 text-slate-400'}">4</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 4 ? (prog.isRejected ? 'text-rose-700' : 'text-indigo-950') : 'text-slate-400'}">${prog.isRejected ? 'ไม่ได้รับการอนุมัติ' : 'อนุมัติเรียบร้อย'}</span>
                   </div>
 
-                  <!-- Step 5 -->
                   <div class="flex flex-col items-center">
-                    <div class="relative">
-                      ${prog.step === 5 ? '<span class="absolute -inset-1.5 rounded-full bg-emerald-500/20 animate-pulse-ring"></span>' : ''}
-                      <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${
-                        prog.step >= 5 
-                          ? 'bg-emerald-600 text-white' 
-                          : 'bg-slate-100 text-slate-400'
-                      }">
-                        5
-                      </div>
-                    </div>
-                    <span class="text-[11px] font-bold mt-3 transition-colors ${
-                      prog.step >= 5 
-                        ? 'text-emerald-800' 
-                        : 'text-slate-400'
-                    }">
-                      โอนเงินเข้าบัญชี
-                    </span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 5 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}">5</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 5 ? 'text-emerald-800' : 'text-slate-400'}">โอนเงินเข้าบัญชี</span>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- MOBILE VERTICAL STEPPER -->
-            <div class="block md:hidden mb-6 pl-2 pr-2">
-              <div class="relative border-l-2 border-slate-200 ml-4 space-y-6 pb-2">
-                <div class="relative pl-8">
-                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 1 ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}">
-                    1
-                  </div>
-                  <h4 class="text-xs font-bold ${prog.step >= 1 ? 'text-slate-900' : 'text-slate-400'}">ยื่นเอกสารสำเร็จ</h4>
-                </div>
-
-                <div class="relative pl-8">
-                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${
-                    prog.isDocError ? 'bg-rose-600 text-white' : (prog.step >= 2 ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400')
-                  }">
-                    2
-                  </div>
-                  <h4 class="text-xs font-bold ${prog.isDocError ? 'text-rose-700' : (prog.step >= 2 ? 'text-slate-900' : 'text-slate-400')}">
-                    ${prog.isDocError ? 'เอกสารไม่ถูกต้อง' : 'ตรวจสอบเอกสาร'}
-                  </h4>
-                </div>
-
-                <div class="relative pl-8">
-                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 3 ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}">
-                    3
-                  </div>
-                  <h4 class="text-xs font-bold ${prog.step >= 3 ? 'text-slate-900' : 'text-slate-400'}">การพิจารณา</h4>
-                </div>
-
-                <div class="relative pl-8">
-                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${
-                    prog.step >= 4 
-                      ? (prog.isRejected ? 'bg-rose-600 text-white' : 'bg-indigo-900 text-white') 
-                      : 'bg-slate-100 text-slate-400'
-                  }">
-                    4
-                  </div>
-                  <h4 class="text-xs font-bold ${prog.step >= 4 ? (prog.isRejected ? 'text-rose-700' : 'text-slate-900') : 'text-slate-400'}">
-                    ${prog.isRejected ? 'ไม่ได้รับการอนุมัติเอกสาร' : 'อนุมัติเรียบร้อย'}
-                  </h4>
-                </div>
-
-                <div class="relative pl-8">
-                  <div class="absolute -left-[13px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${prog.step >= 5 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}">
-                    5
-                  </div>
-                  <h4 class="text-xs font-bold ${prog.step >= 5 ? 'text-emerald-800' : 'text-slate-400'}">โอนเงินเข้าบัญชี</h4>
                 </div>
               </div>
             </div>
@@ -1558,10 +1452,6 @@ function doPost(e) {
             <div class="p-6 md:p-8">
               <h4 class="text-xs font-bold text-slate-500 mb-4 uppercase tracking-wider">ประวัติการยื่นคำขอรับทุนการศึกษา</h4>
               
-              <div class="flex md:hidden items-center justify-end gap-1 mb-2 text-[10px] font-bold text-indigo-800">
-                <span>◀ เลื่อนหน้าจอแนวนอนเพื่อดูข้อมูลเพิ่มเติม ▶</span>
-              </div>
-
               <div class="overflow-x-auto border border-slate-200 rounded-2xl">
                 <table class="min-w-full text-left text-sm border-collapse">
                   <thead>
@@ -1623,18 +1513,8 @@ function doPost(e) {
             </p>
             
             <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-              <a 
-                href="tel:074721930" 
-                class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all"
-              >
-                📞 โทร. 074-721930 (งานธุรการ)
-              </a>
-              <a 
-                href="tel:0953937696" 
-                class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all"
-              >
-                📱 โทร. 095-3937696 (งานธุรการ)
-              </a>
+              <a href="tel:074721930" class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all">📞 โทร. 074-721930 (งานธุรการ)</a>
+              <a href="tel:0953937696" class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-5 py-3 rounded-xl transition-all">📱 โทร. 095-3937696 (งานธุรการ)</a>
             </div>
 
             <div class="mt-6 pt-5 border-t border-slate-100 text-xs text-slate-500 max-w-sm mx-auto">
@@ -1729,23 +1609,16 @@ function doPost(e) {
         if (item.docStatus && item.docStatus.trim()) {
           const s = item.docStatus.trim();
           const matchedStandard = categories.some(cat => cat.value !== 'ALL' && matchStatusFilter(s, cat.value));
-          if (!matchedStandard) {
-            customStatuses.add(s);
-          }
+          if (!matchedStandard) customStatuses.add(s);
         }
       });
 
-      customStatuses.forEach(s => {
-        categories.push({ value: s, label: s });
-      });
+      customStatuses.forEach(s => categories.push({ value: s, label: s }));
 
       selectEl.innerHTML = categories.map(cat => {
         let count = 0;
-        if (cat.value === 'ALL') {
-          count = dbData.length;
-        } else {
-          count = dbData.filter(item => matchStatusFilter(item.docStatus, cat.value)).length;
-        }
+        if (cat.value === 'ALL') count = dbData.length;
+        else count = dbData.filter(item => matchStatusFilter(item.docStatus, cat.value)).length;
         return `<option value="${cat.value}" ${cat.value === currentSelected ? 'selected' : ''}>${cat.label} (${count} ราย)</option>`;
       }).join('');
     }
@@ -1753,13 +1626,10 @@ function doPost(e) {
     // Admin Dashboard Render & Table Management
     function renderAdminDashboard() {
       const totalCount = dbData.length;
-      
       const approvedList = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus));
       const approvedCount = approvedList.length;
-      
       const pendingList = dbData.filter(d => isPendingStatus(d.docStatus));
       const pendingCount = pendingList.length;
-      
       const rejectList = dbData.filter(d => isRejectedOrErrorStatus(d.docStatus));
       const rejectCount = rejectList.length;
 
@@ -1799,9 +1669,7 @@ function doPost(e) {
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } }
-            }
+            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } } }
           }
         });
       }
@@ -1835,9 +1703,7 @@ function doPost(e) {
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
-            },
+            plugins: { legend: { display: false } },
             scales: {
               x: { ticks: { font: { family: 'Prompt', size: 10 } } },
               y: { ticks: { font: { family: 'Prompt', size: 10 } } }
@@ -1909,7 +1775,7 @@ function doPost(e) {
       }).join('');
     }
 
-    // Modal Operations (Add / Edit / Delete)
+    // Modal Operations (Scholarships)
     function openAddModal() {
       document.getElementById('modalTitle').textContent = 'เพิ่มรายการผู้ยื่นคำขอใหม่';
       document.getElementById('editIndex').value = '-1';
@@ -2008,7 +1874,246 @@ function doPost(e) {
       closeDeleteConfirmModal();
     }
 
-    // Google Apps Script Sync
+    // STREAMING_CHUNK: Implementing Survey CRUD Operations for Admin...
+    // ==========================================
+    // SURVEY MANAGEMENT LOGIC (สำหรับฝ่ายจัดการ)
+    // ==========================================
+    function setRating(val) {
+      currentRating = val;
+      updateStarUI(val);
+      const ratingText = document.getElementById('ratingText');
+      const labels = ['', '1 ดาว - ควรปรับปรุง', '2 ดาว - พอใช้', '3 ดาว - ปานกลาง', '4 ดาว - ดีมาก', '5 ดาว - ดีเยี่ยม'];
+      if (ratingText) ratingText.textContent = labels[val] || '';
+    }
+
+    function hoverRating(val) { updateStarUI(val); }
+    function resetHover() { updateStarUI(currentRating); }
+
+    function updateStarUI(val) {
+      const container = document.getElementById('starContainer');
+      if (!container) return;
+      const btns = container.querySelectorAll('.star-btn');
+      btns.forEach((btn, idx) => {
+        if (idx < val) {
+          btn.classList.add('text-amber-400');
+          btn.classList.remove('text-slate-200');
+        } else {
+          btn.classList.remove('text-amber-400');
+          btn.classList.add('text-slate-200');
+        }
+      });
+    }
+
+    async function submitSurvey() {
+      if (currentRating === 0) {
+        showToast('กรุณาเลือกดาวประเมินความพึงพอใจ', 'warning');
+        return;
+      }
+      const commentInput = document.getElementById('surveyComment');
+      const comment = commentInput ? commentInput.value.trim() : '';
+      const dateStr = formatThaiDateTime();
+      const surveyId = 'srv_' + Date.now();
+
+      const surveyItem = {
+        id: surveyId,
+        rating: currentRating,
+        comment: comment,
+        date: dateStr
+      };
+
+      surveyDbData.unshift(surveyItem);
+      saveSurveyToLocalStorage();
+      localStorage.setItem('coop_survey_submitted_2569', 'true');
+
+      syncSurveyToGoogleSheets(surveyItem, 'survey_save');
+      initSurveySystem();
+      showToast('ขอขอบคุณสำหรับแบบประเมินความพึงพอใจ', 'success');
+    }
+
+    function openAddSurveyModal() {
+      document.getElementById('surveyModalTitle').textContent = 'เพิ่มรายการประเมินความพึงพอใจใหม่';
+      document.getElementById('surveyEditId').value = '';
+      document.getElementById('surveyFormRating').value = '5';
+      document.getElementById('surveyFormComment').value = '';
+      document.getElementById('surveyModal').classList.remove('hidden');
+    }
+
+    function openEditSurveyModal(id) {
+      const item = surveyDbData.find(s => String(s.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('surveyModalTitle').textContent = 'แก้ไขแบบประเมินความพึงพอใจ';
+      document.getElementById('surveyEditId').value = item.id;
+      document.getElementById('surveyFormRating').value = String(item.rating || 5);
+      document.getElementById('surveyFormComment').value = item.comment || '';
+      document.getElementById('surveyModal').classList.remove('hidden');
+    }
+
+    function closeSurveyModal() {
+      document.getElementById('surveyModal').classList.add('hidden');
+    }
+
+    function saveSurveyRecord(e) {
+      e.preventDefault();
+      const editId = document.getElementById('surveyEditId').value;
+      const rating = Number(document.getElementById('surveyFormRating').value) || 5;
+      const comment = document.getElementById('surveyFormComment').value.trim();
+
+      let targetItem = null;
+
+      if (editId) {
+        targetItem = surveyDbData.find(s => String(s.id) === String(editId));
+        if (targetItem) {
+          targetItem.rating = rating;
+          targetItem.comment = comment;
+        }
+      } else {
+        targetItem = {
+          id: 'srv_' + Date.now(),
+          rating: rating,
+          comment: comment,
+          date: formatThaiDateTime()
+        };
+        surveyDbData.unshift(targetItem);
+      }
+
+      saveSurveyToLocalStorage();
+      closeSurveyModal();
+      renderSurveyAdmin();
+      showToast('บันทึกการประเมินเรียบร้อยแล้ว', 'success');
+
+      if (targetItem) {
+        syncSurveyToGoogleSheets(targetItem, 'survey_save');
+      }
+    }
+
+    function confirmDeleteSurvey(id) {
+      const item = surveyDbData.find(s => String(s.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('surveyDeleteTargetId').value = id;
+      const starStr = '★'.repeat(item.rating || 0);
+      document.getElementById('surveyDeleteConfirmText').innerHTML = `คุณต้องการลบข้อเสนอแนะระดับ <strong>${starStr} (${item.rating} ดาว)</strong><br/>"${item.comment || 'ไม่มีข้อความ'}" ใช่หรือไม่?`;
+      document.getElementById('surveyDeleteModal').classList.remove('hidden');
+    }
+
+    function closeSurveyDeleteModal() {
+      document.getElementById('surveyDeleteModal').classList.add('hidden');
+    }
+
+    function executeDeleteSurvey() {
+      const targetId = document.getElementById('surveyDeleteTargetId').value;
+      const idx = surveyDbData.findIndex(s => String(s.id) === String(targetId));
+      
+      if (idx !== -1) {
+        const targetItem = surveyDbData[idx];
+        surveyDbData.splice(idx, 1);
+        saveSurveyToLocalStorage();
+        renderSurveyAdmin();
+        showToast('ลบรายการประเมินเรียบร้อยแล้ว', 'info');
+
+        syncSurveyToGoogleSheets(targetItem, 'survey_delete');
+      }
+      closeSurveyDeleteModal();
+    }
+
+    // Google Apps Script Sync for Surveys
+    async function syncSurveyToGoogleSheets(surveyItem, action = 'survey_save') {
+      if (!gasWebAppUrl) return;
+      try {
+        await fetch(gasWebAppUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: action,
+            id: surveyItem.id,
+            rating: surveyItem.rating,
+            comment: surveyItem.comment,
+            date: surveyItem.date || formatThaiDateTime()
+          })
+        });
+        showToast('ส่งการอัปเดตแบบประเมินไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
+      } catch(e) {
+        console.warn('Survey Sync POST Error:', e);
+      }
+    }
+
+    function initSurveySystem() {
+      try {
+        const surveyed = localStorage.getItem('coop_survey_submitted_2569');
+        const formArea = document.getElementById('surveyFormArea');
+        const successArea = document.getElementById('surveySuccessArea');
+        
+        if (formArea && successArea) {
+          if (surveyed === 'true') {
+            formArea.classList.add('hidden');
+            successArea.classList.remove('hidden');
+          } else {
+            formArea.classList.remove('hidden');
+            successArea.classList.add('hidden');
+          }
+        }
+        renderSurveyAdmin();
+      } catch (err) {
+        console.error('initSurveySystem error:', err);
+      }
+    }
+
+    // Render Admin Survey Table and KPI Metrics
+    function renderSurveyAdmin() {
+      try {
+        const totalScore = surveyDbData.reduce((acc, curr) => acc + (Number(curr.rating) || 0), 0);
+        const avg = surveyDbData.length > 0 ? (totalScore / surveyDbData.length).toFixed(1) : '0.0';
+        
+        const avgEl = document.getElementById('surveyAvgArea');
+        const commentsArea = document.getElementById('surveyCommentsArea');
+        
+        if (avgEl) {
+          const fullStars = Math.round(Number(avg));
+          const starHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+          avgEl.innerHTML = `
+            <h2 class="text-5xl font-extrabold text-slate-900 my-3">${avg}</h2>
+            <div class="text-3xl text-amber-400 tracking-widest mb-2">${starHtml}</div>
+            <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">${surveyDbData.length}</span> ราย</p>
+          `;
+        }
+        
+        if (commentsArea) {
+          let commentsHtml = '';
+          if (surveyDbData.length > 0) {
+            commentsHtml = surveyDbData.map(s => {
+              const starCount = Number(s.rating) || 0;
+              const starStr = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+              return `
+                <div class="p-3 border-b border-slate-100 text-xs hover:bg-slate-50 transition-colors flex items-start justify-between gap-3">
+                  <div class="flex-grow">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-amber-400 font-bold tracking-wider">${starStr}</span>
+                      <span class="text-[10px] text-slate-400">${s.date || ''}</span>
+                    </div>
+                    <p class="text-slate-800 font-medium leading-relaxed">"${s.comment || 'ไม่มีข้อเสนอแนะเพิ่มเติม'}"</p>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0 pt-1">
+                    <button onclick="openEditSurveyModal('${s.id}')" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="แก้ไข">✏️</button>
+                    <button onclick="confirmDeleteSurvey('${s.id}')" class="p-1 text-slate-400 hover:text-rose-600 transition-colors" title="ลบ">🗑️</button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+          
+          if (!commentsHtml) {
+            commentsHtml = '<div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>';
+          }
+          commentsArea.innerHTML = commentsHtml;
+        }
+      } catch (err) {
+        console.error('renderSurveyAdmin error:', err);
+      }
+    }
+
+    // Google Apps Script Sync for Main Scholarship Data
     async function syncToGoogleSheets(recordData, action = 'save') {
       if (!gasWebAppUrl) return;
       try {
@@ -2090,18 +2195,47 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var action = data.action || 'save';
     
-    // จัดการข้อมูลแบบประเมินความพึงพอใจ
-    if (action === 'survey') {
+    // 1. จัดการข้อมูลแผ่นงาน แบบประเมินความพึงพอใจ (Surveys)
+    if (action.indexOf('survey') === 0) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
       if (!surveySheet) {
         surveySheet = sheetApp.insertSheet('Surveys');
-        surveySheet.appendRow(['Date', 'Rating', 'Comment']);
+        surveySheet.appendRow(['ID', 'Date', 'Rating', 'Comment']);
       }
-      surveySheet.appendRow([data.date, data.rating, data.comment]);
+      var sRows = surveySheet.getDataRange().getValues();
+      var targetSRow = -1;
+      var reqId = String(data.id || '').trim();
+
+      for (var i = 1; i < sRows.length; i++) {
+        var rowId = String(sRows[i][0] || '').trim();
+        var rowDate = String(sRows[i][1] || '').trim();
+        if ((reqId && rowId === reqId) || (data.date && rowDate === String(data.date).trim())) {
+          targetSRow = i + 1;
+          break;
+        }
+      }
+
+      if (action === 'survey_delete') {
+        if (targetSRow > 1) {
+          surveySheet.deleteRow(targetSRow);
+        }
+      } else {
+        var sData = [
+          data.id || String(new Date().getTime()),
+          data.date || '',
+          data.rating || 0,
+          data.comment || ''
+        ];
+        if (targetSRow > 1) {
+          surveySheet.getRange(targetSRow, 1, 1, sData.length).setValues([sData]);
+        } else {
+          surveySheet.appendRow(sData);
+        }
+      }
       return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
     }
     
-    // จัดการข้อมูลทุนการศึกษา
+    // 2. จัดการข้อมูลแผ่นงาน ทุนการศึกษาหลัก
     var sheet = sheetApp.getActiveSheet();
     var rows = sheet.getDataRange().getValues();
     var targetRow = -1;
@@ -2142,149 +2276,6 @@ function doPost(e) {
       showToast('คัดลอกโค้ด Apps Script เรียบร้อยแล้ว', 'info');
     }
 
-    // ==========================================
-    // SURVEY SYSTEM LOGIC (ระบบประเมินความพึงพอใจ)
-    // ==========================================
-    function setRating(val) {
-      currentRating = val;
-      updateStarUI(val);
-      const ratingText = document.getElementById('ratingText');
-      const labels = ['', '1 ดาว - ควรปรับปรุง', '2 ดาว - พอใช้', '3 ดาว - ปานกลาง', '4 ดาว - ดีมาก', '5 ดาว - ดีเยี่ยมดีมาก'];
-      if (ratingText) ratingText.textContent = labels[val] || '';
-    }
-
-    function hoverRating(val) {
-      updateStarUI(val);
-    }
-
-    function resetHover() {
-      updateStarUI(currentRating);
-    }
-
-    function updateStarUI(val) {
-      const container = document.getElementById('starContainer');
-      if (!container) return;
-      const btns = container.querySelectorAll('.star-btn');
-      btns.forEach((btn, idx) => {
-        if (idx < val) {
-          btn.classList.add('text-amber-400');
-          btn.classList.remove('text-slate-200');
-        } else {
-          btn.classList.remove('text-amber-400');
-          btn.classList.add('text-slate-200');
-        }
-      });
-    }
-
-    async function submitSurvey() {
-      if (currentRating === 0) {
-        showToast('กรุณาเลือกดาวประเมินความพึงพอใจ', 'warning');
-        return;
-      }
-      const commentInput = document.getElementById('surveyComment');
-      const comment = commentInput ? commentInput.value.trim() : '';
-      const dateStr = formatThaiDateTime();
-
-      const surveyItem = {
-        rating: currentRating,
-        comment: comment,
-        date: dateStr
-      };
-
-      surveyDbData.unshift(surveyItem);
-      saveSurveyToLocalStorage();
-      localStorage.setItem('coop_survey_submitted_2569', 'true');
-
-      if (gasWebAppUrl) {
-        try {
-          await fetch(gasWebAppUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'survey',
-              rating: currentRating,
-              comment: comment,
-              date: dateStr
-            })
-          });
-        } catch(e) {
-          console.warn('Survey POST error:', e);
-        }
-      }
-
-      initSurveySystem();
-      showToast('ขอขอบคุณสำหรับแบบประเมินความพึงพอใจ', 'success');
-    }
-
-    function initSurveySystem() {
-      try {
-        const surveyed = localStorage.getItem('coop_survey_submitted_2569');
-        const formArea = document.getElementById('surveyFormArea');
-        const successArea = document.getElementById('surveySuccessArea');
-        
-        if (formArea && successArea) {
-          if (surveyed === 'true') {
-            formArea.classList.add('hidden');
-            successArea.classList.remove('hidden');
-          } else {
-            formArea.classList.remove('hidden');
-            successArea.classList.add('hidden');
-          }
-        }
-        renderSurveyAdmin();
-      } catch (err) {
-        console.error('initSurveySystem error:', err);
-      }
-    }
-
-    function renderSurveyAdmin() {
-      try {
-        const totalScore = surveyDbData.reduce((acc, curr) => acc + (Number(curr.rating) || 0), 0);
-        const avg = surveyDbData.length > 0 ? (totalScore / surveyDbData.length).toFixed(1) : '0.0';
-        
-        const avgEl = document.getElementById('surveyAvgArea');
-        const commentsArea = document.getElementById('surveyCommentsArea');
-        
-        if (avgEl) {
-          const fullStars = Math.round(Number(avg));
-          const starHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-          avgEl.innerHTML = `
-            <h2 class="text-5xl font-extrabold text-slate-900 my-3">${avg}</h2>
-            <div class="text-3xl text-amber-400 tracking-widest mb-2">${starHtml}</div>
-            <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">${surveyDbData.length}</span> ราย</p>
-          `;
-        }
-        
-        if (commentsArea) {
-          let commentsHtml = '';
-          if (surveyDbData.length > 0) {
-            const commentsList = surveyDbData.filter(s => s.comment && s.comment.trim() !== '');
-            if (commentsList.length > 0) {
-              commentsHtml = commentsList.map(s => {
-                const starCount = Number(s.rating) || 0;
-                const starStr = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
-                return `<div class="p-3 border-b border-slate-100 text-xs hover:bg-slate-50">
-                  <div class="flex justify-between items-center mb-1">
-                    <span class="text-amber-400 font-bold">${starStr}</span>
-                    <span class="text-[10px] text-slate-400">${s.date || ''}</span>
-                  </div>
-                  <p class="text-slate-700 font-medium">"${s.comment}"</p>
-                </div>`;
-              }).join('');
-            }
-          }
-          
-          if (!commentsHtml) {
-            commentsHtml = '<div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>';
-          }
-          commentsArea.innerHTML = commentsHtml;
-        }
-      } catch (err) {
-        console.error('renderSurveyAdmin error:', err);
-      }
-    }
-
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
       enforceMemberViewRestriction();
@@ -2323,3 +2314,10 @@ function doPost(e) {
   </script>
 </body>
 </html>
+```eof
+
+### 📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน `Surveys`:
+1. ให้คุณครู/ฝ่ายจัดการเปิดหน้าต่าง **"⚙️ ตั้งค่า Google Sheets Sync"** ในหน้าระบบ
+2. กดคัดลอกโค้ด **Google Apps Script** ล่าสุด นำไปวางในส่วนขยายของไฟล์ Google Sheets 
+3. กด **Deploy (ทำให้ใช้งานได้)** ➔ เลือก **New deployment (การทำให้ใช้งานได้ใหม่)** อีกครั้ง
+4. หลังจากนั้น เมื่อมีการประเมิน แก้ไข หรือลบข้อเสนอแนะ ข้อมูลในแผ่นงาน `Surveys` บน Google Sheets จะซิงก์ตรงกันแบบเรียลไทม์ทันทีครับ!
