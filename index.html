@@ -574,17 +574,6 @@
             <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จาก Google Apps Script เพื่อให้ระบบส่งการอัปเดตกลับไปยัง Google Sheets</p>
           </div>
 
-          <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1 leading-relaxed hidden">
-            <h5 class="font-bold">ขั้นตอนการติดตั้ง Google Apps Script (อัปเดตใหม่รองรับแผ่นงาน Surveys):</h5>
-            <ol class="list-decimal list-inside space-y-1">
-              <li>เปิดไฟล์ Google Sheets ➔ ไปที่เมนู <strong class="text-slate-900">ส่วนขยาย (Extensions)</strong> ➔ เลือก <strong class="text-slate-900">Apps Script</strong></li>
-              <li>นำโค้ดด้านล่างไปวางแทนที่โค้ดเดิมทั้งหมด</li>
-              <li>กด <strong class="text-slate-900">ทำให้ใช้งานได้ (Deploy)</strong> ➔ เลือก <strong class="text-slate-900">การทำให้ใช้งานได้ใหม่ (New deployment)</strong></li>
-              <li>เลือกประเภทเป็น <strong class="text-slate-900">เว็บแอป (Web app)</strong> ➔ กำหนด <strong class="text-slate-900">ผู้มีสิทธิ์เข้าถึง (Who has access)</strong> เป็น <strong class="text-rose-700 font-bold">ทุกคน (Anyone)</strong></li>
-              <li>คัดลอก Web App URL นำมาวางใส่ในช่องด้านบนแล้วกดบันทึก</li>
-            </ol>
-          </div>
-
           <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
             <h4 class="font-bold text-slate-800">โค้ดสำหรับ Google Apps Script:</h4>
             <textarea readonly class="w-full h-40 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none">
@@ -855,8 +844,21 @@ function doPost(e) {
         else dbData = [];
 
         const savedSurvey = localStorage.getItem('coop_survey_db_2569');
-        if (savedSurvey) surveyDbData = JSON.parse(savedSurvey);
-        else surveyDbData = [];
+        if (savedSurvey) {
+          const rawSurveys = JSON.parse(savedSurvey);
+          // Filter out contaminated legacy data (like department names)
+          if (Array.isArray(rawSurveys)) {
+            surveyDbData = rawSurveys.filter(s => {
+              const r = Number(s.rating);
+              const c = (s.comment || '').toLowerCase();
+              return r >= 1 && r <= 5 && !c.startsWith('สสอ.') && !c.startsWith('รพ.');
+            });
+          } else {
+            surveyDbData = [];
+          }
+        } else {
+          surveyDbData = [];
+        }
       } catch(e) {
         dbData = [];
         surveyDbData = [];
@@ -1033,7 +1035,7 @@ function doPost(e) {
         firstRowText.includes('ระดับชั้น') ||
         firstRowText.includes('จำนวนเงิน')
       ) {
-        return []; // This is Sheet 1 (Scholarship), not the Surveys tab
+        return [];
       }
 
       const parsedSurveys = [];
@@ -1065,49 +1067,44 @@ function doPost(e) {
 
       return parsedSurveys;
     }
-    // Local Storage Helpers
-    function loadLocalStorageData() {
-      try {
-        const saved = localStorage.getItem('coop_scholarship_db_2569');
-        if (saved) dbData = JSON.parse(saved);
-        else dbData = [];
 
-        const savedSurvey = localStorage.getItem('coop_survey_db_2569');
-        if (savedSurvey) {
-          const rawSurveys = JSON.parse(savedSurvey);
-          // Filter out contaminated legacy data (like department names)
-          if (Array.isArray(rawSurveys)) {
-            surveyDbData = rawSurveys.filter(s => {
-              const r = Number(s.rating);
-              const c = (s.comment || '').toLowerCase();
-              return r >= 1 && r <= 5 && !c.startsWith('สสอ.') && !c.startsWith('รพ.');
-            });
-          } else {
-            surveyDbData = [];
-          }
-        } else {
-          surveyDbData = [];
-        }
-      } catch(e) {
-        dbData = [];
-        surveyDbData = [];
-      }
+    // Google Sheets Online Data Sync (Scholarship + Surveys)
+    async function loadDataOnline() {
+      const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
+      updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล Google Sheets...');
 
-      if (!Array.isArray(dbData)) dbData = [];
-      if (!Array.isArray(surveyDbData)) surveyDbData = [];
+      const mainEndpoints = [
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`)}`
+      ];
 
-      reIndexDbData();
+      let isSuccess = false;
 
-      const maintenance = localStorage.getItem('coop_maintenance_mode');
-      if (maintenance !== null) isMaintenanceMode = maintenance === 'true';
+      for (const url of mainEndpoints) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
 
-      const savedGasUrl = localStorage.getItem('coop_gas_webapp_url');
-      if (savedGasUrl) gasWebAppUrl = savedGasUrl;
-    }
+          if (response.ok) {
+            const text = await response.text();
+            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+              const rows = parseCSV(text);
+              const parsed = parseDynamicCSV(rows);
+              if (parsed && parsed.length > 0) {
+                dbData = parsed;
+                reIndexDbData();
+                saveLocalStorageData();
+                isSuccess = true;
+                updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+                break;
+              }
             }
           }
         } catch (err) {
-          console.warn('Main fetch failed:', err);
+          console.warn('Main fetch attempt failed:', url, err);
         }
       }
 
@@ -1115,12 +1112,13 @@ function doPost(e) {
       try {
         const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         const response = await fetch(surveyUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
+
         if (response.ok) {
           const text = await response.text();
-          if (text && !text.includes('<!DOCTYPE')) {
+          if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
             const sRows = parseCSV(text);
             const parsedS = parseSurveyCSV(sRows);
             if (parsedS && parsedS.length > 0) {
@@ -1131,6 +1129,14 @@ function doPost(e) {
         }
       } catch (sErr) {
         console.warn('Surveys tab fetch note:', sErr);
+      }
+
+      if (!isSuccess) {
+        if (dbData && dbData.length > 0) {
+          updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อ Google Sheets ไม่สำเร็จ) | ข้อมูล ณ ${formatThaiDateTime()}`);
+        } else {
+          updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
+        }
       }
 
       if (activeView === 'admin') {
@@ -1161,7 +1167,7 @@ function doPost(e) {
       if (!container) return;
 
       let bgClass = 'bg-white shadow-sm border-slate-200';
-      let dotClass = 'bg-amber-500 ring-4 ring-amber-500/20';
+      let dotClass = 'bg-amber-500 ring-4 ring-amber-500/20 animate-pulse';
 
       if (type === 'success') {
         bgClass = 'bg-emerald-50 text-emerald-900 border-emerald-200 shadow-sm';
@@ -1169,6 +1175,9 @@ function doPost(e) {
       } else if (type === 'error') {
         bgClass = 'bg-rose-50 text-rose-900 border-rose-200 shadow-sm';
         dotClass = 'bg-rose-600 ring-4 ring-rose-500/30';
+      } else if (type === 'warning') {
+        bgClass = 'bg-amber-50 text-amber-900 border-amber-200 shadow-sm';
+        dotClass = 'bg-amber-600 ring-4 ring-amber-500/30';
       }
 
       container.className = `flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border ${bgClass} transition-all duration-300`;
