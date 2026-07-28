@@ -93,7 +93,7 @@
       </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8">
 
       <!-- ========================================== -->
@@ -300,33 +300,6 @@
           </div>
         </div>
 
-        <!-- Survey Management Section for Admin -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1 flex flex-col justify-center items-center text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-400"></div>
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">คะแนนความพึงพอใจเฉลี่ย</h3>
-            <div id="surveyAvgArea">
-              <h2 class="text-5xl font-extrabold text-slate-900 my-3">0.0</h2>
-              <div class="text-3xl text-slate-200 tracking-widest mb-2">★★★★★</div>
-              <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">0</span> ราย</p>
-            </div>
-          </div>
-
-          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">จัดการข้อเสนอแนะและแบบประเมิน (แผ่นงาน Surveys)</h3>
-              <button onclick="openAddSurveyModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow transition-all active:scale-95 flex items-center gap-1">
-                <span>➕</span>
-                <span>เพิ่มรายการประเมิน</span>
-              </button>
-            </div>
-
-            <div class="overflow-y-auto max-h-60 border border-slate-100 rounded-xl divide-y divide-slate-100" id="surveyCommentsArea">
-              <div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>
-            </div>
-          </div>
-        </div>
-
         <!-- Visitor Analytics Dashboard Section for Admin -->
         <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden space-y-6">
           <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600"></div>
@@ -392,9 +365,34 @@
           </div>
         </section>
 
-        <!-- Data Management Table Card -->
-        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Survey Management Section for Admin -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1 flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-400"></div>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">คะแนนความพึงพอใจเฉลี่ย</h3>
+            <div id="surveyAvgArea">
+              <h2 class="text-5xl font-extrabold text-slate-900 my-3">0.0</h2>
+              <div class="text-3xl text-slate-200 tracking-widest mb-2">★★★★★</div>
+              <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">0</span> ราย</p>
+            </div>
+          </div>
 
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">จัดการข้อเสนอแนะและแบบประเมิน (แผ่นงาน Surveys)</h3>
+              <button onclick="openAddSurveyModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow transition-all active:scale-95 flex items-center gap-1">
+                <span>➕</span>
+                <span>เพิ่มรายการประเมิน</span>
+              </button>
+            </div>
+
+            <div class="overflow-y-auto max-h-60 border border-slate-100 rounded-xl divide-y divide-slate-100" id="surveyCommentsArea">
+              <div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Management Table Card -->
         <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -537,7 +535,7 @@
       </div>
     </div>
 
-    <!-- Modal: Add / Edit Survey (สำหรับเพิ่มหรือแก้ไขการประเมิน) -->
+    <!-- Modal: Add / Edit Survey -->
     <div id="surveyModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
         <div class="bg-amber-500 text-white p-6 flex justify-between items-center">
@@ -621,12 +619,12 @@
         <div class="p-6 space-y-4 text-xs overflow-y-auto">
           
           <div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-[11px] text-blue-900 space-y-2 leading-relaxed mb-2">
-            <h5 class="font-bold text-sm">📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน Surveys:</h5>
+            <h5 class="font-bold text-sm">📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน Surveys และ Visitors:</h5>
             <ol class="list-decimal list-inside space-y-1.5">
               <li>ให้คุณครู/ฝ่ายจัดการเปิดหน้าต่าง <strong class="text-slate-900">"⚙️ ตั้งค่า Google Sheets Sync"</strong> ในหน้าระบบ</li>
               <li>กดคัดลอกโค้ด <strong class="text-slate-900">Google Apps Script</strong> ล่าสุด นำไปวางในส่วนขยายของไฟล์ Google Sheets</li>
               <li>กด <strong class="text-slate-900">Deploy (ทำให้ใช้งานได้)</strong> ➔ เลือก <strong class="text-slate-900">New deployment (การทำให้ใช้งานได้ใหม่)</strong> อีกครั้ง</li>
-              <li>หลังจากนั้น เมื่อมีการประเมิน แก้ไข หรือลบข้อเสนอแนะ ข้อมูลในแผ่นงาน <code class="bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">Surveys</code> บน Google Sheets จะซิงก์ตรงกันแบบเรียลไทม์ทันทีครับ!</li>
+              <li>หลังจากนั้น ระบบจะทำการบันทึกข้อมูลทุนการศึกษา แบบประเมิน (<code class="bg-blue-100 text-blue-800 font-bold px-1 py-0.5 rounded">Surveys</code>) และสถิติผู้เข้าชม (<code class="bg-blue-100 text-blue-800 font-bold px-1 py-0.5 rounded">Visitors</code>) ลงใน Google Sheets อัตโนมัติ!</li>
             </ol>
           </div>
 
@@ -987,13 +985,177 @@ function doPost(e) {
       localStorage.setItem('coop_visitor_db_2569', JSON.stringify(visitorDbData));
     }
 
-      if (!Array.isArray(dbData)) dbData = [];
+    function reIndexDbData() {
+      dbData.forEach((item, idx) => {
+        item.index = (idx + 1).toString();
+      });
+    }
+
+    // Robust CSV Text Parser
+    function parseCSV(text) {
+      if (!text) return [];
+      let p = '', c = '', r = [];
+      let q = false;
+      let row = [''];
+      for (let i = 0; i < text.length; i++) {
+        c = text[i];
+        let next = text[i+1];
+        if (c === '"') {
+          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { q = !q; }
+        } else if (c === ',' && !q) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !q) {
+          if (c === '\r' && next === '\n') { i++; }
+          r.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') {
+        r.push(row);
+      }
+      return r;
+    }
+
+    // Dynamic Column Mapper for Main Scholarship Sheet
+    function parseDynamicCSV(rows) {
+      if (!rows || rows.length === 0) return [];
+      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
+
+      let headerRowIndex = -1;
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r].map(c => (c || '').toString().replace(/[\u00a0\s]/g, '').trim());
+        const hasMemberId = row.some(c => c.includes('เลขที่สมาชิก') || c.includes('เลขสมาชิก') || c.includes('รหัสสมาชิก'));
+        const hasMemberName = row.some(c => c.includes('ชื่อ') && (c.includes('สกุล') || c.includes('สมาชิก') || c.includes('ผู้ขอ') || c.includes('ผู้ยื่น')));
+        if (hasMemberId && hasMemberName) {
+          headerRowIndex = r;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) {
+        for (let r = 0; r < Math.min(rows.length, 25); r++) {
+          const row = rows[r];
+          if (row.length >= 4) {
+            const col1 = (row[1] || '').toString().trim();
+            const col2 = (row[2] || '').toString().trim();
+            if (/^\d+$/.test(col1) && col1.length >= 2 && col2.length > 2) {
+              headerRowIndex = r - 1;
+              break;
+            }
+          }
+        }
+      }
+
+      if (headerRowIndex !== -1 && headerRowIndex < rows.length) {
+        const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
+        for (let i = 0; i < header.length; i++) {
+          const val = header[i].replace(/[\u00a0\s]/g, '');
+          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) memberIdCol = i;
+          else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) memberNameCol = i;
+          else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') childNameCol = i;
+          else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
+            if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) amountCol = i;
+          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) levelCol = i;
+          else if (val.includes('ลำดับ') || val.includes('ที่')) indexCol = i;
+          else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) deptCol = i;
+          else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) coopAccCol = i;
+          else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('ผลการพิจารณา') || val.includes('อนุมัติ')) docStatusCol = i;
+          else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) remarkCol = i;
+        }
+      }
+
+      if (memberIdCol === -1) memberIdCol = 1;
+      if (memberNameCol === -1) memberNameCol = 2;
+      if (childNameCol === -1) childNameCol = 4;
+      if (amountCol === -1) amountCol = 5;
+      if (levelCol === -1) levelCol = 6;
+      if (indexCol === -1) indexCol = 0;
+      if (deptCol === -1) deptCol = 3;
+
+      const parsedRecords = [];
+      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+
+      for (let r = startRow; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
+
+        let memberId = (row[memberIdCol] || '').toString().trim().replace(/[\s\u00a0\r\n]/g, '');
+        if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
+        if (!/\d/.test(memberId)) continue;
+
+        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
+        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+
+        const combinedText = (memberId + ' ' + memberName + ' ' + childName).toLowerCase();
+        if (combinedText.includes('รวม') || combinedText.includes('รวมทั้งสิ้น') || combinedText.includes('ยอดรวม') || combinedText.includes('ผู้ตรวจ')) continue;
+
+        if (/^\d+$/.test(memberId)) memberId = memberId.padStart(5, '0');
+
+        let amount = 0;
+        if (amountCol < row.length) {
+          const rawAmount = (row[amountCol] || '').toString().trim();
+          amount = parseFloat(rawAmount.replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
+        const indexVal = (parsedRecords.length + 1).toString();
+        const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
+        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
+        
+        let docStatus = 'ยื่นเอกสารสำเร็จ';
+        if (docStatusCol !== -1 && docStatusCol < row.length) {
+          const val = (row[docStatusCol] || '').toString().trim();
+          if (val && val !== '-') docStatus = val;
+        }
+
+        let remark = '';
+        if (remarkCol !== -1 && remarkCol < row.length) remark = (row[remarkCol] || '').toString().trim();
+
+        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
+
+        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, level, department, coopAccount, docStatus, remark });
+      }
+
+      return parsedRecords;
+    }
+
+    // Parser for Google Sheets Tab 'Surveys'
+    function parseSurveyCSV(rows) {
+      if (!rows || rows.length <= 1) return [];
+      const parsedSurveys = [];
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length === 0) continue;
+
+        let id = '', date = '', rating = 0, comment = '';
+
+        if (row.length >= 4) {
+          id = (row[0] || '').toString().trim();
+          date = (row[1] || '').toString().trim();
+          rating = Number(row[2]) || 0;
+          comment = (row[3] || '').toString().trim();
+        } else if (row.length === 3) {
+          date = (row[0] || '').toString().trim();
+          rating = Number(row[1]) || 0;
+          comment = (row[2] || '').toString().trim();
+          id = 'srv_' + r + '_' + Date.now();
+        }
+
+        const cleanComment = comment.toLowerCase();
+        if ((rating >= 1 && rating <= 5) && !cleanComment.startsWith('สสอ.') && !cleanComment.startsWith('รพ.')) {
+          if (!id) id = 'srv_' + r;
+          parsedSurveys.push({ id, date, rating, comment });
+        }
+      }
+      return parsedSurveys;
+    }
+
     // Parser for Google Sheets Tab 'Visitors'
     function parseVisitorCSV(rows) {
       if (!rows || rows.length <= 1) return [];
-      const firstRowText = rows[0].join(' ').toLowerCase();
-      if (firstRowText.includes('เลขที่สมาชิก') || firstRowText.includes('ชื่อบุตร')) return [];
-
       const parsedVisitors = [];
       for (let r = 1; r < rows.length; r++) {
         const row = rows[r];
@@ -1005,7 +1167,7 @@ function doPost(e) {
         const month = (row[3] || (date ? date.substring(0, 7) : '')).toString().trim();
         const year = (row[4] || (date ? date.substring(0, 4) : '')).toString().trim();
 
-        if (ip && date) {
+        if (ip && date && ip !== 'IP' && ip !== 'เลขที่สมาชิก') {
           parsedVisitors.push({ ip, timestamp, date, month, year });
         }
       }
@@ -1061,116 +1223,139 @@ function doPost(e) {
       }
     }
 
-    // Google Sheets Online Data Sync (Scholarship + Surveys + Visitors)
+    // Google Sheets Online Data Sync with Master Safety Timeout
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
       updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล Google Sheets...');
 
-      const mainEndpoints = [
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`)}`
-      ];
-
       let isSuccess = false;
+      let completed = false;
 
-      for (const url of mainEndpoints) {
+      // Master Safety Timer: Guarantees status update within 6 seconds
+      const masterTimer = setTimeout(() => {
+        if (!completed && !isSuccess) {
+          if (dbData && dbData.length > 0) {
+            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อใช้เวลานาน) | ข้อมูล ณ ${formatThaiDateTime()}`);
+          } else {
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดตรวจสอบการแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
+          }
+        }
+      }, 6000);
+
+      try {
+        const mainEndpoints = [
+          `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
+          `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`)}`
+        ];
+
+        for (const url of mainEndpoints) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              const text = await response.text();
+              if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+                const rows = parseCSV(text);
+                const parsed = parseDynamicCSV(rows);
+                if (parsed && parsed.length > 0) {
+                  dbData = parsed;
+                  reIndexDbData();
+                  saveLocalStorageData();
+                  isSuccess = true;
+                  updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+                  break;
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Main fetch attempt failed:', err);
+          }
+        }
+
+        // Fetch Surveys Tab Data
         try {
+          const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-          const response = await fetch(url, { signal: controller.signal });
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const response = await fetch(surveyUrl, { signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (response.ok) {
             const text = await response.text();
-            if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-              const rows = parseCSV(text);
-              const parsed = parseDynamicCSV(rows);
-              if (parsed && parsed.length > 0) {
-                dbData = parsed;
-                reIndexDbData();
-                saveLocalStorageData();
-                isSuccess = true;
-                updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-                break;
+            if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+              const sRows = parseCSV(text);
+              const parsedS = parseSurveyCSV(sRows);
+              if (parsedS && parsedS.length > 0) {
+                surveyDbData = parsedS;
+                saveSurveyToLocalStorage();
               }
             }
           }
-        } catch (err) {
-          console.warn('Main fetch attempt failed:', url, err);
+        } catch (sErr) {
+          console.warn('Surveys tab fetch note:', sErr);
         }
-      }
 
-      // Fetch Surveys Tab Data
-      try {
-        const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const response = await fetch(surveyUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
+        // Fetch Visitors Tab Data
+        try {
+          const visitorUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Visitors&tqx=out:csv`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const response = await fetch(visitorUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
 
-        if (response.ok) {
-          const text = await response.text();
-          if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-            const sRows = parseCSV(text);
-            const parsedS = parseSurveyCSV(sRows);
-            if (parsedS && parsedS.length > 0) {
-              surveyDbData = parsedS;
-              saveSurveyToLocalStorage();
+          if (response.ok) {
+            const text = await response.text();
+            if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+              const vRows = parseCSV(text);
+              const parsedV = parseVisitorCSV(vRows);
+              if (parsedV && parsedV.length > 0) {
+                const combined = [...parsedV];
+                visitorDbData.forEach(vLocal => {
+                  if (!combined.some(c => c.ip === vLocal.ip && c.date === vLocal.date)) {
+                    combined.push(vLocal);
+                  }
+                });
+                visitorDbData = combined;
+                saveVisitorToLocalStorage();
+              }
             }
           }
+        } catch (vErr) {
+          console.warn('Visitors tab fetch note:', vErr);
         }
-      } catch (sErr) {
-        console.warn('Surveys tab fetch note:', sErr);
-      }
 
-      // Fetch Visitors Tab Data
-      try {
-        const visitorUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Visitors&tqx=out:csv`;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const response = await fetch(visitorUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const text = await response.text();
-          if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-            const vRows = parseCSV(text);
-            const parsedV = parseVisitorCSV(vRows);
-            if (parsedV && parsedV.length > 0) {
-              // Merge local and online visitors, ensuring unique entries
-              const combined = [...parsedV];
-              visitorDbData.forEach(vLocal => {
-                if (!combined.some(c => c.ip === vLocal.ip && c.date === vLocal.date)) {
-                  combined.push(vLocal);
-                }
-              });
-              visitorDbData = combined;
-              saveVisitorToLocalStorage();
-            }
+        if (!isSuccess) {
+          if (dbData && dbData.length > 0) {
+            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อ Google Sheets ไม่สำเร็จ) | ข้อมูล ณ ${formatThaiDateTime()}`);
+          } else {
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
           }
         }
-      } catch (vErr) {
-        console.warn('Visitors tab fetch note:', vErr);
-      }
-
-      if (!isSuccess) {
+      } catch (globalErr) {
+        console.error('loadDataOnline global error:', globalErr);
         if (dbData && dbData.length > 0) {
-          updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อ Google Sheets ไม่สำเร็จ) | ข้อมูล ณ ${formatThaiDateTime()}`);
+          updateSyncStatus('warning', `แสดงข้อมูลล่าสุดในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
         } else {
-          updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
+          updateSyncStatus('error', `เกิดข้อผิดพลาดในการเชื่อมต่อออนไลน์ | ณ ${formatThaiDateTime()}`);
         }
-      }
+      } finally {
+        completed = true;
+        clearTimeout(masterTimer);
 
-      if (activeView === 'admin') {
-        renderAdminDashboard();
-      } else {
-        const searchInput = document.getElementById('searchId');
-        if (searchInput && searchInput.value) {
-          handleSearchSubmit();
+        if (activeView === 'admin') {
+          renderAdminDashboard();
+        } else {
+          const searchInput = document.getElementById('searchId');
+          if (searchInput && searchInput.value) {
+            handleSearchSubmit();
+          }
         }
+        initSurveySystem();
       }
-      initSurveySystem();
     }
 
     // Thai Date Time Formatter
@@ -1710,6 +1895,69 @@ function doPost(e) {
       renderVisitorAnalytics();
     }
 
+    function renderAdminCharts(approved, pending, reject) {
+      const ctxDoughnut = document.getElementById('statusDoughnutChart');
+      if (ctxDoughnut && typeof Chart !== 'undefined') {
+        if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
+
+        chartInstanceDoughnut = new Chart(ctxDoughnut, {
+          type: 'doughnut',
+          data: {
+            labels: ['อนุมัติสำเร็จ / โอนเงิน', 'อยู่ระหว่างพิจารณา / ตรวจสอบ', 'เอกสารไม่ถูกต้อง / ไม่อนุมัติ'],
+            datasets: [{
+              data: [approved, pending, reject],
+              backgroundColor: ['#059669', '#d97706', '#dc2626'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } } }
+          }
+        });
+      }
+
+      const ctxBar = document.getElementById('deptBarChart');
+      if (ctxBar && typeof Chart !== 'undefined') {
+        if (chartInstanceBar) chartInstanceBar.destroy();
+
+        const deptMap = {};
+        dbData.forEach(d => {
+          if (isApprovedOrTransferredStatus(d.docStatus)) {
+            const dept = d.department || 'ไม่ระบุสังกัด';
+            deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
+          }
+        });
+
+        const labels = Object.keys(deptMap);
+        const dataValues = Object.values(deptMap);
+
+        chartInstanceBar = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'วงเงินอนุมัติ (บาท)',
+              data: dataValues,
+              backgroundColor: '#312e81',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { font: { family: 'Prompt', size: 10 } } },
+              y: { ticks: { font: { family: 'Prompt', size: 10 } } }
+            }
+          }
+        });
+      }
+    }
+
     // Render Visitor Unique IP KPI Metrics & Trend Chart
     function renderVisitorAnalytics() {
       try {
@@ -1948,9 +2196,7 @@ function doPost(e) {
       closeDeleteConfirmModal();
     }
 
-    // ==========================================
-    // SURVEY MANAGEMENT LOGIC (สำหรับฝ่ายจัดการ)
-    // ==========================================
+    // SURVEY MANAGEMENT LOGIC (สำหรับสมาชิก และฝ่ายจัดการ)
     function setRating(val) {
       currentRating = val;
       updateStarUI(val);
