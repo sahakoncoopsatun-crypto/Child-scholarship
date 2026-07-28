@@ -600,7 +600,7 @@ function doPost(e) {
       </div>
     </div>
 
-    <!-- Modal: Delete Confirmation -->
+    // Modal: Delete Confirmation
     <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-200 text-center p-6 space-y-4">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto">
@@ -2164,109 +2164,6 @@ function doPost(e) {
         formArea.classList.remove('hidden');
         successArea.classList.add('hidden');
       }
-      
-      // ดึง IP อย่างเงียบๆ สำหรับล็อก 1 เครื่อง 1 สิทธิ์
-      fetch('https://api.ipify.org?format=json')
-        .then(r => r.json())
-        .then(data => { clientIP = data.ip; })
-        .catch(e => { clientIP = 'unknown-' + Math.floor(Math.random()*10000); });
-    }
-
-    function setRating(stars) {
-      currentRating = stars;
-      updateStarUI(stars);
-      const ratingTexts = ['ควรปรับปรุง', 'พอใช้', 'ปานกลาง', 'ดี', 'ดีมาก'];
-      const ratingTextEl = document.getElementById('ratingText');
-      if(ratingTextEl) ratingTextEl.textContent = ratingTexts[stars - 1] || '';
-      
-      const submitBtn = document.getElementById('submitSurveyBtn');
-      if(submitBtn) submitBtn.disabled = false;
-    }
-
-    function hoverRating(stars) {
-      updateStarUI(stars);
-    }
-
-    function resetHover() {
-      updateStarUI(currentRating);
-    }
-
-    function updateStarUI(activeStars) {
-      const container = document.getElementById('starContainer');
-      if (!container) return;
-      const btns = container.querySelectorAll('.star-btn');
-      btns.forEach((btn, index) => {
-        if (index < activeStars) {
-          btn.classList.remove('text-slate-200');
-          btn.classList.add('text-amber-400');
-        } else {
-          btn.classList.add('text-slate-200');
-          btn.classList.remove('text-amber-400');
-        }
-      });
-    }
-
-    function submitSurvey() {
-      if (currentRating === 0) return;
-      
-      const commentEl = document.getElementById('surveyComment');
-      const comment = commentEl ? commentEl.value.trim() : '';
-      const btn = document.getElementById('submitSurveyBtn');
-      if(btn) {
-         btn.disabled = true;
-         btn.textContent = 'กำลังส่งข้อมูล...';
-      }
-      
-      const payload = {
-        action: 'survey',
-        date: formatThaiDateTime(),
-        ip: clientIP,
-        rating: currentRating,
-        comment: comment
-      };
-      
-      surveyDbData.push(payload);
-      saveSurveyToLocalStorage();
-      localStorage.setItem('coop_survey_submitted_2569', 'true');
-      
-      if (gasWebAppUrl) {
-        fetch(gasWebAppUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).catch(e => console.log('Survey sync error'));
-      }
-      
-      setTimeout(() => {
-        initSurveySystem();
-        showToast('บันทึกผลการประเมินเรียบร้อย ขอขอบคุณครับ', 'success');
-      }, 800);
-    }
-
-    function renderSurveyAdmin() {
-      if (!surveyDbData || surveyDbData.length === 0) return;
-      
-      let totalScore = 0;
-      let html = '';
-      
-      const sortedSurveys = [...surveyDbData].reverse();
-      
-      sortedSurveys.forEach(s => {
-        totalScore += parseInt(s.rating) || 0;
-        if (s.comment) {
-          const stars = '★'.repeat(s.rating) + '☆'.repeat(5 - s.rating);
-          html += `
-            <div class="mb-3 pb-3 border-b border-slate-100 last:border-0 text-left">
-              <div class="flex justify-between items-start mb-1">
-                <span class="text-amber-400 text-xs tracking-widest">${stars}</span>
-                <span class="text-[9px] text-slate-400">${s.date.split('เวลา')[0] || s.date}</span>
-              </div>
-              <p class="text-xs text-slate-700 leading-relaxed">"${s.comment}"</p>
-            </div>
-          `;
-        }
-      });
       
       const avg = surveyDbData.length > 0 ? (totalScore / surveyDbData.length).toFixed(1) : '0.0';
       
