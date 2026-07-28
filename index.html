@@ -327,7 +327,74 @@
           </div>
         </div>
 
+        <!-- Visitor Analytics Dashboard Section for Admin -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden space-y-6">
+          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600"></div>
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>📈</span>
+                <span>สถิติผู้เข้าใช้งานระบบฝั่งสมาชิก (Visitor Traffic)</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">นับจำนวนผู้เข้าใช้งานที่ไม่ซ้ำกัน (Unique IP Address) แยกตามช่วงเวลา</p>
+            </div>
+            <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-[11px] rounded-full self-start sm:self-auto">
+              🔒 IP Uniqueness Active
+            </span>
+          </div>
+
+          <!-- Visitor KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div class="flex justify-between items-center text-slate-500">
+                <span class="text-xs font-semibold">ผู้ใช้งานวันนี้</span>
+                <span class="text-lg">📅</span>
+              </div>
+              <h3 id="statVisitorToday" class="text-2xl font-bold text-slate-900 mt-2">0 IP</h3>
+              <p class="text-[10px] text-slate-400 mt-1">Unique IP ประจำวันที่ปัจจุบัน</p>
+            </div>
+
+            <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+              <div class="flex justify-between items-center text-blue-700">
+                <span class="text-xs font-semibold">ผู้ใช้งานเดือนนี้</span>
+                <span class="text-lg">🗓️</span>
+              </div>
+              <h3 id="statVisitorMonth" class="text-2xl font-bold text-blue-900 mt-2">0 IP</h3>
+              <p class="text-[10px] text-blue-600 mt-1">Unique IP ประจำเดือนนี้</p>
+            </div>
+
+            <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+              <div class="flex justify-between items-center text-indigo-700">
+                <span class="text-xs font-semibold">ผู้ใช้งานปีนี้</span>
+                <span class="text-lg">🏆</span>
+              </div>
+              <h3 id="statVisitorYear" class="text-2xl font-bold text-indigo-950 mt-2">0 IP</h3>
+              <p class="text-[10px] text-indigo-600 mt-1">Unique IP ประจำปีนี้</p>
+            </div>
+
+            <div class="bg-violet-50/50 p-4 rounded-2xl border border-violet-100">
+              <div class="flex justify-between items-center text-violet-700">
+                <span class="text-xs font-semibold">สะสมรวมทั้งหมด</span>
+                <span class="text-lg">🌐</span>
+              </div>
+              <h3 id="statVisitorTotal" class="text-2xl font-bold text-violet-950 mt-2">0 IP</h3>
+              <p class="text-[10px] text-violet-600 mt-1">Unique IP ทั้งหมดที่บันทึกได้</p>
+            </div>
+          </div>
+
+          <!-- Visitor Trend Visual Chart -->
+          <div class="pt-2">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">แนวโน้มการเข้าใช้งาน ย้อนหลัง 7 วัน (Unique IP รายวัน)</h4>
+            <div class="relative h-56 w-full">
+              <canvas id="visitorTrendChart"></canvas>
+            </div>
+          </div>
+        </section>
+
         <!-- Data Management Table Card -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+
         <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -583,6 +650,26 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var action = data.action || 'save';
     
+    // 0. จัดการข้อมูลแผ่นงาน ผู้เข้าใช้งานระบบ (Visitors)
+    if (action === 'visit_log') {
+      var vSheet = sheetApp.getSheetByName('Visitors');
+      if (!vSheet) {
+        vSheet = sheetApp.insertSheet('Visitors');
+        vSheet.appendRow(['IP', 'Timestamp', 'Date', 'Month', 'Year']);
+      }
+      var vRows = vSheet.getDataRange().getValues();
+      var loggedToday = false;
+      for (var v = 1; v < vRows.length; v++) {
+        if (String(vRows[v][0]).trim() === String(data.ip).trim() && String(vRows[v][2]).trim() === String(data.date).trim()) {
+          loggedToday = true; break;
+        }
+      }
+      if (!loggedToday) {
+        vSheet.appendRow([data.ip || '', data.timestamp || '', data.date || '', data.month || '', data.year || '']);
+      }
+      return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 1. จัดการข้อมูลแผ่นงาน แบบประเมินความพึงพอใจ (Surveys)
     if (action.indexOf('survey') === 0) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
@@ -720,6 +807,7 @@ function doPost(e) {
     // System Data State
     let dbData = [];
     let surveyDbData = [];
+    let visitorDbData = [];
     let pdpaMaskMode = true;
     let activeView = 'member';
     let isMaintenanceMode = false;
@@ -727,6 +815,7 @@ function doPost(e) {
     let gasWebAppUrl = '';
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
+    let chartInstanceVisitor = null;
 
     // Survey Rating Input State
     let currentRating = 0;
@@ -846,7 +935,6 @@ function doPost(e) {
         const savedSurvey = localStorage.getItem('coop_survey_db_2569');
         if (savedSurvey) {
           const rawSurveys = JSON.parse(savedSurvey);
-          // Filter out contaminated legacy data (like department names)
           if (Array.isArray(rawSurveys)) {
             surveyDbData = rawSurveys.filter(s => {
               const r = Number(s.rating);
@@ -859,13 +947,24 @@ function doPost(e) {
         } else {
           surveyDbData = [];
         }
+
+        const savedVisitors = localStorage.getItem('coop_visitor_db_2569');
+        if (savedVisitors) {
+          const rawVisitors = JSON.parse(savedVisitors);
+          if (Array.isArray(rawVisitors)) visitorDbData = rawVisitors;
+          else visitorDbData = [];
+        } else {
+          visitorDbData = [];
+        }
       } catch(e) {
         dbData = [];
         surveyDbData = [];
+        visitorDbData = [];
       }
 
       if (!Array.isArray(dbData)) dbData = [];
       if (!Array.isArray(surveyDbData)) surveyDbData = [];
+      if (!Array.isArray(visitorDbData)) visitorDbData = [];
 
       reIndexDbData();
 
@@ -884,191 +983,85 @@ function doPost(e) {
       localStorage.setItem('coop_survey_db_2569', JSON.stringify(surveyDbData));
     }
 
-    // Helper to sequentially re-index all records starting from 1 onwards
-    function reIndexDbData() {
-      dbData.forEach((item, idx) => {
-        item.index = (idx + 1).toString();
-      });
+    function saveVisitorToLocalStorage() {
+      localStorage.setItem('coop_visitor_db_2569', JSON.stringify(visitorDbData));
     }
 
-    // CSV Parsing Utilities
-    function parseCSV(text) {
-      if (!text) return [];
-      let p = '', c = '', r = [];
-      let q = false;
-      let row = [''];
-      for (let i = 0; i < text.length; i++) {
-        c = text[i];
-        let next = text[i+1];
-        if (c === '"') {
-          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
-          else { q = !q; }
-        } else if (c === ',' && !q) {
-          row.push('');
-        } else if ((c === '\r' || c === '\n') && !q) {
-          if (c === '\r' && next === '\n') { i++; }
-          r.push(row);
-          row = [''];
-        } else {
-          row[row.length - 1] += c;
-        }
-      }
-      if (row.length > 1 || row[0] !== '') {
-        r.push(row);
-      }
-      return r;
-    }
-
-    // Dynamic Column Mapper for Main Scholarship Sheet
-    function parseDynamicCSV(rows) {
-      if (!rows || rows.length === 0) return [];
-      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
-
-      let headerRowIndex = -1;
-      for (let r = 0; r < rows.length; r++) {
-        const row = rows[r].map(c => (c || '').toString().replace(/[\u00a0\s]/g, '').trim());
-        const hasMemberId = row.some(c => c.includes('เลขที่สมาชิก') || c.includes('เลขสมาชิก') || c.includes('รหัสสมาชิก'));
-        const hasMemberName = row.some(c => c.includes('ชื่อ') && (c.includes('สกุล') || c.includes('สมาชิก') || c.includes('ผู้ขอ') || c.includes('ผู้ยื่น')));
-        if (hasMemberId && hasMemberName) {
-          headerRowIndex = r;
-          break;
-        }
-      }
-
-      if (headerRowIndex === -1) {
-        for (let r = 0; r < Math.min(rows.length, 25); r++) {
-          const row = rows[r];
-          if (row.length >= 4) {
-            const col1 = (row[1] || '').toString().trim();
-            const col2 = (row[2] || '').toString().trim();
-            if (/^\d+$/.test(col1) && col1.length >= 2 && col2.length > 2) {
-              headerRowIndex = r - 1;
-              break;
-            }
-          }
-        }
-      }
-
-      if (headerRowIndex !== -1 && headerRowIndex < rows.length) {
-        const header = rows[headerRowIndex].map(c => (c || '').toString().trim());
-        for (let i = 0; i < header.length; i++) {
-          const val = header[i].replace(/[\u00a0\s]/g, '');
-          if (val.includes('เลขที่สมาชิก') || val.includes('เลขสมาชิก') || val.includes('รหัสสมาชิก')) memberIdCol = i;
-          else if ((val.includes('ชื่อ') && (val.includes('สกุล') || val.includes('สมาชิก') || val.includes('ผู้ขอ'))) && !val.includes('บุตร') && !val.includes('ผู้รับทุน')) memberNameCol = i;
-          else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') childNameCol = i;
-          else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
-            if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) amountCol = i;
-          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) levelCol = i;
-          else if (val.includes('ลำดับ') || val.includes('ที่')) indexCol = i;
-          else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) deptCol = i;
-          else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) coopAccCol = i;
-          else if (val.includes('สถานะ') || val.includes('เอกสาร') || val.includes('ยื่นเอกสาร') || val.includes('การยื่น') || val.includes('ผลการพิจารณา') || val.includes('อนุมัติ')) docStatusCol = i;
-          else if (val.includes('หมายเหตุ') || val.includes('เหตุผล') || val.includes('สาเหตุ') || val.includes('remark')) remarkCol = i;
-        }
-      }
-
-      if (memberIdCol === -1) memberIdCol = 1;
-      if (memberNameCol === -1) memberNameCol = 2;
-      if (childNameCol === -1) childNameCol = 4;
-      if (amountCol === -1) amountCol = 5;
-      if (levelCol === -1) levelCol = 6;
-      if (indexCol === -1) indexCol = 0;
-      if (deptCol === -1) deptCol = 3;
-
-      const parsedRecords = [];
-      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
-
-      for (let r = startRow; r < rows.length; r++) {
-        const row = rows[r];
-        if (!row || row.length <= Math.max(memberIdCol, memberNameCol)) continue;
-
-        let memberId = (row[memberIdCol] || '').toString().trim().replace(/[\s\u00a0\r\n]/g, '');
-        if (!memberId || memberId === 'เลขที่สมาชิก' || memberId === 'ลำดับ' || memberId.includes('ระดับ')) continue;
-        if (!/\d/.test(memberId)) continue;
-
-        const memberName = (row[memberNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim();
-        const childName = childNameCol < row.length ? (row[childNameCol] || '').toString().replace(/[\u00a0]/g, ' ').replace(/\s+/g, ' ').trim() : '';
-
-        const combinedText = (memberId + ' ' + memberName + ' ' + childName).toLowerCase();
-        if (combinedText.includes('รวม') || combinedText.includes('รวมทั้งสิ้น') || combinedText.includes('ยอดรวม') || combinedText.includes('ผู้ตรวจ')) continue;
-
-        if (/^\d+$/.test(memberId)) memberId = memberId.padStart(5, '0');
-
-        let amount = 0;
-        if (amountCol < row.length) {
-          const rawAmount = (row[amountCol] || '').toString().trim();
-          amount = parseFloat(rawAmount.replace(/[^0-9.]/g, '')) || 0;
-        }
-
-        const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
-        const indexVal = (parsedRecords.length + 1).toString();
-        const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
-        const coopAccount = coopAccCol !== -1 && coopAccCol < row.length ? (row[coopAccCol] || '').toString().trim() : '-';
-        
-        let docStatus = 'ยื่นเอกสารสำเร็จ';
-        if (docStatusCol !== -1 && docStatusCol < row.length) {
-          const val = (row[docStatusCol] || '').toString().trim();
-          if (val && val !== '-') docStatus = val;
-        }
-
-        let remark = '';
-        if (remarkCol !== -1 && remarkCol < row.length) remark = (row[remarkCol] || '').toString().trim();
-
-        if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
-
-        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, level, department, coopAccount, docStatus, remark });
-      }
-
-      return parsedRecords;
-    }
-
-    // Parser for Google Sheets Tab 'Surveys'
-    function parseSurveyCSV(rows) {
+      if (!Array.isArray(dbData)) dbData = [];
+    // Parser for Google Sheets Tab 'Visitors'
+    function parseVisitorCSV(rows) {
       if (!rows || rows.length <= 1) return [];
-      
-      // Strict Check: If rows contain main scholarship sheet headers, ABORT parsing to avoid corrupting surveys!
       const firstRowText = rows[0].join(' ').toLowerCase();
-      if (
-        firstRowText.includes('เลขที่สมาชิก') || 
-        firstRowText.includes('ชื่อบุตร') || 
-        firstRowText.includes('สังกัด') || 
-        firstRowText.includes('ระดับชั้น') ||
-        firstRowText.includes('จำนวนเงิน')
-      ) {
-        return [];
-      }
+      if (firstRowText.includes('เลขที่สมาชิก') || firstRowText.includes('ชื่อบุตร')) return [];
 
-      const parsedSurveys = [];
-      
+      const parsedVisitors = [];
       for (let r = 1; r < rows.length; r++) {
         const row = rows[r];
-        if (!row || row.length === 0) continue;
+        if (!row || row.length < 3) continue;
 
-        let id = '', date = '', rating = 0, comment = '';
+        const ip = (row[0] || '').toString().trim();
+        const timestamp = (row[1] || '').toString().trim();
+        const date = (row[2] || '').toString().trim();
+        const month = (row[3] || (date ? date.substring(0, 7) : '')).toString().trim();
+        const year = (row[4] || (date ? date.substring(0, 4) : '')).toString().trim();
 
-        if (row.length >= 4) {
-          id = (row[0] || '').toString().trim();
-          date = (row[1] || '').toString().trim();
-          rating = Number(row[2]) || 0;
-          comment = (row[3] || '').toString().trim();
-        } else if (row.length === 3) {
-          date = (row[0] || '').toString().trim();
-          rating = Number(row[1]) || 0;
-          comment = (row[2] || '').toString().trim();
-          id = 'srv_' + r + '_' + Date.now();
-        }
-
-        // Only accept valid survey ratings (1 to 5)
-        if (rating >= 1 && rating <= 5) {
-          if (!id) id = 'srv_' + r;
-          parsedSurveys.push({ id, date, rating, comment });
+        if (ip && date) {
+          parsedVisitors.push({ ip, timestamp, date, month, year });
         }
       }
-
-      return parsedSurveys;
+      return parsedVisitors;
     }
 
-    // Google Sheets Online Data Sync (Scholarship + Surveys)
+    // Member Visit Tracker (IP-Based Uniqueness)
+    async function trackMemberVisit() {
+      try {
+        let clientIp = '127.0.0.1';
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const ipData = await res.json();
+            if (ipData && ipData.ip) clientIp = ipData.ip.trim();
+          }
+        } catch (e) {
+          let sessionIp = localStorage.getItem('coop_client_session_id');
+          if (!sessionIp) {
+            sessionIp = 'IP_' + Math.floor(100000 + Math.random() * 900000);
+            localStorage.setItem('coop_client_session_id', sessionIp);
+          }
+          clientIp = sessionIp;
+        }
+
+        const d = new Date();
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const yearStr = `${d.getFullYear()}`;
+        const timeStr = formatThaiDateTime();
+
+        const existsToday = visitorDbData.some(v => v.ip === clientIp && v.date === dateStr);
+
+        if (!existsToday) {
+          const visitItem = { ip: clientIp, timestamp: timeStr, date: dateStr, month: monthStr, year: yearStr };
+          visitorDbData.unshift(visitItem);
+          saveVisitorToLocalStorage();
+
+          if (gasWebAppUrl) {
+            fetch(gasWebAppUrl, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'visit_log', ...visitItem })
+            }).catch(err => console.warn('Visitor sync note:', err));
+          }
+        }
+      } catch (err) {
+        console.warn('trackMemberVisit error:', err);
+      }
+    }
+
+    // Google Sheets Online Data Sync (Scholarship + Surveys + Visitors)
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
       updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล Google Sheets...');
@@ -1108,7 +1101,7 @@ function doPost(e) {
         }
       }
 
-      // 2. Fetch Surveys Tab Data
+      // Fetch Surveys Tab Data
       try {
         const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
         const controller = new AbortController();
@@ -1129,6 +1122,36 @@ function doPost(e) {
         }
       } catch (sErr) {
         console.warn('Surveys tab fetch note:', sErr);
+      }
+
+      // Fetch Visitors Tab Data
+      try {
+        const visitorUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Visitors&tqx=out:csv`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const response = await fetch(visitorUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const text = await response.text();
+          if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+            const vRows = parseCSV(text);
+            const parsedV = parseVisitorCSV(vRows);
+            if (parsedV && parsedV.length > 0) {
+              // Merge local and online visitors, ensuring unique entries
+              const combined = [...parsedV];
+              visitorDbData.forEach(vLocal => {
+                if (!combined.some(c => c.ip === vLocal.ip && c.date === vLocal.date)) {
+                  combined.push(vLocal);
+                }
+              });
+              visitorDbData = combined;
+              saveVisitorToLocalStorage();
+            }
+          }
+        }
+      } catch (vErr) {
+        console.warn('Visitors tab fetch note:', vErr);
       }
 
       if (!isSuccess) {
@@ -1684,68 +1707,83 @@ function doPost(e) {
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
       filterAdminTable();
       renderSurveyAdmin();
+      renderVisitorAnalytics();
     }
 
-    function renderAdminCharts(approved, pending, reject) {
-      const ctxDoughnut = document.getElementById('statusDoughnutChart');
-      if (ctxDoughnut) {
-        if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
+    // Render Visitor Unique IP KPI Metrics & Trend Chart
+    function renderVisitorAnalytics() {
+      try {
+        const d = new Date();
+        const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const yearStr = `${d.getFullYear()}`;
 
-        chartInstanceDoughnut = new Chart(ctxDoughnut, {
-          type: 'doughnut',
-          data: {
-            labels: ['อนุมัติสำเร็จ / โอนเงิน', 'อยู่ระหว่างพิจารณา / ตรวจสอบ', 'เอกสารไม่ถูกต้อง / ไม่อนุมัติ'],
-            datasets: [{
-              data: [approved, pending, reject],
-              backgroundColor: ['#059669', '#d97706', '#dc2626'],
-              borderWidth: 2,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 11 } } } }
-          }
-        });
-      }
+        const todayIPs = new Set(visitorDbData.filter(v => v.date === todayStr).map(v => v.ip));
+        const monthIPs = new Set(visitorDbData.filter(v => v.month === monthStr || (v.date && v.date.startsWith(monthStr))).map(v => v.ip));
+        const yearIPs = new Set(visitorDbData.filter(v => v.year === yearStr || (v.date && v.date.startsWith(yearStr))).map(v => v.ip));
+        const allIPs = new Set(visitorDbData.map(v => v.ip));
 
-      const ctxBar = document.getElementById('deptBarChart');
-      if (ctxBar) {
-        if (chartInstanceBar) chartInstanceBar.destroy();
+        const elToday = document.getElementById('statVisitorToday');
+        const elMonth = document.getElementById('statVisitorMonth');
+        const elYear = document.getElementById('statVisitorYear');
+        const elTotal = document.getElementById('statVisitorTotal');
 
-        const deptMap = {};
-        dbData.forEach(d => {
-          if (isApprovedOrTransferredStatus(d.docStatus)) {
-            const dept = d.department || 'ไม่ระบุสังกัด';
-            deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
-          }
-        });
+        if (elToday) elToday.textContent = `${todayIPs.size} IP`;
+        if (elMonth) elMonth.textContent = `${monthIPs.size} IP`;
+        if (elYear) elYear.textContent = `${yearIPs.size} IP`;
+        if (elTotal) elTotal.textContent = `${allIPs.size} IP`;
 
-        const labels = Object.keys(deptMap);
-        const dataValues = Object.values(deptMap);
+        // Prepare Last 7 Days trend chart
+        const last7DaysLabels = [];
+        const dailyUniqueCounts = [];
 
-        chartInstanceBar = new Chart(ctxBar, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'วงเงินอนุมัติ (บาท)',
-              data: dataValues,
-              backgroundColor: '#312e81',
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { ticks: { font: { family: 'Prompt', size: 10 } } },
-              y: { ticks: { font: { family: 'Prompt', size: 10 } } }
+        for (let i = 6; i >= 0; i--) {
+          const tempDate = new Date();
+          tempDate.setDate(tempDate.getDate() - i);
+          const dateKey = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+          const dayLabel = `${tempDate.getDate()}/${tempDate.getMonth() + 1}`;
+
+          const dayIPs = new Set(visitorDbData.filter(v => v.date === dateKey).map(v => v.ip));
+          last7DaysLabels.push(dayLabel);
+          dailyUniqueCounts.push(dayIPs.size);
+        }
+
+        const ctxVisitor = document.getElementById('visitorTrendChart');
+        if (ctxVisitor && typeof Chart !== 'undefined') {
+          if (chartInstanceVisitor) chartInstanceVisitor.destroy();
+
+          chartInstanceVisitor = new Chart(ctxVisitor, {
+            type: 'bar',
+            data: {
+              labels: last7DaysLabels,
+              datasets: [{
+                label: 'ผู้เข้าใช้งาน (Unique IP)',
+                data: dailyUniqueCounts,
+                backgroundColor: '#4f46e5',
+                borderRadius: 8,
+                borderSkipped: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (context) => ` จำนวนผู้เข้าชม: ${context.parsed.y} IP (ไม่นับซ้ำ)`
+                  }
+                }
+              },
+              scales: {
+                x: { ticks: { font: { family: 'Prompt', size: 10 } }, grid: { display: false } },
+                y: { beginAtZero: true, ticks: { precision: 0, font: { family: 'Prompt', size: 10 } } }
+              }
             }
-          }
-        });
+          });
+        }
+      } catch (err) {
+        console.error('renderVisitorAnalytics error:', err);
       }
     }
 
@@ -2229,6 +2267,26 @@ function doPost(e) {
     var sheetApp = SpreadsheetApp.getActiveSpreadsheet();
     var data = JSON.parse(e.postData.contents);
     var action = data.action || 'save';
+
+    // 0. จัดการข้อมูลแผ่นงาน ผู้เข้าใช้งานระบบ (Visitors)
+    if (action === 'visit_log') {
+      var vSheet = sheetApp.getSheetByName('Visitors');
+      if (!vSheet) {
+        vSheet = sheetApp.insertSheet('Visitors');
+        vSheet.appendRow(['IP', 'Timestamp', 'Date', 'Month', 'Year']);
+      }
+      var vRows = vSheet.getDataRange().getValues();
+      var loggedToday = false;
+      for (var v = 1; v < vRows.length; v++) {
+        if (String(vRows[v][0]).trim() === String(data.ip).trim() && String(vRows[v][2]).trim() === String(data.date).trim()) {
+          loggedToday = true; break;
+        }
+      }
+      if (!loggedToday) {
+        vSheet.appendRow([data.ip || '', data.timestamp || '', data.date || '', data.month || '', data.year || '']);
+      }
+      return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+    }
     
     // 1. จัดการข้อมูลแผ่นงาน แบบประเมินความพึงพอใจ (Surveys)
     if (action.indexOf('survey') === 0) {
@@ -2323,6 +2381,7 @@ function doPost(e) {
       }
 
       initSurveySystem();
+      trackMemberVisit();
 
       const searchForm = document.getElementById('searchForm');
       const searchInput = document.getElementById('searchId');
