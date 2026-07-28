@@ -52,7 +52,6 @@
     <div class="h-2 bg-gradient-to-r from-indigo-700 via-blue-800 to-emerald-600"></div>
 
     <!-- Header & Navigation -->
-    <!-- STREAMING_CHUNK: Rendering official top header and view mode tabs... -->
     <header class="bg-indigo-950 text-white py-6 px-4 shadow-md border-b border-indigo-900 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -100,7 +99,6 @@
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (สำหรับสมาชิก)       -->
       <!-- ========================================== -->
-      <!-- STREAMING_CHUNK: Rendering Member Portal Search & Survey Widget... -->
       <div id="memberPortalView" class="space-y-6">
         
         <!-- System Maintenance Banner -->
@@ -207,7 +205,6 @@
       <!-- ==================================================== -->
       <!-- PART 2: STAFF & BOARD PORTAL (ฝ่ายจัดการ/คณะกรรมการ) -->
       <!-- ==================================================== -->
-      <!-- STREAMING_CHUNK: Rendering Staff and Board Dashboard View with Survey Management... -->
       <div id="adminPortalView" class="hidden space-y-6">
         
         <!-- Admin Header Actions -->
@@ -304,7 +301,6 @@
         </div>
 
         <!-- Survey Management Section for Admin -->
-        <!-- STREAMING_CHUNK: Rendering Admin Survey Summary and Management Table... -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1 flex flex-col justify-center items-center text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-400"></div>
@@ -475,7 +471,6 @@
     </div>
 
     <!-- Modal: Add / Edit Survey (สำหรับเพิ่มหรือแก้ไขการประเมิน) -->
-    <!-- STREAMING_CHUNK: Building Survey Add/Edit Modal... -->
     <div id="surveyModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200">
         <div class="bg-amber-500 text-white p-6 flex justify-between items-center">
@@ -557,8 +552,19 @@
         </div>
 
         <div class="p-6 space-y-4 text-xs overflow-y-auto">
+          
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-[11px] text-blue-900 space-y-2 leading-relaxed mb-2">
+            <h5 class="font-bold text-sm">📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน Surveys:</h5>
+            <ol class="list-decimal list-inside space-y-1.5">
+              <li>ให้คุณครู/ฝ่ายจัดการเปิดหน้าต่าง <strong class="text-slate-900">"⚙️ ตั้งค่า Google Sheets Sync"</strong> ในหน้าระบบ</li>
+              <li>กดคัดลอกโค้ด <strong class="text-slate-900">Google Apps Script</strong> ล่าสุด นำไปวางในส่วนขยายของไฟล์ Google Sheets</li>
+              <li>กด <strong class="text-slate-900">Deploy (ทำให้ใช้งานได้)</strong> ➔ เลือก <strong class="text-slate-900">New deployment (การทำให้ใช้งานได้ใหม่)</strong> อีกครั้ง</li>
+              <li>หลังจากนั้น เมื่อมีการประเมิน แก้ไข หรือลบข้อเสนอแนะ ข้อมูลในแผ่นงาน <code class="bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">Surveys</code> บน Google Sheets จะซิงก์ตรงกันแบบเรียลไทม์ทันทีครับ!</li>
+            </ol>
+          </div>
+
           <div>
-            <label class="font-bold text-slate-700 block mb-1">URL ของ Google Apps Script Web App</label>
+            <label class="font-bold text-slate-700 block mb-1 mt-2">URL ของ Google Apps Script Web App</label>
             <input 
               type="text" 
               id="gasUrlInput" 
@@ -568,7 +574,7 @@
             <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จาก Google Apps Script เพื่อให้ระบบส่งการอัปเดตกลับไปยัง Google Sheets</p>
           </div>
 
-          <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1 leading-relaxed">
+          <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1 leading-relaxed hidden">
             <h5 class="font-bold">ขั้นตอนการติดตั้ง Google Apps Script (อัปเดตใหม่รองรับแผ่นงาน Surveys):</h5>
             <ol class="list-decimal list-inside space-y-1">
               <li>เปิดไฟล์ Google Sheets ➔ ไปที่เมนู <strong class="text-slate-900">ส่วนขยาย (Extensions)</strong> ➔ เลือก <strong class="text-slate-900">Apps Script</strong></li>
@@ -721,7 +727,6 @@ function doPost(e) {
 
   </div>
 
-  <!-- STREAMING_CHUNK: Implementing Survey CRUD Logic & Dual-Sheet Fetching... -->
   <script>
     // System Data State
     let dbData = [];
@@ -1015,7 +1020,6 @@ function doPost(e) {
       return parsedRecords;
     }
 
-    // STREAMING_CHUNK: Parsing Survey Tab CSV Data from Google Sheets...
     // Parser for Google Sheets Tab 'Surveys'
     function parseSurveyCSV(rows) {
       if (!rows || rows.length <= 1) return [];
@@ -1874,7 +1878,6 @@ function doPost(e) {
       closeDeleteConfirmModal();
     }
 
-    // STREAMING_CHUNK: Implementing Survey CRUD Operations for Admin...
     // ==========================================
     // SURVEY MANAGEMENT LOGIC (สำหรับฝ่ายจัดการ)
     // ==========================================
@@ -2314,10 +2317,3 @@ function doPost(e) {
   </script>
 </body>
 </html>
-```eof
-
-### 📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน `Surveys`:
-1. ให้คุณครู/ฝ่ายจัดการเปิดหน้าต่าง **"⚙️ ตั้งค่า Google Sheets Sync"** ในหน้าระบบ
-2. กดคัดลอกโค้ด **Google Apps Script** ล่าสุด นำไปวางในส่วนขยายของไฟล์ Google Sheets 
-3. กด **Deploy (ทำให้ใช้งานได้)** ➔ เลือก **New deployment (การทำให้ใช้งานได้ใหม่)** อีกครั้ง
-4. หลังจากนั้น เมื่อมีการประเมิน แก้ไข หรือลบข้อเสนอแนะ ข้อมูลในแผ่นงาน `Surveys` บน Google Sheets จะซิงก์ตรงกันแบบเรียลไทม์ทันทีครับ!
