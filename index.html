@@ -85,7 +85,7 @@
             onclick="switchView('admin')" 
             class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10"
           >
-            <span>📊</span>
+            <span>🔒</span>
             <span>ฝ่ายจัดการ / คณะกรรมการ</span>
           </button>
         </nav>
@@ -213,7 +213,7 @@
             <div class="flex flex-wrap items-center gap-2">
               <span class="px-3 py-1 rounded-full bg-white/10 text-indigo-200 border border-white/10 text-xs font-bold flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                ส่วนงานฝ่ายจัดการ และคณะกรรมการ
+                ส่วนงานฝ่ายจัดการ และคณะกรรมการ (เจ้าหน้าที่: <span id="adminLoggedInUserDisplay" class="text-emerald-300 font-bold">007</span>)
               </span>
 
               <!-- Maintenance Mode Toggle -->
@@ -245,7 +245,11 @@
             </button>
             <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
               <span>📥</span>
-              <span>ส่งออกไฟล์ CSV (รวมเลขบัญชี)</span>
+              <span>ส่งออกไฟล์ CSV</span>
+            </button>
+            <button onclick="adminLogout()" class="bg-rose-800 hover:bg-rose-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-rose-700 transition-all flex items-center gap-1.5 active:scale-95 shadow">
+              <span>🚪</span>
+              <span>ออกจากระบบ</span>
             </button>
           </div>
         </div>
@@ -598,6 +602,68 @@
     <!-- Hidden Printable Slip Area -->
     <div id="printSlipArea" class="hidden p-8 bg-white text-slate-900"></div>
 
+    <!-- Modal: Admin Login Authentication (บังคับล็อกอินทุกครั้ง) -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-indigo-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-indigo-100 animate-fadeIn relative">
+        <div class="bg-indigo-950 text-white p-6 text-center relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-indigo-500 to-amber-400"></div>
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/10 text-3xl mb-2 shadow-inner">
+            🔐
+          </div>
+          <h3 class="text-lg font-bold px-2">เข้าสู่ระบบ ระบบบริหารจัดการและติดตามสถานะทุนการศึกษาบุตรสมาชิก ประจำปี 2569</h3>
+          <p class="text-xs text-indigo-200 mt-1">สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด</p>
+          <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-indigo-300 hover:text-white font-bold text-lg">✕</button>
+        </div>
+
+        <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)" class="p-6 space-y-4 text-xs">
+          <div id="loginAlertBox" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-center leading-relaxed"></div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">รหัสเจ้าหน้าที่ *</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="loginStaffId" 
+                required 
+                placeholder="ระบุรหัสเจ้าหน้าที่" 
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 outline-none font-mono font-bold text-slate-900 text-sm"
+              />
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">👤</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">รหัสผ่าน *</label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="loginPassword" 
+                required 
+                placeholder="ระบุรหัสผ่าน" 
+                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 outline-none text-slate-900 text-sm"
+              />
+              <button 
+                type="button" 
+                onclick="togglePasswordVisibility('loginPassword')" 
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm font-bold"
+              >
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeAdminLoginModal()" class="w-1/3 py-3 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-bold">
+              ยกเลิก
+            </button>
+            <button type="submit" class="w-2/3 py-3 rounded-xl bg-indigo-900 hover:bg-indigo-950 text-white font-bold shadow-md transition-all active:scale-95">
+              🚀 เข้าสู่ระบบ
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal: Add / Edit Record (Scholarship) -->
     <div id="recordModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
@@ -778,12 +844,11 @@
         <div class="p-6 space-y-4 text-xs overflow-y-auto">
           
           <div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-[11px] text-blue-900 space-y-2 leading-relaxed mb-2">
-            <h5 class="font-bold text-sm">📌 คำแนะนำเพิ่มเติมสำหรับการเชื่อมโยงแผ่นงาน Surveys และ Visitors:</h5>
+            <h5 class="font-bold text-sm">📌 คำแนะนำการเชื่อมโยงแผ่นงานและรหัสผ่านเจ้าหน้าที่:</h5>
             <ol class="list-decimal list-inside space-y-1.5">
-              <li>ให้คุณครู/ฝ่ายจัดการเปิดหน้าต่าง <strong class="text-slate-900">"⚙️ ตั้งค่า Google Sheets Sync"</strong> ในหน้าระบบ</li>
-              <li>กดคัดลอกโค้ด <strong class="text-slate-900">Google Apps Script</strong> ล่าสุด นำไปวางในส่วนขยายของไฟล์ Google Sheets</li>
-              <li>กด <strong class="text-slate-900">Deploy (ทำให้ใช้งานได้)</strong> ➔ เลือก <strong class="text-slate-900">New deployment (การทำให้ใช้งานได้ใหม่)</strong> อีกครั้ง</li>
-              <li>หลังจากนั้น ระบบจะทำการบันทึกข้อมูลทุนการศึกษา แบบประเมิน (<code class="bg-blue-100 text-blue-800 font-bold px-1 py-0.5 rounded">Surveys</code>) และสถิติผู้เข้าชม (<code class="bg-blue-100 text-blue-800 font-bold px-1 py-0.5 rounded">Visitors</code>) ลงใน Google Sheets อัตโนมัติ!</li>
+              <li>แผ่นงานรหัสผ่านเจ้าหน้าที่ (<code class="bg-blue-100 text-blue-800 font-bold px-1 py-0.5 rounded">Admins</code>): คอลัมน์ประกอบด้วย <strong class="text-slate-900">StaffID, Password, Name, Role</strong> (เช่น <code>007</code> / <code>Satun055pass@1</code>)</li>
+              <li>เปิดหน้าต่าง <strong class="text-slate-900">"⚙️ ตั้งค่า Google Sheets Sync"</strong> และคัดลอกโค้ดไปวางใน Google Apps Script</li>
+              <li>กด <strong class="text-slate-900">Deploy</strong> ➔ เลือก <strong class="text-slate-900">New deployment</strong> ➔ กำหนดสิทธิ์เป็น <strong class="text-slate-900">Anyone</strong></li>
             </ol>
           </div>
 
@@ -795,7 +860,7 @@
               placeholder="https://script.google.com/macros/s/.../exec" 
               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none font-mono text-[11px]"
             />
-            <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL ที่ได้จาก Google Apps Script เพื่อให้ระบบส่งการอัปเดตกลับไปยัง Google Sheets</p>
+            <p class="text-[10px] text-slate-400 mt-1">วาง Web App URL เพื่อซิงก์ข้อมูลและรหัสผ่านเจ้าหน้าที่ไปยัง Google Sheets</p>
           </div>
 
           <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
@@ -965,8 +1030,16 @@ function doPost(e) {
     let dbData = [];
     let surveyDbData = [];
     let visitorDbData = [];
+    let adminAccountsDb = [];
+    
+    // Default Official Credentials (ยืนยันเข้าใช้งานได้เสมอ)
+    const DEFAULT_STAFF_ID = "007";
+    const DEFAULT_STAFF_PASS = "Satun055pass@1";
+
     let pdpaMaskMode = true;
     let activeView = 'member';
+    let isAdminLoggedIn = false;
+    let loggedInStaffId = '';
     let isMaintenanceMode = false;
     let isMemberOnlyUrl = false;
     let gasWebAppUrl = '';
@@ -1175,7 +1248,6 @@ function doPost(e) {
         if (savedVisitors) {
           const rawVisitors = JSON.parse(savedVisitors);
           if (Array.isArray(rawVisitors)) {
-            // STRICT FILTERING: Keep ONLY rows with valid YYYY-MM-DD date and 4-digit numeric year
             visitorDbData = rawVisitors.filter(v => 
               v && typeof v === 'object' && 
               v.ip && 
@@ -1230,6 +1302,86 @@ function doPost(e) {
       dbData.forEach((item, idx) => {
         item.index = (idx + 1).toString();
       });
+    }
+
+    // Admin Login Modal Handlers
+    function openAdminLoginModal() {
+      const modal = document.getElementById('adminLoginModal');
+      const alertBox = document.getElementById('loginAlertBox');
+      const loginForm = document.getElementById('adminLoginForm');
+
+      if (alertBox) alertBox.classList.add('hidden');
+      if (loginForm) loginForm.reset();
+
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeAdminLoginModal() {
+      const modal = document.getElementById('adminLoginModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      const pwdInput = document.getElementById(fieldId);
+      if (pwdInput) {
+        pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    function handleAdminLoginSubmit(e) {
+      e.preventDefault();
+      const staffIdInput = document.getElementById('loginStaffId').value.trim();
+      const passInput = document.getElementById('loginPassword').value.trim();
+      const alertBox = document.getElementById('loginAlertBox');
+
+      // Check against Default Credentials OR fetched Google Sheets admin list
+      let isValid = false;
+
+      if (staffIdInput === DEFAULT_STAFF_ID && passInput === DEFAULT_STAFF_PASS) {
+        isValid = true;
+      } else if (adminAccountsDb && adminAccountsDb.length > 0) {
+        const found = adminAccountsDb.find(a => 
+          String(a.staffId).trim() === staffIdInput && 
+          String(a.password).trim() === passInput
+        );
+        if (found) isValid = true;
+      }
+
+      if (isValid) {
+        isAdminLoggedIn = true;
+        loggedInStaffId = staffIdInput;
+
+        const userDisplay = document.getElementById('adminLoggedInUserDisplay');
+        if (userDisplay) userDisplay.textContent = loggedInStaffId;
+
+        closeAdminLoginModal();
+        
+        // Show Admin Portal
+        document.getElementById('memberPortalView').classList.add('hidden');
+        document.getElementById('adminPortalView').classList.remove('hidden');
+
+        const tabMemberBtn = document.getElementById('tabMemberBtn');
+        const tabAdminBtn = document.getElementById('tabAdminBtn');
+
+        if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
+        if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
+
+        renderAdminDashboard();
+        showToast(`🔓 เข้าสู่ระบบเจ้าหน้าที่ (${loggedInStaffId}) สำเร็จ`, 'success');
+      } else {
+        if (alertBox) {
+          alertBox.innerHTML = '⚠️ รหัสเจ้าหน้าที่ หรือ รหัสผ่านไม่ถูกต้อง<br/><span class="text-[10px] font-normal text-slate-500">กรุณาตรวจสอบรหัสผ่านอีกครั้ง</span>';
+          alertBox.classList.remove('hidden');
+        }
+        showToast('รหัสผ่านไม่ถูกต้อง', 'error');
+      }
+    }
+
+    function adminLogout() {
+      isAdminLoggedIn = false;
+      loggedInStaffId = '';
+      switchView('member');
+      showToast('🔒 ออกจากระบบฝ่ายจัดการเรียบร้อยแล้ว', 'info');
     }
 
     // Robust CSV Text Parser
@@ -1484,6 +1636,25 @@ function doPost(e) {
       return parsedVisitors;
     }
 
+    // Parser for Google Sheets Tab 'Admins' (Credentials)
+    function parseAdminCSV(rows) {
+      if (!rows || rows.length <= 1) return [];
+      const admins = [];
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length < 2) continue;
+
+        const staffId = (row[0] || '').toString().trim();
+        const password = (row[1] || '').toString().trim();
+        const name = (row[2] || '').toString().trim();
+
+        if (staffId && password) {
+          admins.push({ staffId, password, name });
+        }
+      }
+      return admins;
+    }
+
     // Member Visit Tracker (IP-Based Uniqueness)
     async function trackMemberVisit() {
       try {
@@ -1640,6 +1811,28 @@ function doPost(e) {
           console.warn('Visitors tab fetch note:', vErr);
         }
 
+        // Fetch Admins Credentials Tab Data (Optional custom staff accounts)
+        try {
+          const adminUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Admins&tqx=out:csv`;
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
+          const response = await fetch(adminUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const text = await response.text();
+            if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+              const aRows = parseCSV(text);
+              const parsedA = parseAdminCSV(aRows);
+              if (parsedA && parsedA.length > 0) {
+                adminAccountsDb = parsedA;
+              }
+            }
+          }
+        } catch (aErr) {
+          console.warn('Admins tab fetch note:', aErr);
+        }
+
         if (!isSuccess) {
           if (dbData && dbData.length > 0) {
             updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
@@ -1658,7 +1851,7 @@ function doPost(e) {
         completed = true;
         clearTimeout(masterTimer);
 
-        if (activeView === 'admin') {
+        if (activeView === 'admin' && isAdminLoggedIn) {
           renderAdminDashboard();
         } else {
           const searchInput = document.getElementById('searchId');
@@ -1733,7 +1926,7 @@ function doPost(e) {
       if (searchInput && searchInput.value) handleSearchSubmit();
     }
 
-    // Switch View Function
+    // Switch View Function with Forced Login Gate for Admin View
     function switchView(viewName) {
       if (viewName === 'admin' && isMemberOnlyUrl) {
         showToast('🔒 ลิงก์นี้ใช้สำหรับสมาชิกเท่านั้น', 'error');
@@ -1745,21 +1938,29 @@ function doPost(e) {
       const tabMemberBtn = document.getElementById('tabMemberBtn');
       const tabAdminBtn = document.getElementById('tabAdminBtn');
 
-      activeView = viewName;
+      if (viewName === 'admin') {
+        // Force authentication check: If not logged in, prompt modal every time!
+        if (!isAdminLoggedIn) {
+          openAdminLoginModal();
+          return;
+        }
 
-      if (viewName === 'member') {
+        activeView = 'admin';
+        memberView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+
+        if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
+        if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
+        renderAdminDashboard();
+      } else {
+        activeView = 'member';
         memberView.classList.remove('hidden');
         adminView.classList.add('hidden');
+
         if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
         if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
         updateMaintenanceUI();
         initSurveySystem();
-      } else {
-        memberView.classList.add('hidden');
-        adminView.classList.remove('hidden');
-        if (tabAdminBtn) tabAdminBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-indigo-600 text-white shadow";
-        if (tabMemberBtn) tabMemberBtn.className = "px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 text-indigo-200 hover:text-white hover:bg-white/10";
-        renderAdminDashboard();
       }
     }
 
