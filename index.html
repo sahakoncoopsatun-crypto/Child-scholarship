@@ -571,6 +571,7 @@
                   <th class="px-4 py-3.5">ชื่อ-สกุล สมาชิก</th>
                   <th class="px-4 py-3.5">สังกัด</th>
                   <th class="px-4 py-3.5">ชื่อบุตรผู้รับทุน</th>
+                  <th class="px-4 py-3.5">ประเภทการศึกษา</th>
                   <th class="px-4 py-3.5 text-center">ระดับชั้น</th>
                   <th class="px-4 py-3.5 text-right">จำนวนเงิน</th>
                   <th class="px-4 py-3.5">เลขบัญชีโอน</th>
@@ -620,13 +621,18 @@
             <input type="text" id="formMemberName" required placeholder="นาย / นาง / นางสาว..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
           </div>
 
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">ชื่อบุตรผู้รับทุน *</label>
+            <input type="text" id="formChildName" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
+          </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="font-bold text-slate-700 block mb-1">ชื่อบุตรผู้รับทุน *</label>
-              <input type="text" id="formChildName" required placeholder="ด.ช. / ด.ญ. / นาย / นางสาว..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
+              <label class="font-bold text-slate-700 block mb-1">ประเภทการศึกษา</label>
+              <input type="text" id="formEduType" placeholder="เช่น ประถมศึกษา, ม.ต้น" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
             </div>
             <div>
-              <label class="font-bold text-slate-700 block mb-1">ระดับชั้นปี *</label>
+              <label class="font-bold text-slate-700 block mb-1">ระดับชั้น *</label>
               <input type="text" id="formLevel" onchange="autoSuggestAmountByLevel()" required placeholder="เช่น ป.6, ม.3, ป.ตรี" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
             </div>
           </div>
@@ -877,7 +883,7 @@ function doPost(e) {
     } else {
       var rowData = [
         data.index || '', data.memberId || '', data.memberName || '', data.department || '',
-        data.childName || '', data.amount || 0, data.level || '', data.coopAccount || '',
+        data.childName || '', data.amount || 0, data.eduType || '', data.level || '', data.coopAccount || '',
         data.docStatus || '', data.remark || ''
       ];
       if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
@@ -1031,28 +1037,31 @@ function doPost(e) {
              matchStatusFilter(status, 'อยู่ระหว่างการพิจารณา');
     }
 
-    // Categorize Education Level into 4 Tiers
-    function categorizeEducationLevel(levelStr, amountVal) {
+    // Categorize Education Level into 4 Tiers (Handles separate eduType and level)
+    function categorizeEducationLevel(levelStr, amountVal, eduTypeStr = '') {
       const lvl = (levelStr || '').toString().toLowerCase().trim();
+      const edu = (eduTypeStr || '').toString().toLowerCase().trim();
       const amt = Number(amountVal) || 0;
 
+      const combined = (edu + ' ' + lvl).trim();
+
       // Tier 1: Primary (1,000 Baht)
-      if (amt === 1000 || lvl.includes('ป.') || lvl.includes('ประถม') || lvl.includes('ป1') || lvl.includes('ป2') || lvl.includes('ป3') || lvl.includes('ป4') || lvl.includes('ป5') || lvl.includes('ป6')) {
+      if (amt === 1000 || combined.includes('ประถม') || combined.includes('ป.') || combined.includes('ป1') || combined.includes('ป2') || combined.includes('ป3') || combined.includes('ป4') || combined.includes('ป5') || combined.includes('ป6')) {
         return 'PRIMARY';
       }
       
       // Tier 2: Junior High (1,200 Baht)
-      if (amt === 1200 || lvl.includes('ม.1') || lvl.includes('ม.2') || lvl.includes('ม.3') || lvl.includes('ม.ต้น') || lvl.includes('มัธยมต้น')) {
+      if (amt === 1200 || combined.includes('ม.ต้น') || combined.includes('มัธยมต้น') || combined.includes('ม.1') || combined.includes('ม.2') || combined.includes('ม.3')) {
         return 'JUNIOR';
       }
 
       // Tier 3: Senior High / Vocational (1,400 Baht)
-      if (amt === 1400 || lvl.includes('ม.4') || lvl.includes('ม.5') || lvl.includes('ม.6') || lvl.includes('ม.ปลาย') || lvl.includes('ปวช')) {
+      if (amt === 1400 || combined.includes('ม.ปลาย') || combined.includes('มัธยมปลาย') || combined.includes('ปวช') || combined.includes('ม.4') || combined.includes('ม.5') || combined.includes('ม.6')) {
         return 'SENIOR';
       }
 
       // Tier 4: Bachelor / High Vocational (1,600 Baht)
-      if (amt === 1600 || lvl.includes('ป.ตรี') || lvl.includes('ปริญญา') || lvl.includes('ปวส') || lvl.includes('อุดมศึกษา') || lvl.includes('มหาวิทยาลัย')) {
+      if (amt === 1600 || combined.includes('ป.ตรี') || combined.includes('ปริญญา') || combined.includes('ปวส') || combined.includes('อุดมศึกษา') || combined.includes('มหาวิทยาลัย')) {
         return 'BACHELOR';
       }
 
@@ -1066,19 +1075,25 @@ function doPost(e) {
     // Auto preset amount helper for Modal
     function setPresetAmount(amount, levelName) {
       const formAmt = document.getElementById('formAmount');
+      const formEduType = document.getElementById('formEduType');
       const formLvl = document.getElementById('formLevel');
       if (formAmt) formAmt.value = amount;
+      if (formEduType) formEduType.value = levelName;
       if (formLvl && (!formLvl.value || formLvl.value.trim() === '')) {
-        formLvl.value = levelName;
+        if (amount === 1000) formLvl.value = 'ป.1';
+        else if (amount === 1200) formLvl.value = 'ม.1';
+        else if (amount === 1400) formLvl.value = 'ม.4';
+        else if (amount === 1600) formLvl.value = 'ปี 1';
       }
     }
 
     function autoSuggestAmountByLevel() {
       const formLvl = document.getElementById('formLevel');
+      const formEduType = document.getElementById('formEduType');
       const formAmt = document.getElementById('formAmount');
       if (!formLvl || !formAmt) return;
 
-      const cat = categorizeEducationLevel(formLvl.value, 0);
+      const cat = categorizeEducationLevel(formLvl.value, 0, formEduType ? formEduType.value : '');
       if (cat === 'PRIMARY') formAmt.value = 1000;
       else if (cat === 'JUNIOR') formAmt.value = 1200;
       else if (cat === 'SENIOR') formAmt.value = 1400;
@@ -1180,7 +1195,7 @@ function doPost(e) {
       if (!Array.isArray(visitorDbData)) visitorDbData = [];
 
       reIndexDbData();
-      saveVisitorToLocalStorage(); // Clean corrupt entries from local storage immediately
+      saveVisitorToLocalStorage();
 
       const maintenance = localStorage.getItem('coop_maintenance_mode');
       if (maintenance !== null) isMaintenanceMode = maintenance === 'true';
@@ -1198,7 +1213,6 @@ function doPost(e) {
     }
 
     function saveVisitorToLocalStorage() {
-      // Clean visitor array before saving
       visitorDbData = visitorDbData.filter(v => 
         v && typeof v === 'object' && 
         v.ip && 
@@ -1242,10 +1256,10 @@ function doPost(e) {
       return r;
     }
 
-    // Dynamic Column Mapper for Main Scholarship Sheet
+    // Dynamic Column Mapper for Main Scholarship Sheet (Supports separated Category & Level)
     function parseDynamicCSV(rows) {
       if (!rows || rows.length === 0) return [];
-      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
+      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, eduTypeCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
 
       let headerRowIndex = -1;
       for (let r = 0; r < rows.length; r++) {
@@ -1281,7 +1295,9 @@ function doPost(e) {
           else if (val.includes('ชื่อบุตร') || val.includes('ชื่อผู้รับทุน') || val.includes('ชื่อผู้ยื่นรับทุน') || val === 'เด็กชาย/เด็กหญิง') childNameCol = i;
           else if (val.includes('จำนวนเงิน') || val.includes('ยอดเงิน') || val.includes('เงินทุน') || val.includes('วงเงิน') || val.includes('จำนวน')) {
             if (amountCol === -1 || val.includes('เงิน') || val.includes('บาท')) amountCol = i;
-          } else if (val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ') || val.includes('ระดับชั้น')) levelCol = i;
+          }
+          else if (val.includes('ประเภทการศึกษา') || val.includes('หมวดการศึกษา') || val.includes('ประเภททุน') || val.includes('หมวดทุน') || val.includes('ประเภท')) eduTypeCol = i;
+          else if (val.includes('ระดับชั้น') || val.includes('ชั้นปี') || val.includes('ชั้น') || val.includes('ระดับ')) levelCol = i;
           else if (val.includes('ลำดับ') || val.includes('ที่')) indexCol = i;
           else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('รพ.') || val.includes('ที่ทำงาน')) deptCol = i;
           else if (val.includes('บัญชี') || val.includes('เลขบัญชี') || val.includes('เลขที่บัญชี') || val.includes('เลขที่บัญชีสหกรณ์') || val.includes('บัญชีเงินฝาก')) coopAccCol = i;
@@ -1323,6 +1339,7 @@ function doPost(e) {
           amount = parseFloat(rawAmount.replace(/[^0-9.]/g, '')) || 0;
         }
 
+        const eduType = eduTypeCol !== -1 && eduTypeCol < row.length ? (row[eduTypeCol] || '').toString().trim() : '';
         const level = levelCol < row.length ? (row[levelCol] || '').toString().trim() : 'ป.1';
         const indexVal = (parsedRecords.length + 1).toString();
         const department = deptCol !== -1 && row[deptCol] ? (row[deptCol] || '').toString().replace(/[\u00a0\s]/g, ' ').trim() : 'ไม่ระบุสังกัด';
@@ -1339,7 +1356,7 @@ function doPost(e) {
 
         if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
 
-        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, level, department, coopAccount, docStatus, remark });
+        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, eduType, level, department, coopAccount, docStatus, remark });
       }
 
       return parsedRecords;
@@ -1376,7 +1393,7 @@ function doPost(e) {
       return parsedSurveys;
     }
 
-    // Parser for Google Sheets Tab 'Visitors' - Strict Validation Implemented
+    // Parser for Google Sheets Tab 'Visitors'
     function parseVisitorCSV(rows) {
       if (!rows || rows.length <= 1) return [];
       const parsedVisitors = [];
@@ -1390,21 +1407,16 @@ function doPost(e) {
         let month = (row[3] || (date ? date.substring(0, 7) : '')).toString().trim();
         let year = (row[4] || (date ? date.substring(0, 4) : '')).toString().trim();
 
-        // STRICT VALIDATION:
-        // 1. Date MUST strictly match YYYY-MM-DD
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
 
-        // 2. Year MUST strictly be a 4-digit number (e.g. 2026)
         if (!/^\d{4}$/.test(year)) {
           year = date.substring(0, 4);
         }
 
-        // 3. Month MUST strictly match YYYY-MM
         if (!/^\d{4}-\d{2}$/.test(month)) {
           month = date.substring(0, 7);
         }
 
-        // 4. IP MUST NOT be a sequence number (like 1, 2, 3), member ID, or header text
         if (ip && ip !== 'IP' && ip !== 'เลขที่สมาชิก' && !/^\d{1,4}$/.test(ip)) {
           parsedVisitors.push({ ip, timestamp, date, month, year });
         }
@@ -1751,6 +1763,8 @@ function doPost(e) {
       const printArea = document.getElementById('printSlipArea');
       if (!printArea) return;
 
+      const eduDisplay = record.eduType ? `${record.eduType} (${record.level})` : record.level;
+
       printArea.innerHTML = `
         <div class="p-10 border-4 border-double border-indigo-900 rounded-3xl max-w-lg mx-auto">
           <div class="text-center border-b-2 border-indigo-100 pb-6 mb-6">
@@ -1763,7 +1777,7 @@ function doPost(e) {
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ชื่อสมาชิก:</span><span class="font-bold text-slate-900">${record.memberName}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">เลขที่สมาชิก:</span><span class="font-mono font-bold text-slate-900">${record.memberId}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ชื่อบุตรผู้รับทุน:</span><span class="font-bold text-slate-900">${record.childName}</span></div>
-            <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ระดับชั้น:</span><span class="font-bold text-slate-900">${record.level}</span></div>
+            <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">ระดับชั้น/การศึกษา:</span><span class="font-bold text-slate-900">${eduDisplay}</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">จำนวนเงินทุนจัดสรร:</span><span class="font-bold text-emerald-700 text-base">${record.amount.toLocaleString()} บาท</span></div>
             <div class="flex justify-between border-b border-dashed pb-1.5"><span class="font-medium text-slate-500">เลขที่บัญชีรับโอน:</span><span class="font-mono font-bold text-slate-900">${record.coopAccount || '-'}</span></div>
             <div class="flex justify-between pt-2"><span class="font-medium text-slate-500">สถานะล่าสุด:</span><span class="font-bold text-indigo-900">${record.docStatus}</span></div>
@@ -1825,6 +1839,7 @@ function doPost(e) {
         }
 
         const canPrintSlip = itemProg.step >= 4 && !itemProg.isFailed;
+        const levelBadge = item.eduType ? `${item.eduType} ${item.level}` : item.level;
 
         rowsHtml += `
           <tr class="hover:bg-slate-50 transition-colors">
@@ -1834,7 +1849,7 @@ function doPost(e) {
             <td class="px-5 py-4 text-slate-900 font-medium whitespace-nowrap">${item.childName}</td>
             <td class="px-5 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${item.amount.toLocaleString()} บาท</td>
             <td class="px-5 py-4 text-center font-bold text-slate-700 whitespace-nowrap">
-              <span class="bg-slate-100 px-3 py-1 rounded-full text-xs">${item.level}</span>
+              <span class="bg-slate-100 px-3 py-1 rounded-full text-xs">${levelBadge}</span>
             </td>
             <td class="px-5 py-4 font-mono font-semibold text-slate-700 whitespace-nowrap">${maskAccount(item.coopAccount)}</td>
             <td class="px-5 py-4 text-center whitespace-nowrap">
@@ -1944,7 +1959,7 @@ function doPost(e) {
                       <th class="px-5 py-4 whitespace-nowrap">ชื่อ - สกุล สมาชิก</th>
                       <th class="px-5 py-4 whitespace-nowrap">ชื่อบุตรผู้รับทุน</th>
                       <th class="px-5 py-4 text-right whitespace-nowrap">จำนวนเงิน</th>
-                      <th class="px-5 py-4 text-center whitespace-nowrap">ระดับชั้น</th>
+                      <th class="px-5 py-4 text-center whitespace-nowrap">ระดับชั้น/การศึกษา</th>
                       <th class="px-5 py-4 whitespace-nowrap">เลขที่บัญชีรับโอน</th>
                       <th class="px-5 py-4 text-center whitespace-nowrap">สถานะคำขอ</th>
                       <th class="px-5 py-4 text-center whitespace-nowrap">พิมพ์เอกสาร</th>
@@ -2146,7 +2161,7 @@ function doPost(e) {
       let countBachelor = 0, sumBachelor = 0;
 
       approvedList.forEach(item => {
-        const cat = categorizeEducationLevel(item.level, item.amount);
+        const cat = categorizeEducationLevel(item.level, item.amount, item.eduType);
         const amt = Number(item.amount) || 0;
 
         if (cat === 'PRIMARY') {
@@ -2314,7 +2329,6 @@ function doPost(e) {
       if (monthPicker && !monthPicker.value) monthPicker.value = monthStr;
 
       if (yearPicker) {
-        // Sanitize visitor array to remove any contaminated rows from non-visitor sheets
         visitorDbData = visitorDbData.filter(v => 
           v && typeof v === 'object' && 
           v.ip && 
@@ -2364,7 +2378,6 @@ function doPost(e) {
     // Render Visitor Unique IP KPI Metrics & Trend Chart with Historical Filters
     function renderVisitorAnalytics() {
       try {
-        // Strict Data Sanitization
         visitorDbData = visitorDbData.filter(v => 
           v && typeof v === 'object' && 
           v.ip && 
@@ -2430,14 +2443,12 @@ function doPost(e) {
           period1Desc = `Unique IP เฉพาะวันที่เลือก`;
           period1Count = selDateIPs.size;
 
-          // Month of selected date
           const selMonth = selDate.substring(0, 7);
           const selMonthIPs = new Set(visitorDbData.filter(v => v.month === selMonth || (v.date && v.date.startsWith(selMonth))).map(v => v.ip));
           period2Label = `รวมเดือน ${selMonth}`;
           period2Desc = `Unique IP ประจำเดือนของวันที่เลือก`;
           period2Count = selMonthIPs.size;
 
-          // Year of selected date
           const selYear = selDate.substring(0, 4);
           const selYearIPs = new Set(visitorDbData.filter(v => v.year === selYear || (v.date && v.date.startsWith(selYear))).map(v => v.ip));
           period3Label = `รวมปี พ.ศ. ${Number(selYear) + 543}`;
@@ -2573,7 +2584,7 @@ function doPost(e) {
       const statusFilterVal = document.getElementById('adminStatusFilter').value;
 
       const filtered = dbData.filter(item => {
-        const searchTarget = `${item.memberId} ${item.memberName} ${item.childName} ${item.department}`.toLowerCase();
+        const searchTarget = `${item.memberId} ${item.memberName} ${item.childName} ${item.department} ${item.eduType} ${item.level}`.toLowerCase();
         const matchSearch = searchVal === '' || searchTarget.includes(searchVal);
         const matchStatus = matchStatusFilter(item.docStatus, statusFilterVal);
 
@@ -2583,7 +2594,7 @@ function doPost(e) {
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="11" class="text-center py-8 text-slate-400 font-medium">ไม่พบรายการข้อมูลที่ตรงตามเงื่อนไขที่เลือก</td>
+            <td colspan="12" class="text-center py-8 text-slate-400 font-medium">ไม่พบรายการข้อมูลที่ตรงตามเงื่อนไขที่เลือก</td>
           </tr>
         `;
         return;
@@ -2610,6 +2621,7 @@ function doPost(e) {
             <td class="px-4 py-3 font-semibold text-slate-800">${item.memberName}</td>
             <td class="px-4 py-3 text-slate-600">${item.department || '-'}</td>
             <td class="px-4 py-3 text-slate-900 font-medium">${item.childName}</td>
+            <td class="px-4 py-3 text-slate-700 font-medium">${item.eduType || '-'}</td>
             <td class="px-4 py-3 text-center"><span class="bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-[10px]">${item.level}</span></td>
             <td class="px-4 py-3 text-right font-bold text-emerald-700">${Number(item.amount).toLocaleString()} บาท</td>
             <td class="px-4 py-3 font-mono text-slate-600">${item.coopAccount || '-'}</td>
@@ -2645,6 +2657,7 @@ function doPost(e) {
       document.getElementById('formIndex').value = item.index;
       document.getElementById('formMemberName').value = item.memberName;
       document.getElementById('formChildName').value = item.childName;
+      document.getElementById('formEduType').value = item.eduType || '';
       document.getElementById('formLevel').value = item.level;
       document.getElementById('formAmount').value = item.amount;
       document.getElementById('formDepartment').value = item.department || '';
@@ -2668,6 +2681,7 @@ function doPost(e) {
         memberId: document.getElementById('formMemberId').value.trim().padStart(5, '0'),
         memberName: document.getElementById('formMemberName').value.trim(),
         childName: document.getElementById('formChildName').value.trim(),
+        eduType: document.getElementById('formEduType').value.trim(),
         level: document.getElementById('formLevel').value.trim(),
         amount: parseFloat(document.getElementById('formAmount').value) || 0,
         department: document.getElementById('formDepartment').value.trim() || 'ไม่ระบุสังกัด',
@@ -2980,12 +2994,12 @@ function doPost(e) {
 
     // Export CSV Helper with Explicit Coop Bank Account Column Included
     function exportToCSV() {
-      let csvContent = "\uFEFFลำดับ,เลขที่สมาชิก,ชื่อ-สกุล สมาชิก,สังกัด,ชื่อบุตร,ชั้นปี,จำนวนเงิน,เลขที่บัญชีเงินฝากสหกรณ์,สถานะคำขอ,หมายเหตุ\n";
+      let csvContent = "\uFEFFลำดับ,เลขที่สมาชิก,ชื่อ-สกุล สมาชิก,สังกัด,ชื่อบุตร,ประเภทการศึกษา,ระดับชั้น,จำนวนเงิน,เลขที่บัญชีเงินฝากสหกรณ์,สถานะคำขอ,หมายเหตุ\n";
       
       dbData.forEach(d => {
         const cleanCoopAcc = (d.coopAccount || '-').toString().replace(/"/g, '""');
-        const cleanMemberId = `'${d.memberId}`; // Format with single quote prefix so Excel handles 5-digit zero padded string
-        csvContent += `"${d.index}","${cleanMemberId}","${d.memberName}","${d.department}","${d.childName}","${d.level}","${d.amount}","${cleanCoopAcc}","${d.docStatus}","${d.remark}"\n`;
+        const cleanMemberId = `'${d.memberId}`;
+        csvContent += `"${d.index}","${cleanMemberId}","${d.memberName}","${d.department}","${d.childName}","${d.eduType || ''}","${d.level}","${d.amount}","${cleanCoopAcc}","${d.docStatus}","${d.remark}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3125,7 +3139,7 @@ function doPost(e) {
     } else {
       var rowData = [
         data.index || '', data.memberId || '', data.memberName || '', data.department || '',
-        data.childName || '', data.amount || 0, data.level || '', data.coopAccount || '',
+        data.childName || '', data.amount || 0, data.eduType || '', data.level || '', data.coopAccount || '',
         data.docStatus || '', data.remark || ''
       ];
       if (targetRow > 1) sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
