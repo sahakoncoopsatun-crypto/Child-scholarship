@@ -174,10 +174,10 @@
             <!-- กรณีที่ยังไม่ได้ประเมิน -->
             <div id="surveyFormArea" class="text-center transition-all duration-500">
               <h3 class="text-lg font-bold text-slate-900">⭐ แบบประเมินความพึงพอใจการใช้งานระบบ</h3>
-              <p class="text-xs text-slate-500 mt-1 mb-5">ความคิดเห็นของท่านจะช่วยให้เราพัฒนาระบบให้ดียิ่งขึ้น (จำกัด 1 ครั้งต่อ 1 อุปกรณ์)</p>
+              <p class="text-xs text-slate-500 mt-1 mb-5">ความคิดเห็นของท่านจะช่วยให้เราพัฒนาระบบให้ดียิ่งขึ้น</p>
               
               <!-- ระบบดาว 1-5 -->
-              <div class="flex justify-center gap-2 mb-4 star-rating" id="starContainer">
+              <div class="flex justify-center gap-2 mb-2 star-rating" id="starContainer">
                 <button type="button" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseout="resetHover()" class="text-4xl text-slate-200 hover:text-amber-400 transition-colors star-btn focus:outline-none">★</button>
                 <button type="button" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseout="resetHover()" class="text-4xl text-slate-200 hover:text-amber-400 transition-colors star-btn focus:outline-none">★</button>
                 <button type="button" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseout="resetHover()" class="text-4xl text-slate-200 hover:text-amber-400 transition-colors star-btn focus:outline-none">★</button>
@@ -319,7 +319,6 @@
           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">ข้อเสนอแนะล่าสุดจากสมาชิก</h3>
             <div class="overflow-y-auto max-h-48 border border-slate-100 rounded-xl pr-2" id="surveyCommentsArea">
-              <!-- Comments will be injected here -->
               <div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>
             </div>
           </div>
@@ -501,7 +500,7 @@
       </div>
     </div>
 
-    <!-- Modal: Google Sheets Config (Updated for Survey) -->
+    <!-- Modal: Google Sheets Config -->
     <div id="gasConfigModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
         <div class="bg-indigo-950 text-white p-6 flex justify-between items-center shrink-0">
@@ -549,9 +548,9 @@ function doPost(e) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
       if (!surveySheet) {
         surveySheet = sheetApp.insertSheet('Surveys');
-        surveySheet.appendRow(['Date', 'IP', 'Rating', 'Comment']);
+        surveySheet.appendRow(['Date', 'Rating', 'Comment']);
       }
-      surveySheet.appendRow([data.date, data.ip, data.rating, data.comment]);
+      surveySheet.appendRow([data.date, data.rating, data.comment]);
       return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
     }
     
@@ -600,7 +599,7 @@ function doPost(e) {
       </div>
     </div>
 
-    // Modal: Delete Confirmation
+    <!-- Modal: Delete Confirmation -->
     <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden border border-slate-200 text-center p-6 space-y-4">
         <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto">
@@ -646,7 +645,6 @@ function doPost(e) {
 
     // Survey State
     let currentRating = 0;
-    let clientIP = 'unknown';
 
     /**
      * Flexible & Bulletproof Status Matching Helper
@@ -1009,7 +1007,8 @@ function doPost(e) {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
       const endpoints = [
         `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`
+        `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`)}`
       ];
 
       let csvText = null;
@@ -1023,7 +1022,6 @@ function doPost(e) {
           clearTimeout(timeoutId);
           if (response.ok) {
             const text = await response.text();
-            // ตรวจสอบว่าได้ไฟล์ CSV จริงๆ ไม่ใช่หน้าเว็บ Login ของ Google (กรณีติดล็อกสิทธิ์)
             if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
               csvText = text;
               break;
@@ -1035,54 +1033,51 @@ function doPost(e) {
       }
 
       if (csvText) {
-        const rows = parseCSV(csvText);
-        if (rows && rows.length >= 2) {
-          const parsed = parseDynamicCSV(rows);
-          if (parsed && parsed.length > 0) {
-            // บังคับให้ใช้ข้อมูลจาก Google Sheets เท่านั้น 100% ไม่ดึงจากแคชมาปะปน
-            dbData = parsed; 
-            reIndexDbData();
-            saveLocalStorageData();
-            updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-            isSuccess = true;
-            
-            if (activeView === 'admin') {
-              renderAdminDashboard();
-            } else {
-              const searchInput = document.getElementById('searchId');
-              if (searchInput && searchInput.value) {
-                handleSearchSubmit();
+        try {
+          const rows = parseCSV(csvText);
+          if (rows && rows.length >= 2) {
+            const parsed = parseDynamicCSV(rows);
+            if (parsed && parsed.length > 0) {
+              dbData = parsed; 
+              reIndexDbData();
+              saveLocalStorageData();
+              updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+              isSuccess = true;
+              
+              if (activeView === 'admin') {
+                renderAdminDashboard();
+              } else {
+                const searchInput = document.getElementById('searchId');
+                if (searchInput && searchInput.value) {
+                  handleSearchSubmit();
+                }
               }
+              return;
             }
-            
-            // ป้องกัน Error กรณีโค้ดโหลด Survey ไม่มี
-            if(typeof loadSurveyDataOnline === 'function') {
-               loadSurveyDataOnline();
-            }
-            return;
           }
+        } catch(parseErr) {
+          console.error('Data parsing error:', parseErr);
         }
       }
 
-      // หากดึงข้อมูลล้มเหลว (มักเกิดจากติด Permission) จะแสดงหน้าต่างช่วยเหลือ
       if (!isSuccess) {
         updateSyncStatus('error', `ระบบถูกบล็อก! กรุณาเปิดแชร์ไฟล์ Google Sheets เป็น "ทุกคนที่มีลิงก์"`);
         showShareHelpBanner();
       }
     }
 
-    // ฟังก์ชันแสดงหน้าต่างช่วยเหลือกรณีลืมเปิดแชร์ไฟล์
+    // Helper banner for share help
     function showShareHelpBanner() {
       const html = `
         <div class="bg-rose-50 border border-rose-200 rounded-3xl p-6 md:p-8 text-center animate-fadeIn mt-6 max-w-2xl mx-auto shadow-sm">
            <div class="text-5xl mb-4">🔒</div>
            <h2 class="text-lg md:text-xl font-bold text-rose-700 mb-2">ระบบถูกบล็อก ไม่สามารถดึงข้อมูลมาแสดงผลได้</h2>
            <p class="text-xs md:text-sm text-slate-700 leading-relaxed mb-6">
-             การตั้งค่า <strong>Google Apps Script</strong> ที่ท่านทำไปนั้นใช้สำหรับ <strong>"บันทึกข้อมูลกลับ"</strong> เท่านั้น<br/>
+             การตั้งค่า <strong>Google Apps Script</strong> นั้นใช้สำหรับ <strong>"บันทึกข้อมูลกลับ"</strong> เท่านั้น<br/>
              แต่การ <strong>"ดึงข้อมูลมาแสดง"</strong> ไฟล์ Google Sheets จะต้องถูกตั้งค่าสิทธิ์ให้เปิดเผยเสียก่อน
            </p>
            <div class="bg-white p-5 rounded-2xl text-left text-xs md:text-sm border border-rose-100 shadow-inner">
-             <p class="font-bold text-slate-900 mb-3 text-center border-b pb-2 border-slate-100">🛠️ วิธีแก้ไขด่วนใน 3 คลิก:</p>
+             <p class="font-bold text-slate-900 mb-3 text-center border-b pb-2 border-slate-100">🛠️ วิธีแก้ไขง่ายๆ ใน 3 คลิก:</p>
              <ol class="list-decimal pl-5 space-y-2.5 text-slate-700 font-medium">
                <li>เปิดไฟล์ Google Sheets ของสหกรณ์</li>
                <li>คลิกปุ่ม <strong class="text-blue-600">"แชร์ (Share)"</strong> สีน้ำเงิน มุมขวาบน</li>
@@ -2100,9 +2095,9 @@ function doPost(e) {
       var surveySheet = sheetApp.getSheetByName('Surveys');
       if (!surveySheet) {
         surveySheet = sheetApp.insertSheet('Surveys');
-        surveySheet.appendRow(['Date', 'IP', 'Rating', 'Comment']);
+        surveySheet.appendRow(['Date', 'Rating', 'Comment']);
       }
-      surveySheet.appendRow([data.date, data.ip, data.rating, data.comment]);
+      surveySheet.appendRow([data.date, data.rating, data.comment]);
       return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
     }
     
@@ -2150,38 +2145,143 @@ function doPost(e) {
     // ==========================================
     // SURVEY SYSTEM LOGIC (ระบบประเมินความพึงพอใจ)
     // ==========================================
+    function setRating(val) {
+      currentRating = val;
+      updateStarUI(val);
+      const ratingText = document.getElementById('ratingText');
+      const labels = ['', '1 ดาว - ควรปรับปรุง', '2 ดาว - พอใช้', '3 ดาว - ปานกลาง', '4 ดาว - ดีมาก', '5 ดาว - ดีเยี่ยมดีมาก'];
+      if (ratingText) ratingText.textContent = labels[val] || '';
+    }
+
+    function hoverRating(val) {
+      updateStarUI(val);
+    }
+
+    function resetHover() {
+      updateStarUI(currentRating);
+    }
+
+    function updateStarUI(val) {
+      const container = document.getElementById('starContainer');
+      if (!container) return;
+      const btns = container.querySelectorAll('.star-btn');
+      btns.forEach((btn, idx) => {
+        if (idx < val) {
+          btn.classList.add('text-amber-400');
+          btn.classList.remove('text-slate-200');
+        } else {
+          btn.classList.remove('text-amber-400');
+          btn.classList.add('text-slate-200');
+        }
+      });
+    }
+
+    async function submitSurvey() {
+      if (currentRating === 0) {
+        showToast('กรุณาเลือกดาวประเมินความพึงพอใจ', 'warning');
+        return;
+      }
+      const commentInput = document.getElementById('surveyComment');
+      const comment = commentInput ? commentInput.value.trim() : '';
+      const dateStr = formatThaiDateTime();
+
+      const surveyItem = {
+        rating: currentRating,
+        comment: comment,
+        date: dateStr
+      };
+
+      surveyDbData.unshift(surveyItem);
+      saveSurveyToLocalStorage();
+      localStorage.setItem('coop_survey_submitted_2569', 'true');
+
+      if (gasWebAppUrl) {
+        try {
+          await fetch(gasWebAppUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'survey',
+              rating: currentRating,
+              comment: comment,
+              date: dateStr
+            })
+          });
+        } catch(e) {
+          console.warn('Survey POST error:', e);
+        }
+      }
+
+      initSurveySystem();
+      showToast('ขอขอบคุณสำหรับแบบประเมินความพึงพอใจ', 'success');
+    }
+
     function initSurveySystem() {
-      const surveyed = localStorage.getItem('coop_survey_submitted_2569');
-      const formArea = document.getElementById('surveyFormArea');
-      const successArea = document.getElementById('surveySuccessArea');
-      
-      if (!formArea || !successArea) return;
-      
-      if (surveyed === 'true') {
-        formArea.classList.add('hidden');
-        successArea.classList.remove('hidden');
-      } else {
-        formArea.classList.remove('hidden');
-        successArea.classList.add('hidden');
+      try {
+        const surveyed = localStorage.getItem('coop_survey_submitted_2569');
+        const formArea = document.getElementById('surveyFormArea');
+        const successArea = document.getElementById('surveySuccessArea');
+        
+        if (formArea && successArea) {
+          if (surveyed === 'true') {
+            formArea.classList.add('hidden');
+            successArea.classList.remove('hidden');
+          } else {
+            formArea.classList.remove('hidden');
+            successArea.classList.add('hidden');
+          }
+        }
+        renderSurveyAdmin();
+      } catch (err) {
+        console.error('initSurveySystem error:', err);
       }
-      
-      const avg = surveyDbData.length > 0 ? (totalScore / surveyDbData.length).toFixed(1) : '0.0';
-      
-      const avgEl = document.getElementById('surveyAvgArea');
-      const commentsArea = document.getElementById('surveyCommentsArea');
-      
-      if (avgEl) {
-        const fullStars = Math.round(avg);
-        const starHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-        avgEl.innerHTML = `
-          <h2 class="text-5xl font-extrabold text-slate-900 my-3">${avg}</h2>
-          <div class="text-3xl text-amber-400 tracking-widest mb-2">${starHtml}</div>
-          <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">${surveyDbData.length}</span> ราย</p>
-        `;
-      }
-      
-      if (commentsArea && html) {
-        commentsArea.innerHTML = html;
+    }
+
+    function renderSurveyAdmin() {
+      try {
+        const totalScore = surveyDbData.reduce((acc, curr) => acc + (Number(curr.rating) || 0), 0);
+        const avg = surveyDbData.length > 0 ? (totalScore / surveyDbData.length).toFixed(1) : '0.0';
+        
+        const avgEl = document.getElementById('surveyAvgArea');
+        const commentsArea = document.getElementById('surveyCommentsArea');
+        
+        if (avgEl) {
+          const fullStars = Math.round(Number(avg));
+          const starHtml = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+          avgEl.innerHTML = `
+            <h2 class="text-5xl font-extrabold text-slate-900 my-3">${avg}</h2>
+            <div class="text-3xl text-amber-400 tracking-widest mb-2">${starHtml}</div>
+            <p class="text-xs text-slate-500">จากผู้ประเมินทั้งหมด <span id="surveyTotalCount" class="font-bold text-indigo-600">${surveyDbData.length}</span> ราย</p>
+          `;
+        }
+        
+        if (commentsArea) {
+          let commentsHtml = '';
+          if (surveyDbData.length > 0) {
+            const commentsList = surveyDbData.filter(s => s.comment && s.comment.trim() !== '');
+            if (commentsList.length > 0) {
+              commentsHtml = commentsList.map(s => {
+                const starCount = Number(s.rating) || 0;
+                const starStr = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+                return `<div class="p-3 border-b border-slate-100 text-xs hover:bg-slate-50">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-amber-400 font-bold">${starStr}</span>
+                    <span class="text-[10px] text-slate-400">${s.date || ''}</span>
+                  </div>
+                  <p class="text-slate-700 font-medium">"${s.comment}"</p>
+                </div>`;
+              }).join('');
+            }
+          }
+          
+          if (!commentsHtml) {
+            commentsHtml = '<div class="text-center py-6 text-xs text-slate-400">ยังไม่มีข้อเสนอแนะในขณะนี้</div>';
+          }
+          commentsArea.innerHTML = commentsHtml;
+        }
+      } catch (err) {
+        console.error('renderSurveyAdmin error:', err);
       }
     }
 
@@ -2194,9 +2294,9 @@ function doPost(e) {
       const viewParam = urlParams.get('view');
       if (viewParam === 'member') {
         switchView('member');
-      } else {
-        initSurveySystem(); // เปิดใช้งานระบบแบบประเมินอย่างปลอดภัย
       }
+
+      initSurveySystem();
 
       const searchForm = document.getElementById('searchForm');
       const searchInput = document.getElementById('searchId');
