@@ -245,7 +245,7 @@
             </button>
             <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
               <span>📥</span>
-              <span>ส่งออกไฟล์ CSV</span>
+              <span>ส่งออกไฟล์ CSV (รวมเลขบัญชี)</span>
             </button>
           </div>
         </div>
@@ -283,6 +283,121 @@
           </div>
         </div>
 
+        <!-- Budget Allocation Breakdown by Education Level (4 Categories) -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden space-y-5">
+          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600"></div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>📊</span>
+                <span>สรุปการจัดสรรงบประมาณตามระดับการศึกษา (4 ประเภท)</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">จำแนกผู้รับทุน วงเงินจัดสรร และสัดส่วนแยกตามเกณฑ์ระดับชั้นปีการศึกษา</p>
+            </div>
+            <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 font-bold text-xs rounded-full self-start sm:self-auto">
+              💰 เกณฑ์ทุนสวัสดิการ 2569
+            </span>
+          </div>
+
+          <!-- 4 Category Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Category 1: Primary -->
+            <div class="p-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded-full">ระดับ 1</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">1. ประถมศึกษา</h4>
+                  <p class="text-[11px] font-semibold text-blue-700">ทุนละ 1,000 บาท</p>
+                </div>
+                <span class="text-2xl">🏫</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-blue-100 flex items-baseline justify-between">
+                <div>
+                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
+                  <span id="eduCountPrimary" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+                </div>
+                <div class="text-right">
+                  <span id="eduAmountPrimary" class="text-base font-extrabold text-blue-900">0 บาท</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category 2: Junior High -->
+            <div class="p-4 rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-teal-800 uppercase tracking-wider bg-teal-100 px-2 py-0.5 rounded-full">ระดับ 2</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">2. มัธยมศึกษาตอนต้น</h4>
+                  <p class="text-[11px] font-semibold text-teal-700">ทุนละ 1,200 บาท</p>
+                </div>
+                <span class="text-2xl">🎒</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-teal-100 flex items-baseline justify-between">
+                <div>
+                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
+                  <span id="eduCountJunior" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+                </div>
+                <div class="text-right">
+                  <span id="eduAmountJunior" class="text-base font-extrabold text-teal-900">0 บาท</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category 3: Senior High / Vocational -->
+            <div class="p-4 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-indigo-800 uppercase tracking-wider bg-indigo-100 px-2 py-0.5 rounded-full">ระดับ 3</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">3. ม.ปลาย / ปวช.</h4>
+                  <p class="text-[11px] font-semibold text-indigo-700">ทุนละ 1,400 บาท</p>
+                </div>
+                <span class="text-2xl">📐</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-indigo-100 flex items-baseline justify-between">
+                <div>
+                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
+                  <span id="eduCountSenior" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+                </div>
+                <div class="text-right">
+                  <span id="eduAmountSenior" class="text-base font-extrabold text-indigo-900">0 บาท</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category 4: Bachelor Degree / High Vocational -->
+            <div class="p-4 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-violet-800 uppercase tracking-wider bg-violet-100 px-2 py-0.5 rounded-full">ระดับ 4</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">4. ปริญญาตรี / ปวส.</h4>
+                  <p class="text-[11px] font-semibold text-violet-700">ทุนละ 1,600 บาท</p>
+                </div>
+                <span class="text-2xl">🎓</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-violet-100 flex items-baseline justify-between">
+                <div>
+                  <span class="text-xs text-slate-500">อนุมัติแล้ว:</span>
+                  <span id="eduCountBachelor" class="text-base font-bold text-slate-900 ml-1">0 ราย</span>
+                </div>
+                <div class="text-right">
+                  <span id="eduAmountBachelor" class="text-base font-extrabold text-violet-900">0 บาท</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Chart for Education Level Budget Breakdown -->
+          <div class="pt-2">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">เปรียบเทียบงบประมาณอนุมัติแยกตามระดับการศึกษา</h4>
+            <div class="relative h-52 w-full">
+              <canvas id="eduLevelBarChart"></canvas>
+            </div>
+          </div>
+        </section>
+
         <!-- Dashboard Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1">
@@ -300,50 +415,73 @@
           </div>
         </div>
 
-        <!-- Visitor Analytics Dashboard Section for Admin -->
+        <!-- Visitor Analytics Dashboard Section for Admin with Historical Filters -->
         <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden space-y-6">
           <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600"></div>
           
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                 <span>📈</span>
                 <span>สถิติผู้เข้าใช้งานระบบฝั่งสมาชิก (Visitor Traffic)</span>
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5">นับจำนวนผู้เข้าใช้งานที่ไม่ซ้ำกัน (Unique IP Address) แยกตามช่วงเวลา</p>
+              <p class="text-xs text-slate-500 mt-0.5">นับจำนวนผู้เข้าใช้งานที่ไม่ซ้ำกัน (Unique IP Address) และสืบค้นข้อมูลย้อนหลัง</p>
             </div>
-            <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-[11px] rounded-full self-start sm:self-auto">
-              🔒 IP Uniqueness Active
-            </span>
+
+            <!-- Historical Visitor Filter Controls -->
+            <div class="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200">
+              <span class="text-xs font-bold text-slate-700 pl-1">🗓️ เลือกดูย้อนหลัง:</span>
+              
+              <!-- Filter Mode Selector -->
+              <select id="visitorFilterMode" onchange="handleVisitorFilterChange()" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white text-slate-800 outline-none focus:border-indigo-600">
+                <option value="CURRENT">ปัจจุบัน (วันนี้ / เดือนนี้ / ปีนี้)</option>
+                <option value="DAILY">ย้อนหลังแบบรายวัน</option>
+                <option value="MONTHLY">ย้อนหลังแบบรายเดือน</option>
+                <option value="YEARLY">ย้อนหลังแบบรายปี</option>
+              </select>
+
+              <!-- Dynamic Pickers -->
+              <input id="visitorDatePicker" type="date" onchange="renderVisitorAnalytics()" class="hidden px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white text-slate-800 outline-none focus:border-indigo-600" />
+              
+              <input id="visitorMonthPicker" type="month" onchange="renderVisitorAnalytics()" class="hidden px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white text-slate-800 outline-none focus:border-indigo-600" />
+
+              <select id="visitorYearPicker" onchange="renderVisitorAnalytics()" class="hidden px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white text-slate-800 outline-none focus:border-indigo-600">
+                <!-- Dynamically Populated -->
+              </select>
+
+              <button onclick="resetVisitorFilter()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
+                รีเซ็ต
+              </button>
+            </div>
           </div>
 
           <!-- Visitor KPI Cards -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
               <div class="flex justify-between items-center text-slate-500">
-                <span class="text-xs font-semibold">ผู้ใช้งานวันนี้</span>
+                <span id="labelVisitorPeriod1" class="text-xs font-semibold">ผู้ใช้งานวันนี้</span>
                 <span class="text-lg">📅</span>
               </div>
               <h3 id="statVisitorToday" class="text-2xl font-bold text-slate-900 mt-2">0 IP</h3>
-              <p class="text-[10px] text-slate-400 mt-1">Unique IP ประจำวันที่ปัจจุบัน</p>
+              <p id="descVisitorPeriod1" class="text-[10px] text-slate-400 mt-1">Unique IP ประจำวันที่ปัจจุบัน</p>
             </div>
 
             <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
               <div class="flex justify-between items-center text-blue-700">
-                <span class="text-xs font-semibold">ผู้ใช้งานเดือนนี้</span>
+                <span id="labelVisitorPeriod2" class="text-xs font-semibold">ผู้ใช้งานเดือนนี้</span>
                 <span class="text-lg">🗓️</span>
               </div>
               <h3 id="statVisitorMonth" class="text-2xl font-bold text-blue-900 mt-2">0 IP</h3>
-              <p class="text-[10px] text-blue-600 mt-1">Unique IP ประจำเดือนนี้</p>
+              <p id="descVisitorPeriod2" class="text-[10px] text-blue-600 mt-1">Unique IP ประจำเดือนนี้</p>
             </div>
 
             <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
               <div class="flex justify-between items-center text-indigo-700">
-                <span class="text-xs font-semibold">ผู้ใช้งานปีนี้</span>
+                <span id="labelVisitorPeriod3" class="text-xs font-semibold">ผู้ใช้งานปีนี้</span>
                 <span class="text-lg">🏆</span>
               </div>
               <h3 id="statVisitorYear" class="text-2xl font-bold text-indigo-950 mt-2">0 IP</h3>
-              <p class="text-[10px] text-indigo-600 mt-1">Unique IP ประจำปีนี้</p>
+              <p id="descVisitorPeriod3" class="text-[10px] text-indigo-600 mt-1">Unique IP ประจำปีนี้</p>
             </div>
 
             <div class="bg-violet-50/50 p-4 rounded-2xl border border-violet-100">
@@ -358,7 +496,7 @@
 
           <!-- Visitor Trend Visual Chart -->
           <div class="pt-2">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">แนวโน้มการเข้าใช้งาน ย้อนหลัง 7 วัน (Unique IP รายวัน)</h4>
+            <h4 id="visitorTrendTitle" class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">แนวโน้มการเข้าใช้งาน ย้อนหลัง 7 วัน (Unique IP รายวัน)</h4>
             <div class="relative h-56 w-full">
               <canvas id="visitorTrendChart"></canvas>
             </div>
@@ -489,7 +627,18 @@
             </div>
             <div>
               <label class="font-bold text-slate-700 block mb-1">ระดับชั้นปี *</label>
-              <input type="text" id="formLevel" required placeholder="เช่น ป.6, ม.3, ป.ตรี" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
+              <input type="text" id="formLevel" onchange="autoSuggestAmountByLevel()" required placeholder="เช่น ป.6, ม.3, ป.ตรี" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none" />
+            </div>
+          </div>
+
+          <!-- Quick Preset Buttons for Budget Tier -->
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">ปุ่มช่วยกรอกจำนวนเงินตามระดับการศึกษา:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button type="button" onclick="setPresetAmount(1000, 'ประถมศึกษา')" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-lg text-[10px] font-bold">1,000 (ประถม)</button>
+              <button type="button" onclick="setPresetAmount(1200, 'มัธยมศึกษาตอนต้น')" class="px-2 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-lg text-[10px] font-bold">1,200 (ม.ต้น)</button>
+              <button type="button" onclick="setPresetAmount(1400, 'มัธยมศึกษาตอนปลาย')" class="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg text-[10px] font-bold">1,400 (ม.ปลาย/ปวช.)</button>
+              <button type="button" onclick="setPresetAmount(1600, 'ปริญญาตรี')" class="px-2 py-1 bg-violet-50 hover:bg-violet-100 text-violet-800 border border-violet-200 rounded-lg text-[10px] font-bold">1,600 (ป.ตรี/ปวส.)</button>
             </div>
           </div>
 
@@ -811,9 +960,12 @@ function doPost(e) {
     let isMaintenanceMode = false;
     let isMemberOnlyUrl = false;
     let gasWebAppUrl = '';
+    
+    // Chart instances
     let chartInstanceDoughnut = null;
     let chartInstanceBar = null;
     let chartInstanceVisitor = null;
+    let chartInstanceEduLevel = null;
 
     // Survey Rating Input State
     let currentRating = 0;
@@ -877,6 +1029,60 @@ function doPost(e) {
       return matchStatusFilter(status, 'ยื่นเอกสารสำเร็จ') || 
              matchStatusFilter(status, 'อยู่ระหว่างตรวจสอบเอกสาร') || 
              matchStatusFilter(status, 'อยู่ระหว่างการพิจารณา');
+    }
+
+    // Categorize Education Level into 4 Tiers
+    function categorizeEducationLevel(levelStr, amountVal) {
+      const lvl = (levelStr || '').toString().toLowerCase().trim();
+      const amt = Number(amountVal) || 0;
+
+      // Tier 1: Primary (1,000 Baht)
+      if (amt === 1000 || lvl.includes('ป.') || lvl.includes('ประถม') || lvl.includes('ป1') || lvl.includes('ป2') || lvl.includes('ป3') || lvl.includes('ป4') || lvl.includes('ป5') || lvl.includes('ป6')) {
+        return 'PRIMARY';
+      }
+      
+      // Tier 2: Junior High (1,200 Baht)
+      if (amt === 1200 || lvl.includes('ม.1') || lvl.includes('ม.2') || lvl.includes('ม.3') || lvl.includes('ม.ต้น') || lvl.includes('มัธยมต้น')) {
+        return 'JUNIOR';
+      }
+
+      // Tier 3: Senior High / Vocational (1,400 Baht)
+      if (amt === 1400 || lvl.includes('ม.4') || lvl.includes('ม.5') || lvl.includes('ม.6') || lvl.includes('ม.ปลาย') || lvl.includes('ปวช')) {
+        return 'SENIOR';
+      }
+
+      // Tier 4: Bachelor / High Vocational (1,600 Baht)
+      if (amt === 1600 || lvl.includes('ป.ตรี') || lvl.includes('ปริญญา') || lvl.includes('ปวส') || lvl.includes('อุดมศึกษา') || lvl.includes('มหาวิทยาลัย')) {
+        return 'BACHELOR';
+      }
+
+      // Fallback by Amount
+      if (amt <= 1000) return 'PRIMARY';
+      if (amt === 1200) return 'JUNIOR';
+      if (amt === 1400) return 'SENIOR';
+      return 'BACHELOR';
+    }
+
+    // Auto preset amount helper for Modal
+    function setPresetAmount(amount, levelName) {
+      const formAmt = document.getElementById('formAmount');
+      const formLvl = document.getElementById('formLevel');
+      if (formAmt) formAmt.value = amount;
+      if (formLvl && (!formLvl.value || formLvl.value.trim() === '')) {
+        formLvl.value = levelName;
+      }
+    }
+
+    function autoSuggestAmountByLevel() {
+      const formLvl = document.getElementById('formLevel');
+      const formAmt = document.getElementById('formAmount');
+      if (!formLvl || !formAmt) return;
+
+      const cat = categorizeEducationLevel(formLvl.value, 0);
+      if (cat === 'PRIMARY') formAmt.value = 1000;
+      else if (cat === 'JUNIOR') formAmt.value = 1200;
+      else if (cat === 'SENIOR') formAmt.value = 1400;
+      else if (cat === 'BACHELOR') formAmt.value = 1600;
     }
 
     // Strict URL check to enforce member-only isolation
@@ -949,8 +1155,17 @@ function doPost(e) {
         const savedVisitors = localStorage.getItem('coop_visitor_db_2569');
         if (savedVisitors) {
           const rawVisitors = JSON.parse(savedVisitors);
-          if (Array.isArray(rawVisitors)) visitorDbData = rawVisitors;
-          else visitorDbData = [];
+          if (Array.isArray(rawVisitors)) {
+            // STRICT FILTERING: Keep ONLY rows with valid YYYY-MM-DD date and 4-digit numeric year
+            visitorDbData = rawVisitors.filter(v => 
+              v && typeof v === 'object' && 
+              v.ip && 
+              /^\d{4}-\d{2}-\d{2}$/.test(String(v.date || '').trim()) &&
+              /^\d{4}$/.test(String(v.year || '').trim())
+            );
+          } else {
+            visitorDbData = [];
+          }
         } else {
           visitorDbData = [];
         }
@@ -965,6 +1180,7 @@ function doPost(e) {
       if (!Array.isArray(visitorDbData)) visitorDbData = [];
 
       reIndexDbData();
+      saveVisitorToLocalStorage(); // Clean corrupt entries from local storage immediately
 
       const maintenance = localStorage.getItem('coop_maintenance_mode');
       if (maintenance !== null) isMaintenanceMode = maintenance === 'true';
@@ -982,6 +1198,13 @@ function doPost(e) {
     }
 
     function saveVisitorToLocalStorage() {
+      // Clean visitor array before saving
+      visitorDbData = visitorDbData.filter(v => 
+        v && typeof v === 'object' && 
+        v.ip && 
+        /^\d{4}-\d{2}-\d{2}$/.test(String(v.date || '').trim()) &&
+        /^\d{4}$/.test(String(v.year || '').trim())
+      );
       localStorage.setItem('coop_visitor_db_2569', JSON.stringify(visitorDbData));
     }
 
@@ -1153,7 +1376,7 @@ function doPost(e) {
       return parsedSurveys;
     }
 
-    // Parser for Google Sheets Tab 'Visitors'
+    // Parser for Google Sheets Tab 'Visitors' - Strict Validation Implemented
     function parseVisitorCSV(rows) {
       if (!rows || rows.length <= 1) return [];
       const parsedVisitors = [];
@@ -1164,10 +1387,25 @@ function doPost(e) {
         const ip = (row[0] || '').toString().trim();
         const timestamp = (row[1] || '').toString().trim();
         const date = (row[2] || '').toString().trim();
-        const month = (row[3] || (date ? date.substring(0, 7) : '')).toString().trim();
-        const year = (row[4] || (date ? date.substring(0, 4) : '')).toString().trim();
+        let month = (row[3] || (date ? date.substring(0, 7) : '')).toString().trim();
+        let year = (row[4] || (date ? date.substring(0, 4) : '')).toString().trim();
 
-        if (ip && date && ip !== 'IP' && ip !== 'เลขที่สมาชิก') {
+        // STRICT VALIDATION:
+        // 1. Date MUST strictly match YYYY-MM-DD
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+        // 2. Year MUST strictly be a 4-digit number (e.g. 2026)
+        if (!/^\d{4}$/.test(year)) {
+          year = date.substring(0, 4);
+        }
+
+        // 3. Month MUST strictly match YYYY-MM
+        if (!/^\d{4}-\d{2}$/.test(month)) {
+          month = date.substring(0, 7);
+        }
+
+        // 4. IP MUST NOT be a sequence number (like 1, 2, 3), member ID, or header text
+        if (ip && ip !== 'IP' && ip !== 'เลขที่สมาชิก' && !/^\d{1,4}$/.test(ip)) {
           parsedVisitors.push({ ip, timestamp, date, month, year });
         }
       }
@@ -1223,7 +1461,7 @@ function doPost(e) {
       }
     }
 
-    // Google Sheets Online Data Sync with Master Safety Timeout
+    // Google Sheets Online Data Sync
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
       updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล Google Sheets...');
@@ -1231,13 +1469,12 @@ function doPost(e) {
       let isSuccess = false;
       let completed = false;
 
-      // Master Safety Timer: Guarantees status update within 6 seconds
       const masterTimer = setTimeout(() => {
         if (!completed && !isSuccess) {
           if (dbData && dbData.length > 0) {
-            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อใช้เวลานาน) | ข้อมูล ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
           } else {
-            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดตรวจสอบการแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ | ณ ${formatThaiDateTime()}`);
           }
         }
       }, 6000);
@@ -1315,7 +1552,9 @@ function doPost(e) {
               if (parsedV && parsedV.length > 0) {
                 const combined = [...parsedV];
                 visitorDbData.forEach(vLocal => {
-                  if (!combined.some(c => c.ip === vLocal.ip && c.date === vLocal.date)) {
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(String(vLocal.date || '').trim()) &&
+                      /^\d{4}$/.test(String(vLocal.year || '').trim()) &&
+                      !combined.some(c => c.ip === vLocal.ip && c.date === vLocal.date)) {
                     combined.push(vLocal);
                   }
                 });
@@ -1330,9 +1569,9 @@ function doPost(e) {
 
         if (!isSuccess) {
           if (dbData && dbData.length > 0) {
-            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ (การเชื่อมต่อ Google Sheets ไม่สำเร็จ) | ข้อมูล ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
           } else {
-            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดเปิดสิทธิ์ไฟล์ใน Google Drive เป็น "ทุกคนที่มีลิงก์") | ณ ${formatThaiDateTime()}`);
+            updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ | ณ ${formatThaiDateTime()}`);
           }
         }
       } catch (globalErr) {
@@ -1888,11 +2127,113 @@ function doPost(e) {
       document.getElementById('statTotalAmount').textContent = `${approvedTotalAmount.toLocaleString()} บาท`;
       document.getElementById('statTotalRequested').textContent = `งบยื่นขอรวมทั้งหมด: ${allRequestedTotalAmount.toLocaleString()} บาท`;
 
+      // 4 Education Level Budget Breakdown Calculations
+      renderEducationLevelBreakdown(approvedList);
+
       updateAdminStatusDropdownOptions();
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
       filterAdminTable();
       renderSurveyAdmin();
+      initVisitorFilterPickers();
       renderVisitorAnalytics();
+    }
+
+    // Calculate & Render Budget Allocations across 4 Education Tiers
+    function renderEducationLevelBreakdown(approvedList) {
+      let countPrimary = 0, sumPrimary = 0;
+      let countJunior = 0, sumJunior = 0;
+      let countSenior = 0, sumSenior = 0;
+      let countBachelor = 0, sumBachelor = 0;
+
+      approvedList.forEach(item => {
+        const cat = categorizeEducationLevel(item.level, item.amount);
+        const amt = Number(item.amount) || 0;
+
+        if (cat === 'PRIMARY') {
+          countPrimary++;
+          sumPrimary += amt || 1000;
+        } else if (cat === 'JUNIOR') {
+          countJunior++;
+          sumJunior += amt || 1200;
+        } else if (cat === 'SENIOR') {
+          countSenior++;
+          sumSenior += amt || 1400;
+        } else if (cat === 'BACHELOR') {
+          countBachelor++;
+          sumBachelor += amt || 1600;
+        }
+      });
+
+      document.getElementById('eduCountPrimary').textContent = `${countPrimary} ราย`;
+      document.getElementById('eduAmountPrimary').textContent = `${sumPrimary.toLocaleString()} บาท`;
+
+      document.getElementById('eduCountJunior').textContent = `${countJunior} ราย`;
+      document.getElementById('eduAmountJunior').textContent = `${sumJunior.toLocaleString()} บาท`;
+
+      document.getElementById('eduCountSenior').textContent = `${countSenior} ราย`;
+      document.getElementById('eduAmountSenior').textContent = `${sumSenior.toLocaleString()} บาท`;
+
+      document.getElementById('eduCountBachelor').textContent = `${countBachelor} ราย`;
+      document.getElementById('eduAmountBachelor').textContent = `${sumBachelor.toLocaleString()} บาท`;
+
+      // Render Education Level Bar Chart
+      const ctxEdu = document.getElementById('eduLevelBarChart');
+      if (ctxEdu && typeof Chart !== 'undefined') {
+        if (chartInstanceEduLevel) chartInstanceEduLevel.destroy();
+
+        chartInstanceEduLevel = new Chart(ctxEdu, {
+          type: 'bar',
+          data: {
+            labels: ['1. ประถมศึกษา (1,000บ.)', '2. ม.ต้น (1,200บ.)', '3. ม.ปลาย/ปวช. (1,400บ.)', '4. ป.ตรี/ปวส. (1,600บ.)'],
+            datasets: [
+              {
+                label: 'จำนวนผู้ได้รับทุน (คน)',
+                data: [countPrimary, countJunior, countSenior, countBachelor],
+                backgroundColor: '#3b82f6',
+                yAxisID: 'yCount',
+                borderRadius: 6
+              },
+              {
+                label: 'งบประมาณรวม (บาท)',
+                data: [sumPrimary, sumJunior, sumSenior, sumBachelor],
+                backgroundColor: '#059669',
+                yAxisID: 'yAmount',
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', labels: { font: { family: 'Prompt', size: 11 } } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} ${ctx.datasetIndex === 0 ? 'ราย' : 'บาท'}`
+                }
+              }
+            },
+            scales: {
+              x: { ticks: { font: { family: 'Prompt', size: 10 } } },
+              yCount: {
+                type: 'linear',
+                position: 'left',
+                beginAtZero: true,
+                title: { display: true, text: 'จำนวนผู้รับทุน (คน)', font: { family: 'Prompt', size: 10 } },
+                ticks: { precision: 0, font: { family: 'Prompt', size: 10 } }
+              },
+              yAmount: {
+                type: 'linear',
+                position: 'right',
+                beginAtZero: true,
+                grid: { drawOnChartArea: false },
+                title: { display: true, text: 'งบประมาณ (บาท)', font: { family: 'Prompt', size: 10 } },
+                ticks: { font: { family: 'Prompt', size: 10 } }
+              }
+            }
+          }
+        });
+      }
     }
 
     function renderAdminCharts(approved, pending, reject) {
@@ -1958,44 +2299,232 @@ function doPost(e) {
       }
     }
 
-    // Render Visitor Unique IP KPI Metrics & Trend Chart
+    // Initialize Visitor Filter Pickers
+    function initVisitorFilterPickers() {
+      const d = new Date();
+      const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const yearStr = `${d.getFullYear()}`;
+
+      const datePicker = document.getElementById('visitorDatePicker');
+      const monthPicker = document.getElementById('visitorMonthPicker');
+      const yearPicker = document.getElementById('visitorYearPicker');
+
+      if (datePicker && !datePicker.value) datePicker.value = todayStr;
+      if (monthPicker && !monthPicker.value) monthPicker.value = monthStr;
+
+      if (yearPicker) {
+        // Sanitize visitor array to remove any contaminated rows from non-visitor sheets
+        visitorDbData = visitorDbData.filter(v => 
+          v && typeof v === 'object' && 
+          v.ip && 
+          /^\d{4}-\d{2}-\d{2}$/.test(String(v.date || '').trim()) &&
+          /^\d{4}$/.test(String(v.year || '').trim())
+        );
+
+        const yearsSet = new Set([yearStr]);
+        visitorDbData.forEach(v => {
+          const y = String(v.year || '').trim();
+          if (/^\d{4}$/.test(y)) {
+            yearsSet.add(y);
+          }
+        });
+
+        const sortedYears = Array.from(yearsSet).sort().reverse();
+        yearPicker.innerHTML = sortedYears.map(y => {
+          const numY = Number(y);
+          if (isNaN(numY) || numY < 2000 || numY > 2100) return '';
+          return `<option value="${y}">ปี พ.ศ. ${numY + 543} (${y})</option>`;
+        }).filter(Boolean).join('');
+      }
+    }
+
+    function handleVisitorFilterChange() {
+      const mode = document.getElementById('visitorFilterMode').value;
+      const datePicker = document.getElementById('visitorDatePicker');
+      const monthPicker = document.getElementById('visitorMonthPicker');
+      const yearPicker = document.getElementById('visitorYearPicker');
+
+      datePicker.classList.add('hidden');
+      monthPicker.classList.add('hidden');
+      yearPicker.classList.add('hidden');
+
+      if (mode === 'DAILY') datePicker.classList.remove('hidden');
+      else if (mode === 'MONTHLY') monthPicker.classList.remove('hidden');
+      else if (mode === 'YEARLY') yearPicker.classList.remove('hidden');
+
+      renderVisitorAnalytics();
+    }
+
+    function resetVisitorFilter() {
+      document.getElementById('visitorFilterMode').value = 'CURRENT';
+      handleVisitorFilterChange();
+    }
+
+    // Render Visitor Unique IP KPI Metrics & Trend Chart with Historical Filters
     function renderVisitorAnalytics() {
       try {
+        // Strict Data Sanitization
+        visitorDbData = visitorDbData.filter(v => 
+          v && typeof v === 'object' && 
+          v.ip && 
+          /^\d{4}-\d{2}-\d{2}$/.test(String(v.date || '').trim()) &&
+          /^\d{4}$/.test(String(v.year || '').trim())
+        );
+
+        const mode = document.getElementById('visitorFilterMode')?.value || 'CURRENT';
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const yearStr = `${d.getFullYear()}`;
 
-        const todayIPs = new Set(visitorDbData.filter(v => v.date === todayStr).map(v => v.ip));
-        const monthIPs = new Set(visitorDbData.filter(v => v.month === monthStr || (v.date && v.date.startsWith(monthStr))).map(v => v.ip));
-        const yearIPs = new Set(visitorDbData.filter(v => v.year === yearStr || (v.date && v.date.startsWith(yearStr))).map(v => v.ip));
-        const allIPs = new Set(visitorDbData.map(v => v.ip));
+        // Overall Accurate Unique IP Sets
+        const allUniqueIPs = new Set(visitorDbData.map(v => v.ip).filter(Boolean));
+        document.getElementById('statVisitorTotal').textContent = `${allUniqueIPs.size} IP`;
 
-        const elToday = document.getElementById('statVisitorToday');
-        const elMonth = document.getElementById('statVisitorMonth');
-        const elYear = document.getElementById('statVisitorYear');
-        const elTotal = document.getElementById('statVisitorTotal');
+        let period1Label = 'ผู้ใช้งานวันนี้';
+        let period1Desc = 'Unique IP ประจำวันที่ปัจจุบัน';
+        let period1Count = 0;
 
-        if (elToday) elToday.textContent = `${todayIPs.size} IP`;
-        if (elMonth) elMonth.textContent = `${monthIPs.size} IP`;
-        if (elYear) elYear.textContent = `${yearIPs.size} IP`;
-        if (elTotal) elTotal.textContent = `${allIPs.size} IP`;
+        let period2Label = 'ผู้ใช้งานเดือนนี้';
+        let period2Desc = 'Unique IP ประจำเดือนนี้';
+        let period2Count = 0;
 
-        // Prepare Last 7 Days trend chart
-        const last7DaysLabels = [];
-        const dailyUniqueCounts = [];
+        let period3Label = 'ผู้ใช้งานปีนี้';
+        let period3Desc = 'Unique IP ประจำปีนี้';
+        let period3Count = 0;
 
-        for (let i = 6; i >= 0; i--) {
-          const tempDate = new Date();
-          tempDate.setDate(tempDate.getDate() - i);
-          const dateKey = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
-          const dayLabel = `${tempDate.getDate()}/${tempDate.getMonth() + 1}`;
+        let chartTrendTitle = 'แนวโน้มการเข้าใช้งาน ย้อนหลัง 7 วัน (Unique IP รายวัน)';
+        let chartLabels = [];
+        let chartValues = [];
 
-          const dayIPs = new Set(visitorDbData.filter(v => v.date === dateKey).map(v => v.ip));
-          last7DaysLabels.push(dayLabel);
-          dailyUniqueCounts.push(dayIPs.size);
+        if (mode === 'CURRENT') {
+          // Today Unique IPs
+          const todayIPs = new Set(visitorDbData.filter(v => v.date === todayStr).map(v => v.ip));
+          period1Count = todayIPs.size;
+
+          // Month Unique IPs
+          const monthIPs = new Set(visitorDbData.filter(v => v.month === monthStr || (v.date && v.date.startsWith(monthStr))).map(v => v.ip));
+          period2Count = monthIPs.size;
+
+          // Year Unique IPs
+          const yearIPs = new Set(visitorDbData.filter(v => v.year === yearStr || (v.date && v.date.startsWith(yearStr))).map(v => v.ip));
+          period3Count = yearIPs.size;
+
+          // Chart: Last 7 Days
+          for (let i = 6; i >= 0; i--) {
+            const tempDate = new Date();
+            tempDate.setDate(tempDate.getDate() - i);
+            const dateKey = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+            const dayLabel = `${tempDate.getDate()}/${tempDate.getMonth() + 1}`;
+
+            const dayIPs = new Set(visitorDbData.filter(v => v.date === dateKey).map(v => v.ip));
+            chartLabels.push(dayLabel);
+            chartValues.push(dayIPs.size);
+          }
+        } else if (mode === 'DAILY') {
+          const selDate = document.getElementById('visitorDatePicker').value || todayStr;
+          const selDateIPs = new Set(visitorDbData.filter(v => v.date === selDate).map(v => v.ip));
+
+          period1Label = `ผู้ใช้งานวันที่ ${selDate}`;
+          period1Desc = `Unique IP เฉพาะวันที่เลือก`;
+          period1Count = selDateIPs.size;
+
+          // Month of selected date
+          const selMonth = selDate.substring(0, 7);
+          const selMonthIPs = new Set(visitorDbData.filter(v => v.month === selMonth || (v.date && v.date.startsWith(selMonth))).map(v => v.ip));
+          period2Label = `รวมเดือน ${selMonth}`;
+          period2Desc = `Unique IP ประจำเดือนของวันที่เลือก`;
+          period2Count = selMonthIPs.size;
+
+          // Year of selected date
+          const selYear = selDate.substring(0, 4);
+          const selYearIPs = new Set(visitorDbData.filter(v => v.year === selYear || (v.date && v.date.startsWith(selYear))).map(v => v.ip));
+          period3Label = `รวมปี พ.ศ. ${Number(selYear) + 543}`;
+          period3Desc = `Unique IP ประจำปีของวันที่เลือก`;
+          period3Count = selYearIPs.size;
+
+          chartTrendTitle = `เปรียบเทียบสถิติย้อนหลัง 7 วัน ก่อนถึงวันที่ ${selDate}`;
+          const anchorDate = new Date(selDate);
+          for (let i = 6; i >= 0; i--) {
+            const tempDate = new Date(anchorDate);
+            tempDate.setDate(tempDate.getDate() - i);
+            const dateKey = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+            const dayLabel = `${tempDate.getDate()}/${tempDate.getMonth() + 1}`;
+
+            const dayIPs = new Set(visitorDbData.filter(v => v.date === dateKey).map(v => v.ip));
+            chartLabels.push(dayLabel);
+            chartValues.push(dayIPs.size);
+          }
+        } else if (mode === 'MONTHLY') {
+          const selMonth = document.getElementById('visitorMonthPicker').value || monthStr;
+          const selMonthIPs = new Set(visitorDbData.filter(v => v.month === selMonth || (v.date && v.date.startsWith(selMonth))).map(v => v.ip));
+
+          period1Label = `ผู้ใช้งานเดือน ${selMonth}`;
+          period1Desc = `Unique IP เฉพาะเดือนที่เลือก`;
+          period1Count = selMonthIPs.size;
+
+          const selYear = selMonth.substring(0, 4);
+          const selYearIPs = new Set(visitorDbData.filter(v => v.year === selYear || (v.date && v.date.startsWith(selYear))).map(v => v.ip));
+          period2Label = `รวมปี พ.ศ. ${Number(selYear) + 543}`;
+          period2Desc = `Unique IP ประจำปีของเดือนที่เลือก`;
+          period2Count = selYearIPs.size;
+
+          period3Label = `สะสมทั้งหมด`;
+          period3Desc = `Unique IP รวมทั้งหมดในระบบ`;
+          period3Count = allUniqueIPs.size;
+
+          chartTrendTitle = `ยอดผู้ใช้งานย้อนหลังรายเดือนในปี พ.ศ. ${Number(selYear) + 543} (Unique IP)`;
+          const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+          for (let m = 1; m <= 12; m++) {
+            const mKey = `${selYear}-${String(m).padStart(2, '0')}`;
+            const mIPs = new Set(visitorDbData.filter(v => v.month === mKey || (v.date && v.date.startsWith(mKey))).map(v => v.ip));
+            chartLabels.push(monthNames[m - 1]);
+            chartValues.push(mIPs.size);
+          }
+        } else if (mode === 'YEARLY') {
+          const selYearRaw = document.getElementById('visitorYearPicker').value || yearStr;
+          const selYear = /^\d{4}$/.test(selYearRaw) ? selYearRaw : yearStr;
+          const selYearIPs = new Set(visitorDbData.filter(v => v.year === selYear || (v.date && v.date.startsWith(selYear))).map(v => v.ip));
+
+          period1Label = `ผู้ใช้งานปี พ.ศ. ${Number(selYear) + 543}`;
+          period1Desc = `Unique IP เฉพาะปีที่เลือก (${selYear})`;
+          period1Count = selYearIPs.size;
+
+          period2Label = `สะสมทั้งหมด`;
+          period2Desc = `Unique IP รวมทั้งหมดในระบบ`;
+          period2Count = allUniqueIPs.size;
+
+          period3Label = `ปีปัจจุบัน (${Number(yearStr) + 543})`;
+          period3Desc = `Unique IP ของปีปัจจุบัน`;
+          const currentYearIPs = new Set(visitorDbData.filter(v => v.year === yearStr || (v.date && v.date.startsWith(yearStr))).map(v => v.ip));
+          period3Count = currentYearIPs.size;
+
+          chartTrendTitle = `ยอดผู้ใช้งานย้อนหลังรายเดือนประจำปี พ.ศ. ${Number(selYear) + 543}`;
+          const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+          for (let m = 1; m <= 12; m++) {
+            const mKey = `${selYear}-${String(m).padStart(2, '0')}`;
+            const mIPs = new Set(visitorDbData.filter(v => v.month === mKey || (v.date && v.date.startsWith(mKey))).map(v => v.ip));
+            chartLabels.push(monthNames[m - 1]);
+            chartValues.push(mIPs.size);
+          }
         }
 
+        document.getElementById('labelVisitorPeriod1').textContent = period1Label;
+        document.getElementById('descVisitorPeriod1').textContent = period1Desc;
+        document.getElementById('statVisitorToday').textContent = `${period1Count} IP`;
+
+        document.getElementById('labelVisitorPeriod2').textContent = period2Label;
+        document.getElementById('descVisitorPeriod2').textContent = period2Desc;
+        document.getElementById('statVisitorMonth').textContent = `${period2Count} IP`;
+
+        document.getElementById('labelVisitorPeriod3').textContent = period3Label;
+        document.getElementById('descVisitorPeriod3').textContent = period3Desc;
+        document.getElementById('statVisitorYear').textContent = `${period3Count} IP`;
+
+        document.getElementById('visitorTrendTitle').textContent = chartTrendTitle;
+
+        // Visitor Trend Bar Chart
         const ctxVisitor = document.getElementById('visitorTrendChart');
         if (ctxVisitor && typeof Chart !== 'undefined') {
           if (chartInstanceVisitor) chartInstanceVisitor.destroy();
@@ -2003,10 +2532,10 @@ function doPost(e) {
           chartInstanceVisitor = new Chart(ctxVisitor, {
             type: 'bar',
             data: {
-              labels: last7DaysLabels,
+              labels: chartLabels,
               datasets: [{
                 label: 'ผู้เข้าใช้งาน (Unique IP)',
-                data: dailyUniqueCounts,
+                data: chartValues,
                 backgroundColor: '#4f46e5',
                 borderRadius: 8,
                 borderSkipped: false
@@ -2196,7 +2725,7 @@ function doPost(e) {
       closeDeleteConfirmModal();
     }
 
-    // SURVEY MANAGEMENT LOGIC (สำหรับสมาชิก และฝ่ายจัดการ)
+    // SURVEY MANAGEMENT LOGIC
     function setRating(val) {
       currentRating = val;
       updateStarUI(val);
@@ -2449,12 +2978,14 @@ function doPost(e) {
       }
     }
 
-    // Export CSV Helper
+    // Export CSV Helper with Explicit Coop Bank Account Column Included
     function exportToCSV() {
-      let csvContent = "\uFEFFลำดับ,เลขที่สมาชิก,ชื่อ-สกุล สมาชิก,สังกัด,ชื่อบุตร,ชั้นปี,จำนวนเงิน,เลขที่บัญชีสหกรณ์,สถานะคำขอ,หมายเหตุ\n";
+      let csvContent = "\uFEFFลำดับ,เลขที่สมาชิก,ชื่อ-สกุล สมาชิก,สังกัด,ชื่อบุตร,ชั้นปี,จำนวนเงิน,เลขที่บัญชีเงินฝากสหกรณ์,สถานะคำขอ,หมายเหตุ\n";
       
       dbData.forEach(d => {
-        csvContent += `"${d.index}","${d.memberId}","${d.memberName}","${d.department}","${d.childName}","${d.level}","${d.amount}","${d.coopAccount}","${d.docStatus}","${d.remark}"\n`;
+        const cleanCoopAcc = (d.coopAccount || '-').toString().replace(/"/g, '""');
+        const cleanMemberId = `'${d.memberId}`; // Format with single quote prefix so Excel handles 5-digit zero padded string
+        csvContent += `"${d.index}","${cleanMemberId}","${d.memberName}","${d.department}","${d.childName}","${d.level}","${d.amount}","${cleanCoopAcc}","${d.docStatus}","${d.remark}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -2463,7 +2994,7 @@ function doPost(e) {
       a.href = url;
       a.download = `รายงานการยื่นคำขอรับทุนการศึกษา_2569_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
-      showToast('ส่งออกไฟล์ CSV เรียบร้อยแล้ว', 'success');
+      showToast('ส่งออกไฟล์ CSV (รวมเลขที่บัญชี) เรียบร้อยแล้ว', 'success');
     }
 
     // Share Modal
