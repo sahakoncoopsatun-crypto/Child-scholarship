@@ -19,6 +19,9 @@
   <!-- SheetJS (xlsx) for Excel Import/Export -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       font-family: 'Prompt', sans-serif;
@@ -111,6 +114,7 @@
         </div>
 
         <!-- Mode Switcher Navigation Tabs -->
+        <!-- Mode Switcher Navigation Tabs -->
         <nav id="mainNav" class="flex items-center bg-indigo-900/80 p-1.5 rounded-2xl border border-indigo-800 shadow-inner">
           <button 
             id="tabMemberBtn" 
@@ -130,12 +134,18 @@
             <span>ฝ่ายจัดการ / คณะกรรมการ</span>
           </button>
         </nav>
-
-      </div>
     </header>
 
     <!-- Main Content Area -->
     <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8">
+
+      <!-- Live Sync Status Bar (Moved for global visibility) -->
+      <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border bg-white shadow-sm border-slate-200 transition-all duration-300 mb-6 mt-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20"></span>
+          <span class="font-bold text-slate-700">กำลังเชื่อมโยงฐานข้อมูล...</span>
+        </div>
+      </div>
 
       <!-- ========================================== -->
       <!-- PART 1: MEMBER PORTAL (สำหรับสมาชิก)       -->
@@ -157,14 +167,7 @@
           </div>
         </div>
 
-        <!-- Live Sync Status Bar -->
         <div id="memberContentArea" class="space-y-6">
-          <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border bg-white shadow-sm border-slate-200 transition-all duration-300">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20"></span>
-              <span class="font-bold text-slate-700">กำลังเชื่อมโยงฐานข้อมูล...</span>
-            </div>
-          </div>
 
           <!-- Search Input Box Card -->
           <section class="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-10 relative overflow-hidden">
@@ -242,12 +245,16 @@
         </div>
 
       </div>
-
-      <!-- ==================================================== -->
-      <!-- PART 2: STAFF & BOARD PORTAL (ฝ่ายจัดการ/คณะกรรมการ) -->
-      <!-- ==================================================== -->
-      <div id="adminPortalView" class="hidden space-y-6">
+      <div id="adminPortalView" class="space-y-6 animate-fadeIn hidden">
         
+        <!-- Live Sync Status Bar for Admin -->
+        <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border bg-white shadow-sm border-slate-200 transition-all duration-300">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20"></span>
+            <span class="font-bold text-slate-700">���ѧ������§�ҹ������...</span>
+          </div>
+        </div>
+
         <!-- Admin Header Actions -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-indigo-950 text-white p-6 rounded-3xl shadow-md border border-indigo-900">
           <div>
@@ -261,13 +268,13 @@
               <button 
                 id="maintenanceToggleBtn"
                 onclick="toggleMaintenanceMode()"
-                class="px-3.5 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 bg-emerald-500/20 border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95"
+                class="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-[10px] font-bold flex items-center gap-1.5 transition-all shadow-inner"
               >
-                <span id="maintenanceStatusIcon">🟢</span>
-                <span id="maintenanceStatusText">ระบบฝั่งสมาชิก: เปิดบริการตามปกติ</span>
+                <span id="maintenanceToggleIcon">⚪</span>
+                <span id="maintenanceToggleText">เปิดใช้งานโหมดปรับปรุง</span>
               </button>
             </div>
-            <h2 class="text-xl font-bold mt-2">ระบบบริหารจัดการทุนการศึกษาบุตรสมาชิก ประจำปี 2569</h2>
+            <h2 class="text-xl font-bold mt-2">กระดานควบคุมข้อมูล (Admin Dashboard)</h2>
             <p class="text-xs text-indigo-200 mt-1">สรุปข้อมูล ตรวจสอบสถานะการอนุมัติ และจัดการข้อมูลผู้ยื่นคำขอรับทุน</p>
           </div>
 
@@ -1355,6 +1362,12 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
   </div>
 
   <script>
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+      alert("JS ERROR: " + msg + "\nLine: " + lineNo + "\nCol: " + columnNo);
+      return false;
+    };
+  </script>
+  <script>
     // System Data State
     let dbData = [];
     let surveyDbData = [];
@@ -2108,56 +2121,19 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }, 8000);
 
       try {
-        const mainEndpoints = [
-          `https://docs.google.com/spreadsheets/d/${targetSheetId}/export?format=csv`,
-          `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`,
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?tqx=out:csv`)}`
-        ];
-
-        for (const url of mainEndpoints) {
+        let isSuccess = false;
+        if (supabaseClient) {
           try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
-            const response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-              const text = await response.text();
-              if (text && text.trim().length > 0 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-                const rows = parseCSV(text);
-                const parsed = parseDynamicCSV(rows);
-                if (parsed && parsed.length > 0) {
-                  dbData = parsed;
-                  gsLoaded = true;
-                  updateSyncStatus('success', `โหลดข้อมูลตั้งต้นจาก Google Sheets...`);
-                  break;
-                }
-              }
+            updateSyncStatus('syncing', 'กำลังผสานข้อมูล Supabase...');
+            const supaLoaded = await loadFromSupabase();
+            if (supaLoaded) {
+              updateSyncStatus('success', `เชื่อมต่อฐานข้อมูลระบบสำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+              isSuccess = true;
             }
-          } catch (err) {
-            console.warn('Main fetch attempt failed:', err);
+          } catch (supaErr) {
+            console.warn('Supabase load note:', supaErr);
           }
         }
-      } catch (err) {
-        console.warn('GS fetch error', err);
-      }
-
-      // Merge Supabase if configured (Supabase is master, overrides GS)
-      if (supabaseClient) {
-        try {
-          updateSyncStatus('syncing', 'กำลังผสานข้อมูล Supabase...');
-          const supaLoaded = await loadFromSupabase();
-          if (supaLoaded) {
-            updateSyncStatus('success', `ซิงค์ข้อมูล Supabase & G-Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-          }
-        } catch (supaErr) {
-          console.warn('Supabase load note:', supaErr);
-        }
-      } else if (gsLoaded) {
-        updateSyncStatus('success', `เชื่อมต่อ Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-      }
-
-      let isSuccess = gsLoaded || (supabaseClient && dbData.length > 0);
 
       // Fetch Surveys Tab Data
         try {
@@ -4822,17 +4798,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      enforceMemberViewRestriction();
       loadLocalStorageData();
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const viewParam = urlParams.get('view');
-      if (viewParam === 'member') {
-        switchView('member');
-      }
-
-      initSurveySystem();
-      trackMemberVisit();
+      // Initialize to Member View by default
+      switchView('member');
 
       const searchForm = document.getElementById('searchForm');
       const searchInput = document.getElementById('searchId');
