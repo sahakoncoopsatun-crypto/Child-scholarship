@@ -3352,13 +3352,13 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         if (supabaseClient) {
           const idsToDelete = indicesToDelete.map(idx => dbData[idx]._supabaseId).filter(id => id);
           if (idsToDelete.length > 0) {
-            // Delete in chunks of 50 to avoid URL length limits if needed, or send one big delete
-            const { error } = await supabaseClient
-              .from('scholarships')
-              .delete()
-              .in('id', idsToDelete);
-              
-            if (error) throw error;
+            // Delete in chunks to avoid URL length limits
+            const chunkSize = 40;
+            for (let i = 0; i < idsToDelete.length; i += chunkSize) {
+              const chunk = idsToDelete.slice(i, i + chunkSize);
+              const res = await supabaseFetch(`scholarships?id=in.(${chunk.join(',')})`, 'DELETE');
+              if (res === null) throw new Error('Supabase Delete API Error');
+            }
           }
         }
         
