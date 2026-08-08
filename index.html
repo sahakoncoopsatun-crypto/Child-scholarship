@@ -2092,35 +2092,20 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
       updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล...');
 
-      // Try Supabase first if configured
-      if (supabaseClient) {
-        try {
-          updateSyncStatus('syncing', 'กำลังเชื่อมต่อ Supabase...');
-          const supaLoaded = await loadFromSupabase();
-          if (supaLoaded) {
-            updateSyncStatus('success', `เชื่อมต่อ Supabase สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
-            if (activeView === 'admin' && isAdminLoggedIn) renderAdminDashboard();
-            initSurveySystem();
-            return;
-          }
-        } catch (supaErr) {
-          console.warn('Supabase load note:', supaErr);
-        }
-      }
-
-      let isSuccess = false;
+      // Try Google Sheets first as baseline
+      let gsLoaded = false;
       let completed = false;
 
-      // Master Safety Timeout: Guarantee UI resolution within 5 seconds
+      // Master Safety Timeout: Guarantee UI resolution within 8 seconds
       const masterTimer = setTimeout(() => {
-        if (!completed && !isSuccess) {
+        if (!completed) {
           if (dbData && dbData.length > 0) {
             updateSyncStatus('warning', `แสดงข้อมูลล่าสุดที่บันทึกไว้ในระบบ | ข้อมูล ณ ${formatThaiDateTime()}`);
           } else {
             updateSyncStatus('error', `ไม่สามารถเชื่อมต่อข้อมูลออนไลน์ได้ (โปรดตรวจสอบสิทธิ์แชร์) | ณ ${formatThaiDateTime()}`);
           }
         }
-      }, 5000);
+      }, 8000);
 
       try {
         const mainEndpoints = [
@@ -2143,10 +2128,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
                 const parsed = parseDynamicCSV(rows);
                 if (parsed && parsed.length > 0) {
                   dbData = parsed;
-                  reIndexDbData();
-                  saveLocalStorageData();
-                  isSuccess = true;
-                  updateSyncStatus('success', `เชื่อมต่อฐานข้อมูล Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+                  gsLoaded = true;
+                  updateSyncStatus('success', `โหลดข้อมูลตั้งต้นจาก Google Sheets...`);
                   break;
                 }
               }
@@ -2155,8 +2138,28 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
             console.warn('Main fetch attempt failed:', err);
           }
         }
+      } catch (err) {
+        console.warn('GS fetch error', err);
+      }
 
-        // Fetch Surveys Tab Data
+      // Merge Supabase if configured (Supabase is master, overrides GS)
+      if (supabaseClient) {
+        try {
+          updateSyncStatus('syncing', 'กำลังผสานข้อมูล Supabase...');
+          const supaLoaded = await loadFromSupabase();
+          if (supaLoaded) {
+            updateSyncStatus('success', `ซิงค์ข้อมูล Supabase & G-Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+          }
+        } catch (supaErr) {
+          console.warn('Supabase load note:', supaErr);
+        }
+      } else if (gsLoaded) {
+        updateSyncStatus('success', `เชื่อมต่อ Google Sheets สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+      }
+
+      let isSuccess = gsLoaded || (supabaseClient && dbData.length > 0);
+
+      // Fetch Surveys Tab Data
         try {
           const surveyUrl = `https://docs.google.com/spreadsheets/d/${targetSheetId}/gviz/tq?sheet=Surveys&tqx=out:csv`;
           const controller = new AbortController();
@@ -3794,20 +3797,31 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       try {
         const data = await supabaseFetch('scholarships?select=*&order=sort_index.asc,id.asc');
         if (data && Array.isArray(data) && data.length > 0) {
-          dbData = data.map((row, idx) => ({
-            index: (idx + 1).toString(),
-            memberId: row.member_id || '',
-            memberName: row.member_name || '',
-            childName: row.child_name || '',
-            department: row.department || 'ไม่ระบุสังกัด',
-            eduType: row.edu_type || '',
-            level: row.level || '',
-            amount: Number(row.amount) || 0,
-            coopAccount: row.coop_account || '-',
-            docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
-            remark: row.remark || '',
-            _supabaseId: row.id
-          }));
+          data.forEach((row, idx) => {
+            const mappedRecord = {
+              index: (idx + 1).toString(),
+              memberId: row.member_id || '',
+              memberName: row.member_name || '',
+              childName: row.child_name || '',
+              department: row.department || 'ไม่ระบุสังกัด',
+              eduType: row.edu_type || '',
+              level: row.level || '',
+              amount: Number(row.amount) || 0,
+              coopAccount: row.coop_account || '-',
+              docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
+              remark: row.remark || '',
+              _supabaseId: row.id
+            };
+
+            // Merge with existing dbData
+            const existingIdx = dbData.findIndex(d => d.memberId === mappedRecord.memberId && d.childName === mappedRecord.childName);
+            if (existingIdx !== -1) {
+              dbData[existingIdx] = { ...dbData[existingIdx], ...mappedRecord };
+            } else {
+              dbData.push(mappedRecord);
+            }
+          });
+
           reIndexDbData();
           saveLocalStorageData();
           return true;
