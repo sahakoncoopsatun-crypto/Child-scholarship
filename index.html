@@ -16,6 +16,9 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- SheetJS (xlsx) for Excel Import/Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
   <style>
     body {
       font-family: 'Prompt', sans-serif;
@@ -38,6 +41,44 @@
       body * { visibility: hidden; }
       #printSlipArea, #printSlipArea * { visibility: visible; }
       #printSlipArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.35s ease-out both; }
+    .import-drop-zone {
+      border: 2px dashed #c7d2fe;
+      border-radius: 1rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .import-drop-zone.drag-over {
+      border-color: #4f46e5;
+      background: #eef2ff;
+    }
+    .bulk-table input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Prompt', sans-serif;
+    }
+    .bulk-table input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+    }
+    .bulk-table select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+      background: white;
+      font-family: 'Prompt', sans-serif;
     }
   </style>
 </head>
@@ -121,7 +162,7 @@
           <div id="syncStatusContainer" class="flex flex-col sm:flex-row items-center justify-center gap-2 py-3 px-6 rounded-full text-center text-xs font-medium border bg-white shadow-sm border-slate-200 transition-all duration-300">
             <div class="flex items-center gap-2.5">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20"></span>
-              <span class="font-bold text-slate-700">กำลังเชื่อมโยงฐานข้อมูล Google Sheets...</span>
+              <span class="font-bold text-slate-700">กำลังเชื่อมโยงฐานข้อมูล...</span>
             </div>
           </div>
 
@@ -235,23 +276,52 @@
               <span>➕</span>
               <span>เพิ่มผู้ยื่นคำขอใหม่</span>
             </button>
+            <button onclick="openImportDataPanel()" class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
+              <span>📊</span>
+              <span>นำเข้าข้อมูล / Bulk</span>
+            </button>
             <button onclick="openShareLinkModal()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5 active:scale-95">
               <span>🔗</span>
-              <span>คัดลอกลิงก์สำหรับสมาชิก</span>
+              <span>คัดลอกลิงก์สมาชิก</span>
             </button>
-            <button onclick="openGasSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>⚙️</span>
-              <span>ตั้งค่า Google Sheets Sync</span>
+            <button onclick="openSupabaseSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
+              <span>⚡</span>
+              <span>ตั้งค่า Supabase</span>
             </button>
-            <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all flex items-center gap-1.5 active:scale-95">
-              <span>📥</span>
-              <span>ส่งออกไฟล์ CSV</span>
+            <button onclick="exportToExcel()" class="bg-emerald-800 hover:bg-emerald-700 text-emerald-100 text-xs font-bold px-4 py-2.5 rounded-xl border border-emerald-700 transition-all flex items-center gap-1.5 active:scale-95">
+              <span>📅</span>
+              <span>ส่งออก Excel</span>
             </button>
             <button onclick="adminLogout()" class="bg-rose-800 hover:bg-rose-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-rose-700 transition-all flex items-center gap-1.5 active:scale-95 shadow">
               <span>🚪</span>
               <span>ออกจากระบบ</span>
             </button>
           </div>
+        </div>
+
+        <!-- Saving Indicator Bar -->
+        <div id="savingIndicatorBar" class="hidden mx-0 mb-2 px-5 py-2.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 animate-fadeIn">
+          <div class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="savingIndicatorText" class="text-xs font-bold text-amber-800">⏳ กำลังบันทึกข้อมูล...</span>
+          </div>
+          <div class="ml-auto">
+            <span class="text-[10px] text-amber-600 font-medium">โปรดรอสักครู่</span>
+          </div>
+        </div>
+
+        <!-- Google Form Sync Status Bar -->
+        <div class="mb-3 flex items-center gap-3 flex-wrap">
+          <div id="formSyncBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">
+            <span id="formSyncBadgeText">📋 Form Sync: รอเชื่อมต่อ...</span>
+          </div>
+          <button id="manualFormSyncBtn" onclick="manualSyncFormSheet()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1">
+            🔄 Sync Form
+          </button>
+          <span class="text-[10px] text-slate-400 ml-auto">อัปเดตอัตโนมัติทุก 5 นาที</span>
         </div>
 
         <!-- Dashboard Analytics Stat Cards -->
@@ -1009,6 +1079,265 @@ function doPost(e) {
       </div>
     </div>
 
+    <!-- Modal: Import Data Panel (Bulk Entry + File Import) -->
+    <div id="importDataModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-6xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col" style="max-height:92vh;">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-violet-900 to-indigo-900 text-white p-5 flex justify-between items-center shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/10 p-2.5 rounded-xl border border-white/10">
+              <span class="text-xl">📊</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold">นำเข้าข้อมูลผู้ยื่นทุน / Import Data</h3>
+              <p class="text-xs text-violet-200">กรอกรายชื่อแบบ bulk หรือนำเข้าจากไฟล์ Excel/CSV</p>
+            </div>
+          </div>
+          <button onclick="closeImportDataModal()" class="text-violet-200 hover:text-white text-2xl font-bold leading-none">×</button>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="flex border-b border-slate-200 shrink-0 bg-slate-50">
+          <button id="importTabBulk" onclick="switchImportTab('bulk')" class="flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-violet-600 text-violet-700 bg-white">
+            <span>✏️</span><span>กรอกรายชื่อแบบ Bulk (หลายแถว)</span>
+          </button>
+          <button id="importTabFile" onclick="switchImportTab('file')" class="flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:bg-white transition-all">
+            <span>📁</span><span>นำเข้าจากไฟล์ Excel / CSV</span>
+          </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="overflow-y-auto flex-grow">
+
+          <!-- TAB: Bulk Entry -->
+          <div id="importPanelBulk" class="p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-slate-600">กรอกข้อมูลแบบตาราง — เพิ่มแถวเพื่อเพิ่มผู้ยื่นทุนหลายรายการพร้อมกัน</p>
+              <div class="flex items-center gap-2">
+                <button onclick="addBulkRow()" class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
+                  <span>➕</span><span>เพิ่มแถว</span>
+                </button>
+                <button onclick="clearBulkTable()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all">
+                  <span>🗑️</span><span>ล้างตาราง</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+              <table class="min-w-full text-left text-xs border-collapse bulk-table">
+                <thead>
+                  <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
+                    <th class="px-3 py-3 text-center w-8">#</th>
+                    <th class="px-3 py-3 min-w-24">เลขสมาชิก *</th>
+                    <th class="px-3 py-3 min-w-40">ชื่อ-สกุล สมาชิก *</th>
+                    <th class="px-3 py-3 min-w-36">ชื่อบุตรผู้รับทุน *</th>
+                    <th class="px-3 py-3 min-w-28">ระดับชั้น/การศึกษา</th>
+                    <th class="px-3 py-3 min-w-32">สังกัด/หน่วยงาน</th>
+                    <th class="px-3 py-3 min-w-24">จำนวนเงิน</th>
+                    <th class="px-3 py-3 min-w-32">เลขที่บัญชี</th>
+                    <th class="px-3 py-3 min-w-36">สถานะคำขอ</th>
+                    <th class="px-3 py-3 w-10">ลบ</th>
+                  </tr>
+                </thead>
+                <tbody id="bulkEntryTableBody">
+                  <!-- Rows added dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <span id="bulkRowCount" class="text-xs text-slate-500 font-medium">0 แถว</span>
+              <button onclick="saveBulkEntries()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl shadow-md text-sm transition-all active:scale-95 flex items-center gap-2">
+                <span>💾</span><span>บันทึกทั้งหมด</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB: File Import -->
+          <div id="importPanelFile" class="p-5 space-y-4 hidden">
+            <!-- Drop Zone -->
+            <div 
+              id="excelDropZone"
+              class="import-drop-zone p-10 text-center cursor-pointer"
+              onclick="document.getElementById('excelFileInput').click()"
+              ondragover="event.preventDefault(); this.classList.add('drag-over');"
+              ondragleave="this.classList.remove('drag-over');"
+              ondrop="handleExcelDrop(event)"
+            >
+              <div class="text-5xl mb-3">📂</div>
+              <p class="text-base font-bold text-indigo-800">ลากไฟล์ Excel / CSV มาวางที่นี่</p>
+              <p class="text-xs text-slate-500 mt-1">หรือคลิกเพื่อเลือกไฟล์</p>
+              <p class="text-[10px] text-slate-400 mt-2">รองรับ: .xlsx, .xls, .csv</p>
+              <input id="excelFileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleExcelFileSelect(event)" />
+            </div>
+
+            <!-- Column Mapping Info -->
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-900 leading-relaxed">
+              <p class="font-bold mb-1.5">📌 สูตร Header ที่ระบบรองรับ (Auto-Map อัตโนมัติ):</p>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">เลขที่สมาชิก / Member ID</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">ชื่อสมาชิก / Member Name</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">ชื่อบุตร / Child Name</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">สังกัด / Department</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">ระดับชั้น / Level</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">จำนวนเงิน / Amount</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">เลขบัญชี / Account</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">สถานะ / Status</span>
+                <span class="bg-blue-100 px-2 py-1 rounded-lg">หมายเหตุ / Remark</span>
+              </div>
+            </div>
+
+            <!-- Import Preview Area -->
+            <div id="importPreviewArea" class="hidden">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-bold text-slate-800">👁️ รายการที่อ่านได้ — ตรวจสอบข้อมูลก่อนนำเข้า</h4>
+                <div class="flex items-center gap-2">
+                  <span id="importPreviewCount" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">0 รายการ</span>
+                  <button onclick="confirmImportData()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5">
+                    <span>✅</span><span>ยืนยันนำเข้าข้อมูล</span>
+                  </button>
+                </div>
+              </div>
+              <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-72">
+                <table class="min-w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold sticky top-0">
+                      <th class="px-3 py-2.5">#</th>
+                      <th class="px-3 py-2.5">เลขสมาชิก</th>
+                      <th class="px-3 py-2.5">ชื่อ-สกุล สมาชิก</th>
+                      <th class="px-3 py-2.5">ชื่อบุตร</th>
+                      <th class="px-3 py-2.5">ระดับชั้น</th>
+                      <th class="px-3 py-2.5">สังกัด</th>
+                      <th class="px-3 py-2.5 text-right">จำนวนเงิน</th>
+                      <th class="px-3 py-2.5">เลขบัญชี</th>
+                      <th class="px-3 py-2.5">สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="importPreviewBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Import Result -->
+            <div id="importResultArea" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-sm font-bold text-emerald-800 text-center animate-fadeIn">
+              ✅ นำเข้าข้อมูลเรียบร้อยแล้ว!
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-slate-200 p-4 flex justify-end gap-2 shrink-0 bg-slate-50">
+          <button onclick="closeImportDataModal()" class="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-bold text-xs">ปิดหน้าต่าง</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Supabase Settings -->
+    <div id="supabaseConfigModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
+        <div class="bg-gradient-to-r from-emerald-900 to-teal-800 text-white p-6 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚡</span>
+            <div>
+              <h3 class="text-base font-bold">Supabase Database Settings</h3>
+              <p class="text-xs text-emerald-200">ตั้งค่าการเชื่อมต่อฐานข้อมูล Supabase</p>
+            </div>
+          </div>
+          <button onclick="closeSupabaseSettingsModal()" class="text-emerald-200 hover:text-white text-lg font-bold">✕</button>
+        </div>
+
+        <div class="p-6 space-y-4 text-xs">
+          <!-- Info Box -->
+          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-900 space-y-1.5 leading-relaxed">
+            <h5 class="font-bold text-sm">📌 วิธีเปิดใช้งาน Supabase:</h5>
+            <ol class="list-decimal list-inside space-y-1">
+              <li>ไปที่ <a href="https://supabase.com" target="_blank" class="underline text-emerald-700">supabase.com</a> สร้าง Project ใหม่</li>
+              <li>ไปที่ Settings → API คัดลอก <strong>Project URL</strong> และ <strong>anon key</strong></li>
+              <li>กดปุ่ม "Run SQL" ด้านล่างเพื่อสร้างตาราง</li>
+              <li>กรอก URL และ Key ด้านล่าง แล้วกดบันทึก</li>
+            </ol>
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Supabase Project URL</label>
+            <input type="text" id="supabaseUrlInput" placeholder="https://xxxxxxxxxxxx.supabase.co" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 outline-none font-mono text-[11px]" />
+          </div>
+
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Supabase Anon Key</label>
+            <input type="text" id="supabaseAnonKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-600 outline-none font-mono text-[10px]" />
+          </div>
+
+          <!-- SQL Schema -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-slate-800">SQL สำหรับสร้างตาราง (รันใน Supabase SQL Editor):</h4>
+              <button onclick="copySupabaseSQL()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-lg text-[10px]">คัดลอก SQL</button>
+            </div>
+            <textarea readonly id="supabaseSqlCode" class="w-full h-48 bg-slate-900 text-emerald-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 outline-none resize-none">
+-- ตารางหลัก: ผู้ยื่นคำขอรับทุน
+CREATE TABLE IF NOT EXISTS scholarships (
+  id BIGSERIAL PRIMARY KEY,
+  member_id VARCHAR(10) NOT NULL,
+  member_name TEXT NOT NULL,
+  child_name TEXT NOT NULL,
+  department TEXT DEFAULT 'ไม่ระบุสังกัด',
+  edu_type TEXT DEFAULT '',
+  level TEXT DEFAULT '',
+  amount NUMERIC DEFAULT 0,
+  coop_account TEXT DEFAULT '-',
+  doc_status TEXT DEFAULT 'ยื่นเอกสารสำเร็จ',
+  remark TEXT DEFAULT '',
+  sort_index INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- เปิด Public Access
+ALTER TABLE scholarships ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read" ON scholarships FOR SELECT USING (true);
+CREATE POLICY "public_insert" ON scholarships FOR INSERT WITH CHECK (true);
+CREATE POLICY "public_update" ON scholarships FOR UPDATE USING (true);
+CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
+            </textarea>
+          </div>
+
+          <div id="supabaseTestResult" class="hidden p-3 rounded-xl text-xs font-bold text-center"></div>
+
+          <!-- Migration Section -->
+          <div class="border-t border-slate-100 pt-4 mt-2">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-sm font-bold text-slate-800">📥 ย้ายข้อมูลจาก Google Sheets → Supabase</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">ดึงข้อมูลทั้งหมดที่มีอยู่แล้วมาบันทึกลง Supabase ครั้งเดียว</p>
+              </div>
+              <button onclick="migrateGSheetsToSupabase()" id="migratBtn" class="px-4 py-2.5 bg-violet-700 hover:bg-violet-800 text-white text-xs font-bold rounded-xl shadow transition-all active:scale-95 flex items-center gap-2">
+                <span>🚀</span><span>เริ่ม Migration</span>
+              </button>
+            </div>
+            <!-- Progress Bar -->
+            <div id="migrateProgressWrap" class="hidden">
+              <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                <span id="migrateProgressLabel">กำลังเตรียมข้อมูล...</span>
+                <span id="migrateProgressPct">0%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                <div id="migrateProgressBar" class="h-3 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 transition-all duration-300" style="width:0%"></div>
+              </div>
+              <p id="migrateProgressDetail" class="text-[10px] text-slate-400 mt-1.5 text-right"></p>
+            </div>
+            <div id="migrateResultMsg" class="hidden mt-2 p-3 rounded-xl text-xs font-bold text-center"></div>
+          </div>
+
+          <div class="pt-2 flex gap-2 justify-end">
+            <button onclick="testSupabaseConnection()" class="px-5 py-2.5 rounded-xl border border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-bold">ทดสอบการเชื่อมต่อ</button>
+            <button onclick="closeSupabaseSettingsModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold">ยกเลิก</button>
+            <button onclick="saveSupabaseSettings()" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow">บันทึกการตั้งค่า</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer Section -->
     <footer class="bg-indigo-950 text-slate-400 py-8 border-t border-indigo-900 mt-10">
       <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
@@ -1031,6 +1360,12 @@ function doPost(e) {
     let surveyDbData = [];
     let visitorDbData = [];
     let adminAccountsDb = [];
+    
+    // Supabase State (Pre-configured)
+    let supabaseUrl = localStorage.getItem('coop_supabase_url') || 'https://ebtnszrcmrhyrrezbjrh.supabase.co';
+    let supabaseAnonKey = localStorage.getItem('coop_supabase_key') || 'sb_publishable_wxMD5et2GsGCcYWap7BHAA_6NnzFMmx';
+    let supabaseClient = null;
+    let importPreviewData = [];
     
     // Default Official Credentials (ยืนยันเข้าใช้งานได้เสมอ)
     const DEFAULT_STAFF_ID = "007";
@@ -1221,6 +1556,41 @@ function doPost(e) {
       }, 3000);
     }
 
+    // Saving Indicator Bar (shows in Admin dashboard during save/edit/delete)
+    let _hideSavingTimer = null;
+    function showSavingIndicator(text = '⏳ กำลังบันทึกข้อมูล...') {
+      const bar = document.getElementById('savingIndicatorBar');
+      const textEl = document.getElementById('savingIndicatorText');
+      if (!bar) return;
+      if (_hideSavingTimer) { clearTimeout(_hideSavingTimer); _hideSavingTimer = null; }
+      if (textEl) textEl.textContent = text;
+      bar.classList.remove('hidden');
+      bar.classList.add('flex');
+    }
+
+    function hideSavingIndicator(successText = null) {
+      const bar = document.getElementById('savingIndicatorBar');
+      const textEl = document.getElementById('savingIndicatorText');
+      if (!bar) return;
+      if (successText && textEl) {
+        // Flash green briefly then hide
+        textEl.textContent = `✅ ${successText}`;
+        bar.classList.remove('bg-amber-50', 'border-amber-200');
+        bar.classList.add('bg-emerald-50', 'border-emerald-200');
+        if (textEl) textEl.classList.replace('text-amber-800', 'text-emerald-800');
+      }
+      _hideSavingTimer = setTimeout(() => {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex', 'bg-emerald-50', 'border-emerald-200');
+        bar.classList.add('bg-amber-50', 'border-amber-200');
+        if (textEl) {
+          textEl.classList.replace('text-emerald-800', 'text-amber-800');
+          textEl.textContent = '⏳ กำลังบันทึกข้อมูล...';
+        }
+        _hideSavingTimer = null;
+      }, 1800);
+    }
+
     // Local Storage Helpers
     function loadLocalStorageData() {
       try {
@@ -1278,6 +1648,13 @@ function doPost(e) {
 
       const savedGasUrl = localStorage.getItem('coop_gas_webapp_url');
       if (savedGasUrl) gasWebAppUrl = savedGasUrl;
+
+      // Load Supabase Settings
+      const savedSupaUrl = localStorage.getItem('coop_supabase_url');
+      const savedSupaKey = localStorage.getItem('coop_supabase_key');
+      if (savedSupaUrl) supabaseUrl = savedSupaUrl;
+      if (savedSupaKey) supabaseAnonKey = savedSupaKey;
+      initSupabaseClient();
     }
 
     function saveLocalStorageData() {
@@ -1705,9 +2082,31 @@ function doPost(e) {
     }
 
     // Google Sheets Online Data Sync
+    const FORM_SHEET_ID = '1bM8XQ0M-vy0Vxo3oi2953pbJ9Fn-isQ8J18tAHpvujc';
+    const FORM_SHEET_GID = '198047993';
+    let formSyncInterval = null;
+    let lastFormSyncTime = null;
+    let formNewCount = 0;
+
     async function loadDataOnline() {
       const targetSheetId = '1T4e8eKciu3eJDme1zMk5xrNwY9xp9ZiNU2V3sqkAgPw';
-      updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล Google Sheets...');
+      updateSyncStatus('syncing', 'กำลังเชื่อมโยงฐานข้อมูล...');
+
+      // Try Supabase first if configured
+      if (supabaseClient) {
+        try {
+          updateSyncStatus('syncing', 'กำลังเชื่อมต่อ Supabase...');
+          const supaLoaded = await loadFromSupabase();
+          if (supaLoaded) {
+            updateSyncStatus('success', `เชื่อมต่อ Supabase สำเร็จ | ข้อมูล ณ ${formatThaiDateTime()}`);
+            if (activeView === 'admin' && isAdminLoggedIn) renderAdminDashboard();
+            initSurveySystem();
+            return;
+          }
+        } catch (supaErr) {
+          console.warn('Supabase load note:', supaErr);
+        }
+      }
 
       let isSuccess = false;
       let completed = false;
@@ -2958,7 +3357,7 @@ function doPost(e) {
       document.getElementById('recordModal').classList.add('hidden');
     }
 
-    function saveRecord(e) {
+    async function saveRecord(e) {
       e.preventDefault();
 
       const editIndex = parseInt(document.getElementById('editIndex').value);
@@ -2983,13 +3382,21 @@ function doPost(e) {
         dbData.unshift(newRecord);
       }
 
+      showSavingIndicator(editIndex >= 0 ? 'กำลังบันทึกการแก้ไขข้อมูล...' : 'กำลังเพิ่มรายการใหม่...');
       reIndexDbData();
       saveLocalStorageData();
       closeRecordModal();
       renderAdminDashboard();
-      showToast('บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
 
-      syncToGoogleSheets(newRecord, 'save');
+      const isGasSuccess = await syncToGoogleSheets(newRecord, 'save');
+      const isSupaSuccess = await saveToSupabase(newRecord);
+
+      hideSavingIndicator('บันทึกข้อมูลเรียบร้อยแล้ว');
+      if (isGasSuccess === false || isSupaSuccess === false) {
+        showToast('บันทึกลงเครื่องแล้ว แต่ส่งข้อมูลออนไลน์ไม่สำเร็จ (กรุณาตั้งค่าฐานข้อมูล)', 'error');
+      } else {
+        showToast('บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+      }
 
       const searchInput = document.getElementById('searchId');
       if (searchInput && searchInput.value) {
@@ -3010,19 +3417,29 @@ function doPost(e) {
       document.getElementById('deleteConfirmModal').classList.add('hidden');
     }
 
-    function executeDeleteRecord() {
+    async function executeDeleteRecord() {
       const index = parseInt(document.getElementById('deleteTargetIndex').value);
       if (index >= 0 && index < dbData.length) {
         const targetRecord = dbData[index];
         dbData.splice(index, 1);
+        showSavingIndicator('กำลังลบรายการ...');
         reIndexDbData();
         saveLocalStorageData();
         renderAdminDashboard();
-        showToast('ลบรายการเรียบร้อยแล้ว', 'info');
+        closeDeleteConfirmModal();
 
-        syncToGoogleSheets(targetRecord, 'delete');
+        const isGasSuccess = await syncToGoogleSheets(targetRecord, 'delete');
+        const isSupaSuccess = await deleteFromSupabase(targetRecord);
+
+        hideSavingIndicator('ลบรายการเรียบร้อยแล้ว');
+        if (isGasSuccess === false || isSupaSuccess === false) {
+          showToast('ลบข้อมูลในเครื่องแล้ว แต่ส่งข้อมูลออนไลน์ไม่สำเร็จ (กรุณาตั้งค่าฐานข้อมูล)', 'error');
+        } else {
+          showToast('ลบรายการเรียบร้อยแล้ว', 'info');
+        }
+      } else {
+        closeDeleteConfirmModal();
       }
-      closeDeleteConfirmModal();
     }
 
     // SURVEY MANAGEMENT LOGIC
@@ -3181,9 +3598,10 @@ function doPost(e) {
             date: surveyItem.date || formatThaiDateTime()
           })
         });
-        showToast('ส่งการอัปเดตแบบประเมินไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
+        return true;
       } catch(e) {
         console.warn('Survey Sync POST Error:', e);
+        return false;
       }
     }
 
@@ -3263,7 +3681,7 @@ function doPost(e) {
 
     // Google Apps Script Sync for Main Scholarship Data
     async function syncToGoogleSheets(recordData, action = 'save') {
-      if (!gasWebAppUrl) return;
+      if (!gasWebAppUrl) return true;
       try {
         const payload = { ...recordData, action };
         await fetch(gasWebAppUrl, {
@@ -3272,9 +3690,10 @@ function doPost(e) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        showToast('ส่งการอัปเดตไปยัง Google Sheets เรียบร้อยแล้ว', 'success');
+        return true;
       } catch (err) {
         console.error('GAS Sync Error:', err);
+        return false;
       }
     }
 
@@ -3336,6 +3755,947 @@ function doPost(e) {
       localStorage.setItem('coop_gas_webapp_url', gasWebAppUrl);
       closeGasSettingsModal();
       showToast('บันทึกการตั้งค่า Google Sheets เรียบร้อยแล้ว', 'success');
+    }
+
+    // =========================================================
+    // SUPABASE INTEGRATION (Optional - Falls back to GAS/Local)
+    // =========================================================
+    function initSupabaseClient() {
+      supabaseClient = null;
+      if (!supabaseUrl || !supabaseAnonKey) return;
+      // We use Supabase REST API directly (no npm needed)
+      supabaseClient = { url: supabaseUrl, key: supabaseAnonKey };
+    }
+
+    async function supabaseFetch(path, method = 'GET', body = null, extraHeaders = {}) {
+      if (!supabaseClient) return null;
+      try {
+        const headers = {
+          'apikey': supabaseClient.key,
+          'Authorization': `Bearer ${supabaseClient.key}`,
+          'Content-Type': 'application/json',
+          'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal',
+          ...extraHeaders
+        };
+        const opts = { method, headers };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(`${supabaseClient.url}/rest/v1/${path}`, opts);
+        if (!res.ok) return null;
+        const text = await res.text();
+        return text ? JSON.parse(text) : [];
+      } catch (e) {
+        console.warn('Supabase fetch error:', e);
+        return null;
+      }
+    }
+
+    async function loadFromSupabase() {
+      if (!supabaseClient) return false;
+      try {
+        const data = await supabaseFetch('scholarships?select=*&order=sort_index.asc,id.asc');
+        if (data && Array.isArray(data) && data.length > 0) {
+          dbData = data.map((row, idx) => ({
+            index: (idx + 1).toString(),
+            memberId: row.member_id || '',
+            memberName: row.member_name || '',
+            childName: row.child_name || '',
+            department: row.department || 'ไม่ระบุสังกัด',
+            eduType: row.edu_type || '',
+            level: row.level || '',
+            amount: Number(row.amount) || 0,
+            coopAccount: row.coop_account || '-',
+            docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
+            remark: row.remark || '',
+            _supabaseId: row.id
+          }));
+          reIndexDbData();
+          saveLocalStorageData();
+          return true;
+        }
+        return false;
+      } catch (e) {
+        console.warn('loadFromSupabase error:', e);
+        return false;
+      }
+    }
+
+    async function saveToSupabase(record) {
+      if (!supabaseClient) return true;
+      try {
+        const payload = {
+          member_id: record.memberId,
+          member_name: record.memberName,
+          child_name: record.childName,
+          department: record.department || 'ไม่ระบุสังกัด',
+          edu_type: record.eduType || '',
+          level: record.level || '',
+          amount: Number(record.amount) || 0,
+          coop_account: record.coopAccount || '-',
+          doc_status: record.docStatus || 'ยื่นเอกสารสำเร็จ',
+          remark: record.remark || '',
+          sort_index: parseInt(record.index) || 0
+        };
+        let res;
+        if (record._supabaseId) {
+          res = await supabaseFetch(`scholarships?id=eq.${record._supabaseId}`, 'PATCH', payload);
+        } else {
+          res = await supabaseFetch('scholarships', 'POST', payload);
+        }
+        if (res === null) return false;
+        return true;
+      } catch (e) {
+        console.warn('saveToSupabase error:', e);
+        return false;
+      }
+    }
+
+    async function deleteFromSupabase(record) {
+      if (!supabaseClient || !record._supabaseId) return true;
+      try {
+        const res = await supabaseFetch(`scholarships?id=eq.${record._supabaseId}`, 'DELETE');
+        if (res === null) return false;
+        return true;
+      } catch (e) {
+        console.warn('deleteFromSupabase error:', e);
+        return false;
+      }
+    }
+
+    function openSupabaseSettingsModal() {
+      document.getElementById('supabaseUrlInput').value = supabaseUrl;
+      document.getElementById('supabaseAnonKeyInput').value = supabaseAnonKey;
+      const resultEl = document.getElementById('supabaseTestResult');
+      if (resultEl) resultEl.classList.add('hidden');
+      document.getElementById('supabaseConfigModal').classList.remove('hidden');
+    }
+
+    function closeSupabaseSettingsModal() {
+      document.getElementById('supabaseConfigModal').classList.add('hidden');
+    }
+
+    function saveSupabaseSettings() {
+      supabaseUrl = document.getElementById('supabaseUrlInput').value.trim();
+      supabaseAnonKey = document.getElementById('supabaseAnonKeyInput').value.trim();
+      localStorage.setItem('coop_supabase_url', supabaseUrl);
+      localStorage.setItem('coop_supabase_key', supabaseAnonKey);
+      initSupabaseClient();
+      closeSupabaseSettingsModal();
+      showToast('บันทึกการตั้งค่า Supabase เรียบร้อยแล้ว', 'success');
+    }
+
+    async function testSupabaseConnection() {
+      const resultEl = document.getElementById('supabaseTestResult');
+      const url = document.getElementById('supabaseUrlInput').value.trim();
+      const key = document.getElementById('supabaseAnonKeyInput').value.trim();
+      if (!url || !key) {
+        resultEl.className = 'p-3 rounded-xl text-xs font-bold text-center bg-rose-50 border border-rose-200 text-rose-700';
+        resultEl.textContent = '⚠️ กรุณากรอก URL และ API Key ก่อน';
+        resultEl.classList.remove('hidden');
+        return;
+      }
+      resultEl.className = 'p-3 rounded-xl text-xs font-bold text-center bg-amber-50 border border-amber-200 text-amber-700';
+      resultEl.textContent = '⏳ กำลังทดสอบ...';
+      resultEl.classList.remove('hidden');
+      try {
+        const res = await fetch(`${url}/rest/v1/scholarships?limit=1`, {
+          headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        });
+        if (res.ok) {
+          resultEl.className = 'p-3 rounded-xl text-xs font-bold text-center bg-emerald-50 border border-emerald-200 text-emerald-700';
+          resultEl.textContent = '✅ เชื่อมต่อ Supabase สำเร็จ! ตาราง scholarships พร้อมใช้งาน';
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (e) {
+        resultEl.className = 'p-3 rounded-xl text-xs font-bold text-center bg-rose-50 border border-rose-200 text-rose-700';
+        resultEl.textContent = `❌ ไม่สามารถเชื่อมต่อได้: ${e.message} | ตรวจสอบ URL, Key และสิทธิ์ตาราง`;
+      }
+    }
+
+    function copySupabaseSQL() {
+      const el = document.getElementById('supabaseSqlCode');
+      if (el) {
+        el.select();
+        document.execCommand('copy');
+        showToast('คัดลอก SQL เรียบร้อยแล้ว', 'info');
+      }
+    }
+
+    // =========================================================
+    // GOOGLE FORM SHEET AUTO-SYNC (ทุก 5 นาที)
+    // =========================================================
+    function parseFormSheet(rows) {
+      if (!rows || rows.length < 2) return { records: [], incomplete: [] };
+      const records = [];
+      const incomplete = [];
+
+      // Column indices:
+      // 0:ประทับเวลา 1:เลขที่สมาชิก 2:ชื่อ-สกุล 3:อายุ 4:ตำแหน่ง
+      // 5:สังกัด 6:รายได้ 7:บ้านเลขที่ 8:ชื่อคู่สมรส 9:บ้าน(คู่สมรส)
+      // 10:จำนวนบุตร 11-15:ชื่อบุตร1-5 16:ชื่อบุตรที่ขอทุน
+      // 17:ระดับ 18:สถานศึกษา 19:หลักฐาน 20:ทะเบียนบ้าน 21:เบอร์โทร
+
+      // เริ่มจากแถว 92 (data row index 92 = rows[92], header=rows[0])
+      const START_ROW = 92;
+
+      for (let r = START_ROW; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || row.length < 3) continue;
+
+        const rowNum = r; // actual sheet row number (1-indexed would be r+1)
+        const timestamp = (row[0] || '').toString().trim();
+        const rawMemberId = (row[1] || '').toString().trim();
+        const memberName = (row[2] || '').toString().trim();
+        const department = (row[5] || '').toString().trim() || 'ไม่ระบุสังกัด';
+        const childName = (row[16] || '').toString().trim();
+        const level = (row[17] || '').toString().trim();
+        const school = (row[18] || '').toString().trim();
+        const phone = (row[21] || '').toString().trim();
+
+        // ตรวจสอบข้อมูลไม่ครบ
+        const missingFields = [];
+        if (!rawMemberId) missingFields.push('เลขที่สมาชิก');
+        if (!memberName) missingFields.push('ชื่อ-สกุล');
+        if (!childName || childName === 'ไม่มี' || childName === '-') missingFields.push('ชื่อบุตรที่ขอทุน');
+        if (!level) missingFields.push('ระดับการศึกษา');
+        if (!department || department === 'ไม่ระบุสังกัด') missingFields.push('สังกัด');
+
+        // ถ้าไม่มี ชื่อสมาชิก หรือ เลขสมาชิก → แจ้งเตือน incomplete
+        if (!rawMemberId || !memberName) {
+          incomplete.push({
+            rowNum: r + 1,
+            timestamp,
+            rawMemberId: rawMemberId || '(ว่าง)',
+            memberName: memberName || '(ว่าง)',
+            childName: childName || '(ว่าง)',
+            missingFields,
+            rawRow: row
+          });
+          continue;
+        }
+
+        // Clean memberId — ถ้ามีเฉพาะตัวเลข pad เป็น 5 หลัก ถ้าเป็น ID card ใช้ทั้งหมด
+        const memberId = rawMemberId.replace(/\D/g, '').length >= 13
+          ? rawMemberId.replace(/\D/g, '')
+          : rawMemberId.replace(/\D/g, '').padStart(5, '0');
+
+        // ถ้าไม่มีชื่อบุตรที่ขอทุน → incomplete
+        if (!childName || childName === 'ไม่มี' || childName === '-') {
+          incomplete.push({
+            rowNum: r + 1, timestamp, rawMemberId: memberId,
+            memberName, childName: '(ไม่ระบุ)', missingFields, rawRow: row
+          });
+          continue;
+        }
+
+        // Map level → eduType + amount
+        const levelLower = level.toLowerCase();
+        let eduType = 'ประถมศึกษา';
+        let amount = 1000;
+        if (levelLower.includes('ปริญญา') || levelLower.includes('อุดมศึกษา') || levelLower.includes('university')) {
+          eduType = 'ปริญญาตรี'; amount = 1600;
+        } else if (levelLower.includes('ม.') || levelLower.includes('มัธยม')) {
+          const mNum = level.match(/(\d+)/);
+          const mn = mNum ? parseInt(mNum[1]) : 0;
+          if (mn >= 4 || levelLower.includes('ปลาย')) {
+            eduType = 'มัธยมศึกษาตอนปลาย'; amount = 1400;
+          } else {
+            eduType = 'มัธยมศึกษาตอนต้น'; amount = 1200;
+          }
+        }
+
+        records.push({
+          memberId,
+          memberName,
+          childName,
+          department,
+          eduType,
+          level,
+          amount,
+          coopAccount: '-',
+          docStatus: 'ยื่นเอกสารสำเร็จ',
+          remark: school ? `สถานศึกษา: ${school}` : '',
+          phone,
+          timestamp,
+          rowNum: r + 1,
+          _fromForm: true,
+          _missingFields: missingFields.length > 0 ? missingFields : null
+        });
+      }
+      return { records, incomplete };
+    }
+
+    async function syncFromFormSheet(silent = false) {
+      try {
+        if (!silent) updateFormSyncBadge('syncing');
+        const url = `https://docs.google.com/spreadsheets/d/${FORM_SHEET_ID}/export?format=csv&gid=${FORM_SHEET_GID}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const text = await res.text();
+        const rows = parseCSV(text);
+        const { records: formRecords, incomplete } = parseFormSheet(rows);
+
+        // แสดงแจ้งเตือนรายการข้อมูลไม่ครบ
+        if (incomplete.length > 0) {
+          showIncompleteWarning(incomplete);
+        } else {
+          const warn = document.getElementById('formIncompleteWarning');
+          if (warn) warn.classList.add('hidden');
+        }
+
+        if (!formRecords || formRecords.length === 0) {
+          if (!silent) updateFormSyncBadge('warn', 'ไม่พบข้อมูลในแถว 92+ ของ Form Sheet');
+          return 0;
+        }
+
+        let addedCount = 0;
+        let dupCount = 0;
+
+        formRecords.forEach(record => {
+          // ตรวจซ้ำด้วย เลขสมาชิก + ชื่อ-สกุล (เข้มกว่าเดิม)
+          const dupByMemberIdName = dbData.some(d =>
+            d.memberId === record.memberId &&
+            d.memberName.replace(/\s+/g, '') === record.memberName.replace(/\s+/g, '')
+          );
+          // ตรวจซ้ำด้วย เลขสมาชิก + ชื่อบุตร
+          const dupByChild = dbData.some(d =>
+            d.memberId === record.memberId &&
+            d.childName.replace(/\s+/g, '') === record.childName.replace(/\s+/g, '')
+          );
+
+          if (dupByMemberIdName || dupByChild) {
+            dupCount++;
+            return;
+          }
+
+          const newRecord = {
+            ...record,
+            index: (dbData.length + 1).toString(),
+            isLocalOnly: true
+          };
+          dbData.push(newRecord);
+          addedCount++;
+          saveToSupabase(newRecord);
+          syncToGoogleSheets(newRecord, 'save');
+        });
+
+        if (addedCount > 0) {
+          reIndexDbData();
+          saveLocalStorageData();
+          if (activeView === 'admin' && isAdminLoggedIn) renderAdminDashboard();
+          formNewCount += addedCount;
+        }
+
+        lastFormSyncTime = new Date();
+        updateFormSyncBadge('ok', formRecords.length, addedCount, dupCount, incomplete.length);
+        return addedCount;
+      } catch (err) {
+        if (!silent) updateFormSyncBadge('error');
+        console.warn('Form Sheet sync error:', err);
+        return 0;
+      }
+    }
+
+    function showIncompleteWarning(incompleteList) {
+      let panel = document.getElementById('formIncompleteWarning');
+      if (!panel) {
+        // สร้าง panel ถ้ายังไม่มี
+        panel = document.createElement('div');
+        panel.id = 'formIncompleteWarning';
+        const badge = document.getElementById('formSyncBadge');
+        if (badge && badge.parentElement) {
+          badge.parentElement.parentElement.insertAdjacentElement('afterend', panel);
+        }
+      }
+      panel.className = 'mb-4 bg-rose-50 border border-rose-200 rounded-2xl p-4';
+      panel.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">⚠️</span>
+            <span class="text-sm font-bold text-rose-800">พบ ${incompleteList.length} รายการ ข้อมูลไม่ครบถ้วน (แถว 92+)</span>
+          </div>
+          <button onclick="document.getElementById('formIncompleteWarning').classList.add('hidden')"
+            class="text-rose-400 hover:text-rose-600 text-lg font-bold">×</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-rose-100 text-rose-900 font-bold">
+                <th class="px-3 py-2 text-left">แถวที่</th>
+                <th class="px-3 py-2 text-left">เลขสมาชิก</th>
+                <th class="px-3 py-2 text-left">ชื่อ-สกุล</th>
+                <th class="px-3 py-2 text-left">ชื่อบุตร</th>
+                <th class="px-3 py-2 text-left">ข้อมูลที่ขาด</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${incompleteList.map(item => `
+                <tr class="border-t border-rose-100 hover:bg-rose-100/50">
+                  <td class="px-3 py-2 font-mono text-rose-600 font-bold">${item.rowNum}</td>
+                  <td class="px-3 py-2 font-mono">${item.rawMemberId}</td>
+                  <td class="px-3 py-2">${item.memberName}</td>
+                  <td class="px-3 py-2">${item.childName}</td>
+                  <td class="px-3 py-2">
+                    ${item.missingFields.map(f => `<span class="bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded font-bold mr-1">${f}</span>`).join('')}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[10px] text-rose-500 mt-2">⚠️ รายการเหล่านี้ไม่ถูกนำเข้าระบบ — กรุณาแจ้งสมาชิกกรอกข้อมูลให้ครบถ้วน</p>
+      `;
+      panel.classList.remove('hidden');
+    }
+
+    function startFormSheetAutoSync() {
+      // Sync once immediately after 3s delay (let main data load first)
+      setTimeout(() => syncFromFormSheet(true), 3000);
+      // Then every 5 minutes
+      formSyncInterval = setInterval(() => syncFromFormSheet(true), 5 * 60 * 1000);
+    }
+
+    function updateFormSyncBadge(status, countOrMsg = null, newAdded = 0, dupCount = 0, incompleteCount = 0) {
+      const badge = document.getElementById('formSyncBadge');
+      const text = document.getElementById('formSyncBadgeText');
+      if (!badge || !text) return;
+
+      if (status === 'syncing') {
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700';
+        text.textContent = '⏳ กำลัง Sync Form (แถว 92+)...';
+      } else if (status === 'ok') {
+        const total = typeof countOrMsg === 'number' ? countOrMsg : 0;
+        const timeStr = lastFormSyncTime ? lastFormSyncTime.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) : '';
+        const newLabel = newAdded > 0 ? ` | +${newAdded} ใหม่!` : '';
+        const dupLabel = dupCount > 0 ? ` | ซ้ำ ${dupCount}` : '';
+        const incLabel = incompleteCount > 0 ? ` | ⚠️ ไม่ครบ ${incompleteCount}` : '';
+        const hasIssue = incompleteCount > 0;
+        badge.className = hasIssue
+          ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700'
+          : 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700';
+        text.textContent = `📋 Form (แถว 92+): ${total} คำขอ${newLabel}${dupLabel}${incLabel} | ${timeStr}`;
+        if (newAdded > 0) {
+          showToast(`📋 มีคำขอใหม่จาก Google Form ${newAdded} รายการ!`, 'success');
+          badge.classList.add('animate-pulse');
+          setTimeout(() => badge.classList.remove('animate-pulse'), 4000);
+        }
+        if (incompleteCount > 0) {
+          showToast(`⚠️ พบ ${incompleteCount} รายการข้อมูลไม่ครบ — ดูแถบแจ้งเตือนด้านบน`, 'warning');
+        }
+      } else if (status === 'error') {
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-rose-50 border border-rose-200 text-rose-600';
+        text.textContent = '❌ Form Sync ล้มเหลว — ตรวจสอบสิทธิ์ Sheet';
+      } else if (status === 'warn') {
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500';
+        text.textContent = `⚠️ ${countOrMsg}`;
+      }
+    }
+
+
+    async function manualSyncFormSheet() {
+      const btn = document.getElementById('manualFormSyncBtn');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Sync...'; }
+      const added = await syncFromFormSheet(false);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '🔄 Sync Form';
+        if (added > 0) showToast(`นำเข้าคำขอใหม่ ${added} รายการเรียบร้อย`, 'success');
+        else showToast('ไม่มีคำขอใหม่จาก Google Form', 'info');
+      }
+    }
+
+    // =========================================================
+    // MIGRATE GOOGLE SHEETS DATA → SUPABASE
+    // =========================================================
+    async function migrateGSheetsToSupabase() {
+      const btn = document.getElementById('migratBtn');
+      const progressWrap = document.getElementById('migrateProgressWrap');
+      const progressBar = document.getElementById('migrateProgressBar');
+      const progressLabel = document.getElementById('migrateProgressLabel');
+      const progressPct = document.getElementById('migrateProgressPct');
+      const progressDetail = document.getElementById('migrateProgressDetail');
+      const resultMsg = document.getElementById('migrateResultMsg');
+
+      // Reset UI
+      resultMsg.classList.add('hidden');
+      progressWrap.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressPct.textContent = '0%';
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      // Check Supabase connected
+      if (!supabaseClient) {
+        resultMsg.className = 'mt-2 p-3 rounded-xl text-xs font-bold text-center bg-rose-50 border border-rose-200 text-rose-700';
+        resultMsg.textContent = '❌ กรุณาบันทึกการตั้งค่า Supabase และทดสอบการเชื่อมต่อก่อน';
+        resultMsg.classList.remove('hidden');
+        progressWrap.classList.add('hidden');
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      // Check source data
+      if (!dbData || dbData.length === 0) {
+        progressLabel.textContent = 'กำลังโหลดข้อมูลจาก Google Sheets...';
+        progressBar.style.width = '5%';
+        progressPct.textContent = '5%';
+        // Force load from Google Sheets
+        await loadDataOnline();
+        await new Promise(r => setTimeout(r, 1500));
+      }
+
+      if (!dbData || dbData.length === 0) {
+        resultMsg.className = 'mt-2 p-3 rounded-xl text-xs font-bold text-center bg-rose-50 border border-rose-200 text-rose-700';
+        resultMsg.textContent = '❌ ไม่พบข้อมูลใน Google Sheets หรือยังโหลดไม่สำเร็จ กรุณาลองใหม่';
+        resultMsg.classList.remove('hidden');
+        progressWrap.classList.add('hidden');
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      const total = dbData.length;
+      let inserted = 0;
+      let skipped = 0;
+      let errors = 0;
+
+      progressLabel.textContent = `เตรียม Migration ${total} รายการ...`;
+      progressBar.style.width = '2%';
+      progressPct.textContent = '2%';
+      progressDetail.textContent = '';
+
+      // Fetch existing Supabase records to avoid duplicates
+      progressLabel.textContent = 'ตรวจสอบข้อมูลที่มีอยู่ใน Supabase...';
+      let existingIds = new Set();
+      try {
+        const existing = await supabaseFetch('scholarships?select=member_id,child_name');
+        if (existing && Array.isArray(existing)) {
+          existing.forEach(r => existingIds.add(`${r.member_id}__${r.child_name}`));
+        }
+      } catch(e) { /* proceed anyway */ }
+
+      progressLabel.textContent = `กำลัง Migration... (0/${total})`;
+
+      // Insert records in batches of 10
+      const BATCH = 10;
+      for (let i = 0; i < total; i += BATCH) {
+        const batch = dbData.slice(i, i + BATCH);
+        for (const record of batch) {
+          const key = `${record.memberId}__${record.childName}`;
+          if (existingIds.has(key)) {
+            skipped++;
+          } else {
+            try {
+              const payload = {
+                member_id: record.memberId || '',
+                member_name: record.memberName || '',
+                child_name: record.childName || '',
+                department: record.department || 'ไม่ระบุสังกัด',
+                edu_type: record.eduType || '',
+                level: record.level || '',
+                amount: Number(record.amount) || 0,
+                coop_account: record.coopAccount || '-',
+                doc_status: record.docStatus || 'ยื่นเอกสารสำเร็จ',
+                remark: record.remark || '',
+                sort_index: parseInt(record.index) || 0
+              };
+              const res = await supabaseFetch('scholarships', 'POST', payload);
+              if (res !== null) {
+                inserted++;
+                existingIds.add(key);
+              } else {
+                errors++;
+              }
+            } catch(e) {
+              errors++;
+            }
+          }
+
+          // Update progress
+          const done = inserted + skipped + errors;
+          const pct = Math.round((done / total) * 100);
+          progressBar.style.width = `${pct}%`;
+          progressPct.textContent = `${pct}%`;
+          progressLabel.textContent = `กำลัง Migration... (${done}/${total})`;
+          progressDetail.textContent = `✅ เพิ่มใหม่ ${inserted} | ⏭️ ข้าม ${skipped} ซ้ำ | ❌ พลาด ${errors}`;
+        }
+
+        // Small delay between batches to avoid rate limit
+        await new Promise(r => setTimeout(r, 150));
+      }
+
+      // Done
+      progressBar.style.width = '100%';
+      progressPct.textContent = '100%';
+      progressLabel.textContent = 'Migration เสร็จสิ้น!';
+      progressDetail.textContent = `รวม: ${total} รายการ`;
+
+      const isSuccess = errors === 0;
+      resultMsg.className = `mt-2 p-3 rounded-xl text-xs font-bold text-center ${
+        isSuccess
+          ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+          : 'bg-amber-50 border border-amber-200 text-amber-800'
+      }`;
+      resultMsg.innerHTML = isSuccess
+        ? `✅ Migration สำเร็จ! เพิ่มข้อมูล <strong>${inserted}</strong> รายการ (ข้าม <strong>${skipped}</strong> รายการที่ซ้ำกัน)`
+        : `⚠️ Migration เสร็จบางส่วน: เพิ่ม ${inserted} | ข้าม ${skipped} | พลาด ${errors} รายการ`;
+      resultMsg.classList.remove('hidden');
+
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      btn.innerHTML = '<span>✅</span><span>Migration เสร็จแล้ว</span>';
+
+      showToast(`Migration เสร็จ! เพิ่ม ${inserted} รายการ`, 'success');
+    }
+
+    // =========================================================
+    // EXPORT TO EXCEL (.xlsx) using SheetJS
+    // =========================================================
+    function exportToExcel() {
+      if (!window.XLSX) {
+        showToast('ไม่สามารถโหลด SheetJS ได้', 'error');
+        return;
+      }
+      if (dbData.length === 0) {
+        showToast('ไม่มีข้อมูลสำหรับส่งออก', 'warning');
+        return;
+      }
+
+      // Build rows
+      const header = ['ลำดับ', 'เลขที่สมาชิก', 'ชื่อ-สกุล สมาชิก', 'สังกัด/หน่วยงาน', 'ชื่อบุตรผู้รับทุน', 'ประเภทการศึกษา', 'ระดับชั้น', 'จำนวนเงิน (บาท)', 'เลขที่บัญชีเงินฝากสหกรณ์', 'สถานะคำขอ', 'หมายเหตุ'];
+      const rows = [header];
+      dbData.forEach(d => {
+        rows.push([
+          parseInt(d.index) || '',
+          `'${d.memberId}`,
+          d.memberName,
+          d.department || '',
+          d.childName,
+          d.eduType || '',
+          d.level || '',
+          Number(d.amount) || 0,
+          d.coopAccount || '-',
+          d.docStatus || '',
+          d.remark || ''
+        ]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+
+      // Column widths
+      ws['!cols'] = [
+        { wch: 6 }, { wch: 12 }, { wch: 28 }, { wch: 22 }, { wch: 24 },
+        { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 28 }, { wch: 30 }
+      ];
+
+      // Style header row (SheetJS CE doesn't support rich styles, but we set basic format)
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'ผู้ยื่นทุน 2569');
+
+      // Add summary sheet
+      const approvedTotal = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const allTotal = dbData.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const summaryData = [
+        ['สรุปรายงานผู้ยื่นทุนการศึกษา ประจำปี 2569'],
+        ['สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด'],
+        [''],
+        ['รายการ', 'จำนวน'],
+        ['จำนวนคำขอทั้งหมด', dbData.length + ' ราย'],
+        ['อนุมัติแล้ว', dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).length + ' ราย'],
+        ['รอพิจารณา', dbData.filter(d => isPendingStatus(d.docStatus)).length + ' ราย'],
+        ['ไม่อนุมัติ/เอกสารไม่ถูกต้อง', dbData.filter(d => isRejectedOrErrorStatus(d.docStatus)).length + ' ราย'],
+        [''],
+        ['วงเงิน (บาท)', ''],
+        ['ประมาณการจ่ายทั้งหมด', allTotal.toLocaleString() + ' บาท'],
+        ['วงเงินอนุมัติแล้ว', approvedTotal.toLocaleString() + ' บาท'],
+        [''],
+        ['วันที่ส่งออก', new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })]
+      ];
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+      wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'สรุป');
+
+      const fileName = `ผู้ยื่นทุนการศึกษา_2569_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      showToast(`ส่งออก Excel เรียบร้อย (${dbData.length} รายการ)`, 'success');
+    }
+
+    // =========================================================
+    // IMPORT DATA PANEL (Bulk Entry + Excel Import)
+    // =========================================================
+    function openImportDataPanel() {
+      document.getElementById('importDataModal').classList.remove('hidden');
+      if (document.getElementById('bulkEntryTableBody').children.length === 0) {
+        addBulkRow(); addBulkRow(); addBulkRow();
+      }
+      updateBulkRowCount();
+    }
+
+    function closeImportDataModal() {
+      document.getElementById('importDataModal').classList.add('hidden');
+    }
+
+    function switchImportTab(tab) {
+      const bulkPanel = document.getElementById('importPanelBulk');
+      const filePanel = document.getElementById('importPanelFile');
+      const bulkBtn = document.getElementById('importTabBulk');
+      const fileBtn = document.getElementById('importTabFile');
+
+      if (tab === 'bulk') {
+        bulkPanel.classList.remove('hidden');
+        filePanel.classList.add('hidden');
+        bulkBtn.className = 'flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-violet-600 text-violet-700 bg-white';
+        fileBtn.className = 'flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:bg-white transition-all';
+      } else {
+        bulkPanel.classList.add('hidden');
+        filePanel.classList.remove('hidden');
+        fileBtn.className = 'flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-violet-600 text-violet-700 bg-white';
+        bulkBtn.className = 'flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:bg-white transition-all';
+      }
+    }
+
+    // ------- BULK ENTRY FUNCTIONS -------
+    let bulkRowIdCounter = 0;
+    function addBulkRow() {
+      const tbody = document.getElementById('bulkEntryTableBody');
+      if (!tbody) return;
+      const rowId = ++bulkRowIdCounter;
+      const statusOptions = [
+        'ยื่นเอกสารสำเร็จ', 'อยู่ระหว่างตรวจสอบเอกสาร',
+        'อยู่ระหว่างการพิจารณา', 'ได้รับการอนุมัติ',
+        'เอกสารไม่ถูกต้อง', 'ไม่ได้รับการอนุมัติ',
+        'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก'
+      ];
+      const statusHtml = statusOptions.map(s => `<option value="${s}">${s}</option>`).join('');
+      const tr = document.createElement('tr');
+      tr.id = `bulkRow_${rowId}`;
+      tr.className = 'border-b border-slate-100 hover:bg-slate-50';
+      tr.innerHTML = `
+        <td class="px-2 py-1.5 text-center text-slate-400 font-mono text-[10px]">${rowId}</td>
+        <td class="px-1.5 py-1"><input type="text" maxlength="5" placeholder="00001" class="font-mono" onchange="autoFillBulkAmount(this)" /></td>
+        <td class="px-1.5 py-1"><input type="text" placeholder="นาย/นาง/นางสาว..." /></td>
+        <td class="px-1.5 py-1"><input type="text" placeholder="ด.ช./ด.ญ./นาย..." /></td>
+        <td class="px-1.5 py-1"><input type="text" placeholder="ป.6, ม.3, ป.ตรี" onchange="autoFillBulkAmountByLevel(this)" /></td>
+        <td class="px-1.5 py-1"><input type="text" placeholder="รพ.สตูล, สสอ." /></td>
+        <td class="px-1.5 py-1"><input type="number" placeholder="1000" class="font-mono text-right" style="text-align:right" /></td>
+        <td class="px-1.5 py-1"><input type="text" placeholder="xxx-xxxxx-x" class="font-mono" /></td>
+        <td class="px-1.5 py-1"><select>${statusHtml}</select></td>
+        <td class="px-2 py-1 text-center">
+          <button onclick="removeBulkRow(${rowId})" class="text-rose-400 hover:text-rose-600 font-bold text-base leading-none">×</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      updateBulkRowCount();
+    }
+
+    function removeBulkRow(rowId) {
+      const tr = document.getElementById(`bulkRow_${rowId}`);
+      if (tr) tr.remove();
+      updateBulkRowCount();
+    }
+
+    function clearBulkTable() {
+      const tbody = document.getElementById('bulkEntryTableBody');
+      if (tbody) tbody.innerHTML = '';
+      bulkRowIdCounter = 0;
+      updateBulkRowCount();
+    }
+
+    function updateBulkRowCount() {
+      const tbody = document.getElementById('bulkEntryTableBody');
+      const countEl = document.getElementById('bulkRowCount');
+      if (tbody && countEl) {
+        countEl.textContent = `${tbody.children.length} แถว`;
+      }
+    }
+
+    function autoFillBulkAmount(memberIdInput) {
+      // Auto-pad member ID
+      const v = memberIdInput.value.replace(/\D/g, '');
+      if (v) memberIdInput.value = v.padStart(5, '0');
+    }
+
+    function autoFillBulkAmountByLevel(levelInput) {
+      const row = levelInput.closest('tr');
+      if (!row) return;
+      const amountInput = row.querySelectorAll('input')[5];
+      if (!amountInput || amountInput.value) return; // Don't overwrite existing value
+      const cat = categorizeEducationLevel(levelInput.value, 0, '');
+      if (cat === 'PRIMARY') amountInput.value = 1000;
+      else if (cat === 'JUNIOR') amountInput.value = 1200;
+      else if (cat === 'SENIOR') amountInput.value = 1400;
+      else if (cat === 'BACHELOR') amountInput.value = 1600;
+    }
+
+    async function saveBulkEntries() {
+      const tbody = document.getElementById('bulkEntryTableBody');
+      if (!tbody) return;
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      let addedCount = 0;
+      let skippedCount = 0;
+      const promises = [];
+
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input, select');
+        if (inputs.length < 8) return;
+        const memberId = (inputs[0].value || '').trim().replace(/\D/g, '');
+        const memberName = (inputs[1].value || '').trim();
+        const childName = (inputs[2].value || '').trim();
+        const level = (inputs[3].value || '').trim();
+        const department = (inputs[4].value || '').trim() || 'ไม่ระบุสังกัด';
+        const amount = parseFloat(inputs[5].value) || 0;
+        const coopAccount = (inputs[6].value || '').trim() || '-';
+        const docStatus = inputs[7].value || 'ยื่นเอกสารสำเร็จ';
+
+        if (!memberId || !memberName || !childName) {
+          skippedCount++;
+          return;
+        }
+
+        const eduType = categorizeEducationLevel(level, amount, '') === 'PRIMARY' ? 'ประถมศึกษา' :
+          categorizeEducationLevel(level, amount, '') === 'JUNIOR' ? 'มัธยมศึกษาตอนต้น' :
+          categorizeEducationLevel(level, amount, '') === 'SENIOR' ? 'มัธยมศึกษาตอนปลาย' : 'ปริญญาตรี';
+
+        const newRecord = {
+          index: (dbData.length + addedCount + 1).toString(),
+          memberId: memberId.padStart(5, '0'),
+          memberName, childName, level, department,
+          eduType, amount, coopAccount, docStatus, remark: '',
+          isLocalOnly: true
+        };
+
+        dbData.push(newRecord);
+        addedCount++;
+        syncToGoogleSheets(newRecord, 'save');
+        saveToSupabase(newRecord);
+      });
+
+      if (addedCount > 0) {
+        reIndexDbData();
+        saveLocalStorageData();
+        renderAdminDashboard();
+        clearBulkTable();
+        addBulkRow(); addBulkRow(); addBulkRow();
+        showToast(`บันทึก ${addedCount} รายการเรียบร้อย${skippedCount > 0 ? ` (${skippedCount} แถวข้ามเนื่องจากข้อมูลไม่ครบ)` : ''}`, 'success');
+      } else {
+        showToast('ไม่มีรายการที่บันทึกได้ (กรุณากรอกโดย เลขสมาชิก + ชื่อสมาชิก + ชื่อบุตร)', 'warning');
+      }
+    }
+
+    // ------- FILE IMPORT FUNCTIONS -------
+    function handleExcelDrop(event) {
+      event.preventDefault();
+      document.getElementById('excelDropZone').classList.remove('drag-over');
+      const file = event.dataTransfer.files[0];
+      if (file) processExcelFile(file);
+    }
+
+    function handleExcelFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) processExcelFile(file);
+    }
+
+    function processExcelFile(file) {
+      if (!window.XLSX) {
+        showToast('SheetJS ยังไม่ได้โหลด', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          const firstSheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+
+          // Use existing parseDynamicCSV logic
+          const parsed = parseDynamicCSV(rows);
+          if (parsed && parsed.length > 0) {
+            importPreviewData = parsed;
+            renderImportPreview(parsed);
+            showToast(`อ่านไฟล์สำเร็จ: ${parsed.length} รายการ`, 'success');
+          } else {
+            showToast('ไม่สามารถอ่านข้อมูลได้ ตรวจสอบ Header ของไฟล์', 'error');
+          }
+        } catch (err) {
+          showToast(`เกิดข้อผิดพลาด: ${err.message}`, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderImportPreview(records) {
+      const previewArea = document.getElementById('importPreviewArea');
+      const previewBody = document.getElementById('importPreviewBody');
+      const countEl = document.getElementById('importPreviewCount');
+      const resultArea = document.getElementById('importResultArea');
+
+      if (resultArea) resultArea.classList.add('hidden');
+
+      if (!previewArea || !previewBody || !countEl) return;
+
+      countEl.textContent = `${records.length} รายการ`;
+      previewBody.innerHTML = records.map((r, i) => `
+        <tr class="hover:bg-slate-50">
+          <td class="px-3 py-2 text-slate-400 font-mono">${i + 1}</td>
+          <td class="px-3 py-2 font-mono font-bold text-indigo-900">${r.memberId}</td>
+          <td class="px-3 py-2 font-medium">${r.memberName}</td>
+          <td class="px-3 py-2">${r.childName}</td>
+          <td class="px-3 py-2">${r.level || '-'}</td>
+          <td class="px-3 py-2">${r.department || '-'}</td>
+          <td class="px-3 py-2 text-right font-bold text-emerald-700">${Number(r.amount).toLocaleString()}</td>
+          <td class="px-3 py-2 font-mono">${r.coopAccount || '-'}</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-[10px] font-bold">${r.docStatus}</span>
+          </td>
+        </tr>
+      `).join('');
+
+      previewArea.classList.remove('hidden');
+    }
+
+    function confirmImportData() {
+      if (!importPreviewData || importPreviewData.length === 0) return;
+
+      let addedCount = 0;
+      importPreviewData.forEach(record => {
+        // Check duplicate by memberId + childName
+        const exists = dbData.some(d =>
+          d.memberId === record.memberId && d.childName === record.childName
+        );
+        if (!exists) {
+          const newRecord = {
+            ...record,
+            index: (dbData.length + addedCount + 1).toString(),
+            isLocalOnly: true
+          };
+          dbData.push(newRecord);
+          addedCount++;
+          syncToGoogleSheets(newRecord, 'save');
+          saveToSupabase(newRecord);
+        }
+      });
+
+      reIndexDbData();
+      saveLocalStorageData();
+      renderAdminDashboard();
+
+      const resultArea = document.getElementById('importResultArea');
+      const previewArea = document.getElementById('importPreviewArea');
+      if (resultArea) {
+        resultArea.textContent = `✅ นำเข้า ${addedCount} รายการเรียบร้อย! (ข้าม${importPreviewData.length - addedCount} ที่ซ้ำ)`;
+        resultArea.classList.remove('hidden');
+      }
+      if (previewArea) previewArea.classList.add('hidden');
+
+      importPreviewData = [];
+      showToast(`นำเข้าข้อมูลเรียบร้อย ${addedCount} รายการ`, 'success');
     }
 
     function copyGasScript() {
@@ -3481,7 +4841,11 @@ function doPost(e) {
       }
 
       loadDataOnline();
+
+      // Start Form Sheet auto-sync every 5 minutes
+      startFormSheetAutoSync();
     });
   </script>
+
 </body>
 </html>
