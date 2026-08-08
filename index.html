@@ -643,6 +643,10 @@
                 <option value="ไม่ได้รับการอนุมัติ">ไม่ได้รับการอนุมัติ</option>
                 <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
               </select>
+              <button onclick="deleteSelectedAdminRecords()" id="btnDeleteSelected" class="hidden px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
+                <span>🗑️</span>
+                <span>ลบรายการที่เลือก</span>
+              </button>
             </div>
           </div>
 
@@ -651,6 +655,9 @@
             <table class="min-w-full text-left text-xs border-collapse">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
+                  <th class="px-4 py-3.5 text-center w-10">
+                    <input type="checkbox" id="selectAllAdmin" onclick="toggleAllAdminCheckboxes()" class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                  </th>
                   <th class="px-4 py-3.5 text-center">ลำดับ</th>
                   <th class="px-4 py-3.5">เลขสมาชิก</th>
                   <th class="px-4 py-3.5">ชื่อ-สกุล สมาชิก</th>
@@ -3280,6 +3287,9 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
         return `
           <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-4 py-3 text-center">
+              <input type="checkbox" class="admin-row-checkbox w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer" value="${realIndex}" onchange="updateDeleteSelectedButton()">
+            </td>
             <td class="px-4 py-3 text-center font-mono font-semibold text-slate-400">${item.index}</td>
             <td class="px-4 py-3 font-mono font-bold text-indigo-900">${item.memberId}</td>
             <td class="px-4 py-3 font-semibold text-slate-800">${item.memberName}</td>
@@ -3300,6 +3310,93 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           </tr>
         `;
       }).join('');
+      updateDeleteSelectedButton();
+    }
+
+    function toggleAllAdminCheckboxes() {
+      const selectAll = document.getElementById('selectAllAdmin').checked;
+      const checkboxes = document.querySelectorAll('.admin-row-checkbox');
+      checkboxes.forEach(cb => cb.checked = selectAll);
+      updateDeleteSelectedButton();
+    }
+
+    function updateDeleteSelectedButton() {
+      const checkboxes = document.querySelectorAll('.admin-row-checkbox:checked');
+      const btn = document.getElementById('btnDeleteSelected');
+      const selectAll = document.getElementById('selectAllAdmin');
+      const totalCheckboxes = document.querySelectorAll('.admin-row-checkbox').length;
+      
+      if (checkboxes.length > 0) {
+        btn.classList.remove('hidden');
+        btn.innerHTML = `<span>🗑️</span><span>ลบรายการที่เลือก (${checkboxes.length})</span>`;
+      } else {
+        btn.classList.add('hidden');
+      }
+      
+      if (totalCheckboxes > 0 && checkboxes.length === totalCheckboxes) {
+        selectAll.checked = true;
+      } else {
+        selectAll.checked = false;
+      }
+    }
+
+    async function deleteSelectedAdminRecords() {
+      const checkboxes = document.querySelectorAll('.admin-row-checkbox:checked');
+      if (checkboxes.length === 0) return;
+      
+      if (!confirm(`คุณต้องการลบข้อมูลจำนวน ${checkboxes.length} รายการ ใช่หรือไม่?\nการกระทำนี้ไม่สามารถยกเลิกได้`)) return;
+      
+      showLoading('กำลังลบข้อมูลหลายรายการ...');
+      
+      try {
+        const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        // Sort descending so splicing from array doesn't affect subsequent indices
+        indicesToDelete.sort((a, b) => b - a);
+        
+        let deletedCount = 0;
+        
+        // If Supabase is connected, we should delete them from DB too
+        if (supabaseClient) {
+          const idsToDelete = indicesToDelete.map(idx => dbData[idx]._supabaseId).filter(id => id);
+          if (idsToDelete.length > 0) {
+            // Delete in chunks of 50 to avoid URL length limits if needed, or send one big delete
+            const { error } = await supabaseClient
+              .from('scholarships')
+              .delete()
+              .in('id', idsToDelete);
+              
+            if (error) throw error;
+          }
+        }
+        
+        // Remove from local dbData
+        for (const idx of indicesToDelete) {
+          dbData.splice(idx, 1);
+          deletedCount++;
+        }
+        
+        hideLoading();
+        Swal.fire({
+          icon: 'success',
+          title: 'ลบข้อมูลสำเร็จ',
+          text: `ลบข้อมูลทั้งหมด ${deletedCount} รายการเรียบร้อยแล้ว`,
+          confirmButtonText: 'ตกลง',
+          confirmButtonColor: '#4f46e5'
+        });
+        
+        renderAdminDashboard();
+        
+      } catch (error) {
+        hideLoading();
+        console.error('Bulk Delete error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: error.message || 'ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+          confirmButtonText: 'ตกลง',
+          confirmButtonColor: '#e11d48'
+        });
+      }
     }
 
     // Modal Operations (Scholarships)
@@ -3340,9 +3437,19 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       e.preventDefault();
 
       const editIndex = parseInt(document.getElementById('editIndex').value);
+      const inputMemberId = document.getElementById('formMemberId').value.trim().padStart(5, '0');
+      
+      // Duplicate Member ID Check
+      const isDuplicate = dbData.some((item, idx) => item.memberId === inputMemberId && idx !== editIndex);
+      if (isDuplicate) {
+        if (!confirm(`แจ้งเตือน: พบข้อมูลเลขที่สมาชิก "${inputMemberId}" ซ้ำในระบบ\nคุณต้องการบันทึกข้อมูลนี้ต่อไปหรือไม่?`)) {
+          return; // Cancel saving
+        }
+      }
+
       const newRecord = {
         index: document.getElementById('formIndex').value.trim(),
-        memberId: document.getElementById('formMemberId').value.trim().padStart(5, '0'),
+        memberId: inputMemberId,
         memberName: document.getElementById('formMemberName').value.trim(),
         childName: document.getElementById('formChildName').value.trim(),
         eduType: document.getElementById('formEduType').value.trim(),
