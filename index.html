@@ -2343,13 +2343,31 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     }
 
     // Maintenance Mode Toggle
-    function toggleMaintenanceMode() {
+    async function toggleMaintenanceMode() {
+      const btn = document.getElementById('maintenanceToggleBtn');
+      if (btn) btn.disabled = true;
+
       isMaintenanceMode = !isMaintenanceMode;
+      // Optimistic local update
       localStorage.setItem('coop_maintenance_mode', isMaintenanceMode ? 'true' : 'false');
       updateMaintenanceUI();
-      showToast(isMaintenanceMode ? 'ปิดระบบฝั่งสมาชิกเรียบร้อยแล้ว' : 'เปิดบริการระบบฝั่งสมาชิกตามปกติเรียบร้อยแล้ว', isMaintenanceMode ? 'warning' : 'success');
-    }
+      showToast('กำลังบันทึกสถานะไปที่ฐานข้อมูลกลาง...', 'info');
 
+      try {
+        const payload = { is_maintenance_mode: isMaintenanceMode, updated_at: new Date().toISOString() };
+        const res = await supabaseFetch('site_settings?id=eq.1', 'PATCH', payload);
+        if (res !== null) {
+          showToast(isMaintenanceMode ? 'ปิดระบบฝั่งสมาชิกเรียบร้อยแล้ว' : 'เปิดบริการระบบฝั่งสมาชิกตามปกติเรียบร้อยแล้ว', isMaintenanceMode ? 'warning' : 'success');
+        } else {
+          showToast('ไม่สามารถบันทึกไปยัง Supabase ได้ (อาจไม่มีสิทธิ์)', 'error');
+        }
+      } catch (err) {
+        console.error('Error saving maintenance mode', err);
+        showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ Supabase', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
     function updateMaintenanceUI() {
       const banner = document.getElementById('maintenanceBanner');
       const content = document.getElementById('memberContentArea');
@@ -3306,6 +3324,20 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       updateDeleteSelectedButton();
     }
 
+    async function loadSettingsFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const res = await supabaseFetch('site_settings?id=eq.1&select=is_maintenance_mode');
+        if (res && res.length > 0) {
+          isMaintenanceMode = res[0].is_maintenance_mode;
+          localStorage.setItem('coop_maintenance_mode', isMaintenanceMode ? 'true' : 'false');
+          updateMaintenanceUI();
+        }
+      } catch (err) {
+        console.warn('Failed to load settings from Supabase', err);
+      }
+    }
+
     function toggleAllAdminCheckboxes() {
       const selectAll = document.getElementById('selectAllAdmin').checked;
       const checkboxes = document.querySelectorAll('.admin-row-checkbox');
@@ -3841,13 +3873,28 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     // =========================================================
     // SUPABASE INTEGRATION (Optional - Falls back to GAS/Local)
     // =========================================================
+
     function initSupabaseClient() {
       supabaseClient = null;
       if (!supabaseUrl || !supabaseAnonKey) return;
       // We use Supabase REST API directly (no npm needed)
       supabaseClient = { url: supabaseUrl, key: supabaseAnonKey };
+      loadSettingsFromSupabase();
     }
 
+    async function loadSettingsFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const res = await supabaseFetch('site_settings?id=eq.1&select=is_maintenance_mode');
+        if (res && res.length > 0) {
+          isMaintenanceMode = res[0].is_maintenance_mode;
+          localStorage.setItem('coop_maintenance_mode', isMaintenanceMode ? 'true' : 'false');
+          updateMaintenanceUI();
+        }
+      } catch (err) {
+        console.warn('Failed to load settings from Supabase', err);
+      }
+    }
     async function supabaseFetch(path, method = 'GET', body = null, extraHeaders = {}) {
       if (!supabaseClient) return null;
       try {
@@ -4973,3 +5020,5 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
 </body>
 </html>
+
+
