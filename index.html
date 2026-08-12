@@ -5046,14 +5046,12 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           
           const key = idKey + '|' + nameKey;
           
-          // Check 2569 internal duplicate
           if (seen2569.has(key)) {
               duplicates2569.push(d);
           } else {
               seen2569.set(key, d);
           }
           
-          // Check 2568 duplicate
           if (typeof window.dbData2568 !== 'undefined') {
               const isDup2568 = window.dbData2568.some(old => normalizeId(old.memberId) === idKey && normalizeName(old.childName) === nameKey);
               if (isDup2568) {
@@ -5064,34 +5062,37 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       let htmlReport = '';
       if (duplicates2569.length === 0 && duplicates2568.length === 0) {
-          htmlReport = '<p class="text-green-600 font-bold text-lg mt-4">ไม่พบข้อมูลที่ยื่นซ้ำเลยครับ ยอดเยี่ยมมาก! 🎉</p>';
+          htmlReport = '<p style="color:#16a34a;font-weight:bold;font-size:1.1em;margin-top:12px;">✅ ไม่พบข้อมูลที่ยื่นซ้ำเลยครับ ยอดเยี่ยมมาก!</p>';
       } else {
           if (duplicates2569.length > 0) {
-              htmlReport += `<div class="mb-4"><h3 class="text-red-600 font-bold text-lg mb-2">ซ้ำกันเองในตาราง 2569 (${duplicates2569.length} รายการ)</h3>`;
-              htmlReport += `<ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-red-50 p-2 rounded border border-red-200">`;
+              htmlReport += '<div style="margin-bottom:12px"><h3 style="color:#dc2626;font-weight:bold;margin-bottom:6px;">⚠️ ซ้ำกันเองในตาราง 2569 (' + duplicates2569.length + ' รายการ)</h3>';
+              htmlReport += '<ul style="font-size:0.85em;text-align:left;padding-left:20px;max-height:150px;overflow-y:auto;background:#fff5f5;padding:8px 8px 8px 24px;border-radius:6px;border:1px solid #fca5a5;">';
               duplicates2569.forEach(d => {
-                  htmlReport += `<li>สมาชิก: <b>${d.memberId}</b> - บุตร: ${d.childName}</li>`;
+                  htmlReport += '<li>สมาชิก: <b>' + d.memberId + '</b> - บุตร: ' + d.childName + '</li>';
               });
-              htmlReport += `</ul></div>`;
+              htmlReport += '</ul></div>';
           }
-          
           if (duplicates2568.length > 0) {
-              htmlReport += `<div><h3 class="text-orange-600 font-bold text-lg mb-2">ซ้ำกับรายชื่อปี 2568 (${duplicates2568.length} รายการ)</h3>`;
-              htmlReport += `<ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-orange-50 p-2 rounded border border-orange-200">`;
+              htmlReport += '<div><h3 style="color:#ea580c;font-weight:bold;margin-bottom:6px;">⚠️ ซ้ำกับรายชื่อปี 2568 (' + duplicates2568.length + ' รายการ)</h3>';
+              htmlReport += '<ul style="font-size:0.85em;text-align:left;padding-left:20px;max-height:150px;overflow-y:auto;background:#fff7ed;padding:8px 8px 8px 24px;border-radius:6px;border:1px solid #fdba74;">';
               duplicates2568.forEach(d => {
-                  htmlReport += `<li>สมาชิก: <b>${d.memberId}</b> - บุตร: ${d.childName}</li>`;
+                  htmlReport += '<li>สมาชิก: <b>' + d.memberId + '</b> - บุตร: ' + d.childName + '</li>';
               });
-              htmlReport += `</ul></div>`;
+              htmlReport += '</ul></div>';
           }
       }
 
-      Swal.fire({
-          title: '📊 ผลการสแกนข้อมูลซ้ำ',
-          html: htmlReport,
-          width: '600px',
-          confirmButtonText: 'ปิด',
-          confirmButtonColor: '#4f46e5'
-      });
+      // Show custom modal
+      const overlay = document.createElement('div');
+      overlay.id = 'scanDupModal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = '<div style="background:#fff;border-radius:12px;padding:24px;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:sans-serif;">' +
+        '<h2 style="font-size:1.2em;font-weight:bold;margin-bottom:16px;text-align:center;">📊 ผลการสแกนข้อมูลซ้ำ</h2>' +
+        htmlReport +
+        '<div style="text-align:center;margin-top:20px;"><button onclick="document.getElementById(\'scanDupModal\').remove()" style="background:#4f46e5;color:#fff;border:none;padding:10px 32px;border-radius:8px;font-size:1em;cursor:pointer;font-weight:bold;">ปิด</button></div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', e => { if(e.target === overlay) overlay.remove(); });
     }
 
   </script>
