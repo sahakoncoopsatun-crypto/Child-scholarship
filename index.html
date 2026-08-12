@@ -84,6 +84,8 @@
       font-family: 'Prompt', sans-serif;
     }
   </style>
+  <!-- Data for 2568 Duplicate Check -->
+  <script src="data_2568.js"></script>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-100">
 
@@ -3465,11 +3467,14 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       const editIndex = parseInt(document.getElementById('editIndex').value);
       const inputMemberId = document.getElementById('formMemberId').value.trim().padStart(5, '0');
+      const inputChildName = document.getElementById('formChildName').value.trim();
+      const normalizeName = name => (name || '').toString().replace(/[\s\u00a0\r\n]/g, '');
       
-      // Duplicate Member ID Check
-      const isDuplicate = dbData.some((item, idx) => item.memberId === inputMemberId && idx !== editIndex);
-      if (isDuplicate) {
-        if (!confirm(`แจ้งเตือน: พบข้อมูลเลขที่สมาชิก "${inputMemberId}" ซ้ำในระบบ\nคุณต้องการบันทึกข้อมูลนี้ต่อไปหรือไม่?`)) {
+      // Duplicate Member ID and Child Name Check (2568 & 2569)
+      const isDuplicate2569 = dbData.some((item, idx) => item.memberId === inputMemberId && normalizeName(item.childName) === normalizeName(inputChildName) && idx !== editIndex);
+      const isDuplicate2568 = (typeof dbData2568 !== 'undefined') && dbData2568.some(item => item.memberId === inputMemberId && normalizeName(item.childName) === normalizeName(inputChildName));
+      if (isDuplicate2569 || isDuplicate2568) {
+        if (!confirm(`แจ้งเตือน: พบข้อมูลการยื่นทุนซ้ำของสมาชิก "${inputMemberId}" และบุตร "${inputChildName}" (ตรวจสอบจากปี 2568 และ 2569)\nคุณต้องการบันทึกข้อมูลนี้ต่อไปหรือไม่?`)) {
           return; // Cancel saving
         }
       }
@@ -4724,10 +4729,15 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
         const normalizeId = id => { const num = (id || '').toString().replace(/\D/g, ''); return num ? parseInt(num, 10).toString() : (id || '').toString().trim(); };
         const normalizeName = name => (name || '').toString().replace(/[\s\u00a0\r\n]/g, '');
-        const exists = dbData.some(d =>
+        const exists2569 = dbData.some(d =>
           normalizeId(d.memberId) === normalizeId(memberId) &&
           normalizeName(d.childName) === normalizeName(childName)
         );
+        const exists2568 = (typeof dbData2568 !== 'undefined') && dbData2568.some(d =>
+          normalizeId(d.memberId) === normalizeId(memberId) &&
+          normalizeName(d.childName) === normalizeName(childName)
+        );
+        const exists = exists2569 || exists2568;
         if (exists) {
           skippedCount++;
           return;
