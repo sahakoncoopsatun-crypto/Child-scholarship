@@ -5030,7 +5030,6 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       // Start Form Sheet auto-sync every 5 minutes
       startFormSheetAutoSync();
     });
-  </script>
 
     function scanForDuplicates() {
       const normalizeId = id => { const num = (id || '').toString().replace(/\D/g, ''); return num ? parseInt(num, 10).toString() : (id || '').toString().trim(); };
@@ -5094,6 +5093,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           confirmButtonColor: '#4f46e5'
       });
     }
+  </script>
 </body>
 </html>
 
