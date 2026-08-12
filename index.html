@@ -5067,21 +5067,21 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           htmlReport = '<p class="text-green-600 font-bold text-lg mt-4">ไม่พบข้อมูลที่ยื่นซ้ำเลยครับ ยอดเยี่ยมมาก! 🎉</p>';
       } else {
           if (duplicates2569.length > 0) {
-              htmlReport += <div class="mb-4"><h3 class="text-red-600 font-bold text-lg mb-2">ซ้ำกันเองในตาราง 2569 ( รายการ)</h3>;
-              htmlReport += <ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-red-50 p-2 rounded border border-red-200">;
+              htmlReport += `<div class="mb-4"><h3 class="text-red-600 font-bold text-lg mb-2">ซ้ำกันเองในตาราง 2569 (${duplicates2569.length} รายการ)</h3>`;
+              htmlReport += `<ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-red-50 p-2 rounded border border-red-200">`;
               duplicates2569.forEach(d => {
-                  htmlReport += <li>สมาชิก: <b></b> - บุตร: </li>;
+                  htmlReport += `<li>สมาชิก: <b>${d.memberId}</b> - บุตร: ${d.childName}</li>`;
               });
-              htmlReport += </ul></div>;
+              htmlReport += `</ul></div>`;
           }
           
           if (duplicates2568.length > 0) {
-              htmlReport += <div><h3 class="text-orange-600 font-bold text-lg mb-2">ซ้ำกับรายชื่อปี 2568 ( รายการ)</h3>;
-              htmlReport += <ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-orange-50 p-2 rounded border border-orange-200">;
+              htmlReport += `<div><h3 class="text-orange-600 font-bold text-lg mb-2">ซ้ำกับรายชื่อปี 2568 (${duplicates2568.length} รายการ)</h3>`;
+              htmlReport += `<ul class="text-sm text-left list-disc pl-5 max-h-40 overflow-y-auto bg-orange-50 p-2 rounded border border-orange-200">`;
               duplicates2568.forEach(d => {
-                  htmlReport += <li>สมาชิก: <b></b> - บุตร: </li>;
+                  htmlReport += `<li>สมาชิก: <b>${d.memberId}</b> - บุตร: ${d.childName}</li>`;
               });
-              htmlReport += </ul></div>;
+              htmlReport += `</ul></div>`;
           }
       }
 
@@ -5093,8 +5093,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           confirmButtonColor: '#4f46e5'
       });
     }
+
   </script>
 </body>
 </html>
-
-
