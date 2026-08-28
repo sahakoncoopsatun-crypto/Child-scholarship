@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" class="h-full bg-slate-100">
 <head>
   <meta charset="UTF-8">
@@ -3375,7 +3375,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const checkboxes = document.querySelectorAll('.admin-row-checkbox:checked');
       if (checkboxes.length === 0) return;
       
-      if (!confirm(`คุณต้องการลบข้อมูลจำนวน ${checkboxes.length} รายการ ใช่หรือไม่?\nการกระทำนี้ไม่สามารถยกเลิกได้`)) return;
+      if (!confirm(`ระบบตรวจสอบ: คุณกำลังจะลบข้อมูลจำนวน ${checkboxes.length} รายการ ออกจากระบบอย่างถาวร!\n\nการกระทำนี้ไม่สามารถกู้คืนได้ คุณยืนยันที่จะลบข้อมูลเหล่านี้หรือไม่?`)) return;
       
       showLoading('กำลังลบข้อมูลหลายรายการ...');
       
@@ -4571,23 +4571,35 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       ];
       // --- เพิ่ม: สรุปงบประมาณแยกตามระดับการศึกษา ---
       const eduSummary = {
-        '1. ประถมศึกษา': { count: 0, amount: 0, approved: 0 },
-        '2. มัธยมศึกษาตอนต้น': { count: 0, amount: 0, approved: 0 },
-        '3. ม.ปลาย / ปวช.': { count: 0, amount: 0, approved: 0 },
-        '4. ปริญญาตรี / ปวส.': { count: 0, amount: 0, approved: 0 },
-        'อื่นๆ / ไม่ระบุ': { count: 0, amount: 0, approved: 0 }
+        'PRIMARY': { label: '1. ประถมศึกษา', count: 0, amount: 0, approved: 0 },
+        'JUNIOR': { label: '2. มัธยมศึกษาตอนต้น', count: 0, amount: 0, approved: 0 },
+        'SENIOR': { label: '3. ม.ปลาย / ปวช.', count: 0, amount: 0, approved: 0 },
+        'BACHELOR': { label: '4. ปริญญาตรี / ปวส.', count: 0, amount: 0, approved: 0 },
+        'OTHER': { label: 'อื่นๆ / ไม่ระบุ', count: 0, amount: 0, approved: 0 }
       };
+      
       dbData.forEach(d => {
-        const edu = d.eduType || '???????';
-        if (!eduSummary[edu]) eduSummary[edu] = { count: 0, amount: 0, approved: 0 };
-        eduSummary[edu].count++;
-        eduSummary[edu].amount += (Number(d.amount) || 0);
-        if (isApprovedOrTransferredStatus(d.docStatus)) eduSummary[edu].approved += (Number(d.amount) || 0);
+        const cat = categorizeEducationLevel(d.level, d.amount, d.eduType) || 'OTHER';
+        if (eduSummary[cat]) {
+            eduSummary[cat].count++;
+            eduSummary[cat].amount += (Number(d.amount) || 0);
+            if (isApprovedOrTransferredStatus(d.docStatus)) eduSummary[cat].approved += (Number(d.amount) || 0);
+        } else {
+            eduSummary['OTHER'].count++;
+            eduSummary['OTHER'].amount += (Number(d.amount) || 0);
+            if (isApprovedOrTransferredStatus(d.docStatus)) eduSummary['OTHER'].approved += (Number(d.amount) || 0);
+        }
       });
       summaryData.push(['']);
-      summaryData.push(['????????????????????????']);
-      for (const [edu, stats] of Object.entries(eduSummary)) {
-        summaryData.push([edu, stats.count + ' ???', stats.amount.toLocaleString() + ' ???', stats.approved.toLocaleString() + ' ??? (???????????)']);
+      summaryData.push(['สรุปแบ่งตามระดับการศึกษา (ข้อมูลทั้งหมด)']);
+      for (const catKey in eduSummary) {
+        const stats = eduSummary[catKey];
+        summaryData.push([
+          stats.label,
+          stats.count + ' ทุน',
+          stats.amount.toLocaleString() + ' บาท',
+          'อนุมัติ: ' + stats.approved.toLocaleString() + ' บาท'
+        ]);
       }
       summaryData.push(['']);
       const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
