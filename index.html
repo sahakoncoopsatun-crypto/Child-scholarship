@@ -1217,24 +1217,7 @@ function doPost(e) {
                   </button>
                 </div>
               </div>
-              <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-72">
-                <table class="min-w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold sticky top-0">
-                      <th class="px-3 py-2.5">#</th>
-                      <th class="px-3 py-2.5">เลขสมาชิก</th>
-                      <th class="px-3 py-2.5">ชื่อ-สกุล สมาชิก</th>
-                      <th class="px-3 py-2.5">ชื่อบุตร</th>
-                      <th class="px-3 py-2.5">ระดับชั้น</th>
-                      <th class="px-3 py-2.5">สังกัด</th>
-                      <th class="px-3 py-2.5 text-right">จำนวนเงิน</th>
-                      <th class="px-3 py-2.5">เลขบัญชี</th>
-                      <th class="px-3 py-2.5">สถานะ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="importPreviewBody" class="divide-y divide-slate-100"></tbody>
-                </table>
-              </div>
+              <div id="importPreviewContainer" class="space-y-4 max-h-[65vh] overflow-y-auto"></div>
             </div>
 
             <!-- Import Result -->
@@ -4866,7 +4849,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       reader.readAsArrayBuffer(file);
     }
 
-        function updatePreviewData(index, field, value) {
+            function updatePreviewData(index, field, value) {
       if (importPreviewData && importPreviewData[index]) {
         importPreviewData[index][field] = value;
         renderImportPreview(importPreviewData);
@@ -4875,80 +4858,110 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
     function renderImportPreview(records) {
       const previewArea = document.getElementById("importPreviewArea");
-      const previewBody = document.getElementById("importPreviewBody");
+      const container = document.getElementById("importPreviewContainer");
       const countEl = document.getElementById("importPreviewCount");
       const resultArea = document.getElementById("importResultArea");
 
       if (resultArea) resultArea.classList.add("hidden");
-
-      if (!previewArea || !previewBody || !countEl) return;
+      if (!previewArea || !container || !countEl) return;
 
       const normalizeId = id => { const num = (id || "").toString().replace(/\D/g, ""); return num ? parseInt(num, 10).toString() : (id || "").toString().trim(); };
       const normalizeName = name => (name || "").toString().replace(/[\s\u00a0\r\n]/g, "");
 
-      let dupCount = 0;
-      previewBody.innerHTML = records.map((r, i) => {
-        const isDup2569 = dbData.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName));
-        const isDup2568 = (typeof window.dbData2568 !== "undefined") ? window.dbData2568.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName)) : null;
-        const isDup = isDup2569 || isDup2568;
-        
-        if (isDup) {
-          dupCount++;
-          let sourceText = isDup2569 ? "พบประวัติซ้ำในปี 2569" : "พบประวัติซ้ำในปี 2568";
-          return `
-            <tr class="bg-rose-50 border-t border-rose-200">
-              <td class="px-2 py-1 text-center border-r border-rose-200" rowspan="2">
-                <span class="text-rose-600 font-bold text-[10px] block leading-tight">${sourceText}</span>
-              </td>
-              <td class="px-2 py-1 text-slate-500 font-mono text-[10px]" colspan="8">👇 ข้อมูลเดิมที่พบในระบบ:</td>
-            </tr>
-            <tr class="bg-rose-50/50">
-              <td class="px-2 py-1 font-mono text-slate-500 text-[11px]">${isDup.memberId}</td>
-              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.memberName}</td>
-              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.childName}</td>
-              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.level || "-"}</td>
-              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.department || "-"}</td>
-              <td class="px-2 py-1 text-slate-500 text-[11px] text-right">${Number(isDup.amount).toLocaleString()}</td>
-              <td class="px-2 py-1 text-slate-500 font-mono text-[11px]">${isDup.coopAccount || "-"}</td>
-              <td class="px-2 py-1">
-                 <span class="px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-[9px] font-bold">ประวัติเดิม</span>
-              </td>
-            </tr>
-            <tr class="bg-amber-50 border-b border-rose-300">
-              <td class="px-2 py-1 text-amber-700 font-bold text-[10px] text-center border-r border-amber-200">✏️ ข้อมูลใหม่</td>
-              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600 font-mono font-bold text-indigo-900" value="${r.memberId}" onchange="updatePreviewData(${i}, 'memberId', this.value)"></td>
-              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600 font-medium" value="${r.memberName}" onchange="updatePreviewData(${i}, 'memberName', this.value)"></td>
-              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600" value="${r.childName}" onchange="updatePreviewData(${i}, 'childName', this.value)"></td>
-              <td class="px-2 py-1 text-[11px]">${r.level || "-"}</td>
-              <td class="px-2 py-1 text-[11px]">${r.department || "-"}</td>
-              <td class="px-2 py-1 text-right font-bold text-emerald-700 text-[11px]">${Number(r.amount).toLocaleString()}</td>
-              <td class="px-2 py-1 font-mono text-[11px]">${r.coopAccount || "-"}</td>
-              <td class="px-2 py-1">
-                 <span class="px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full text-[9px] font-bold">แก้เพื่อบันทึก</span>
-              </td>
-            </tr>
-          `;
-        } else {
-          return `
-          <tr class="hover:bg-slate-50 border-b border-slate-100">
-            <td class="px-3 py-2 text-slate-400 font-mono">${i + 1}</td>
-            <td class="px-3 py-2 font-mono font-bold text-indigo-900">${r.memberId}</td>
-            <td class="px-3 py-2 font-medium">${r.memberName}</td>
-            <td class="px-3 py-2">${r.childName}</td>
-            <td class="px-3 py-2">${r.level || "-"}</td>
-            <td class="px-3 py-2">${r.department || "-"}</td>
-            <td class="px-3 py-2 text-right font-bold text-emerald-700">${Number(r.amount).toLocaleString()}</td>
-            <td class="px-3 py-2 font-mono">${r.coopAccount || "-"}</td>
-            <td class="px-3 py-2">
-              <span class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[10px] font-bold">ข้อมูลใหม่</span>
-            </td>
-          </tr>
-          `;
-        }
-      }).join("");
+      let dup2568 = [];
+      let normal = [];
 
-      countEl.textContent = `${records.length} รายการ ${dupCount > 0 ? `(มีข้อมูลซ้ำ ${dupCount} รายการ)` : ""}`;
-      if (dupCount > 0) {
+      records.forEach((r, i) => {
+        const isDup2568 = (typeof window.dbData2568 !== "undefined") ? window.dbData2568.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName)) : null;
+        if (isDup2568) {
+           dup2568.push({ current: r, old: isDup2568, index: i });
+        } else {
+           const isDup2569 = dbData.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName));
+           normal.push({ current: r, index: i, isDup2569: isDup2569 });
+        }
+      });
+
+      let html = "";
+
+      if (dup2568.length > 0) {
+        html += `<div class="mb-4">
+          <h4 class="text-sm font-bold text-rose-700 mb-2">⚠️ พบข้อมูลยื่นซ้ำกับ ทุนปี 2568 จำนวน ${dup2568.length} รายการ (โปรดแก้ไขเพื่อไม่ให้ซ้ำ)</h4>
+          <div class="overflow-x-auto border border-rose-200 rounded-xl">
+            <table class="min-w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-rose-100 text-rose-900 sticky top-0 z-10 shadow-sm">
+                  <th class="px-3 py-2.5 w-1/2 border-r border-rose-200">ประวัติ ทุน 2568 (เดิม)</th>
+                  <th class="px-3 py-2.5 w-1/2">ข้อมูล ทุน 2569 (จากไฟล์ Excel - แก้ไขได้)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-rose-100">
+                ${dup2568.map(item => `
+                  <tr class="bg-white">
+                    <td class="px-3 py-3 align-top border-r border-rose-200 bg-slate-50/50 hover:bg-slate-100 transition-colors">
+                      <div class="space-y-1.5 text-slate-600">
+                        <div><span class="font-bold text-slate-500 w-16 inline-block">เลขสมาชิก:</span> <span class="font-mono text-indigo-900 font-bold">${item.old.memberId}</span></div>
+                        <div><span class="font-bold text-slate-500 w-16 inline-block">ชื่อสมาชิก:</span> ${item.old.memberName}</div>
+                        <div><span class="font-bold text-slate-500 w-16 inline-block">ชื่อบุตร:</span> <span class="text-rose-600 font-bold">${item.old.childName}</span></div>
+                        <div><span class="font-bold text-slate-500 w-16 inline-block">ระดับชั้น:</span> ${item.old.level || "-"}</div>
+                        <div><span class="font-bold text-slate-500 w-16 inline-block">จำนวนเงิน:</span> ${Number(item.old.amount).toLocaleString()} บาท</div>
+                      </div>
+                    </td>
+                    <td class="px-3 py-3 align-top bg-amber-50/30 hover:bg-amber-100/50 transition-colors">
+                      <div class="space-y-1.5">
+                        <div class="flex items-center"><span class="font-bold text-slate-500 w-16 inline-block shrink-0">เลขสมาชิก:</span> <input type="text" class="flex-1 border-b border-amber-300 bg-transparent px-1 py-0.5 focus:border-amber-600 font-mono font-bold text-indigo-900" value="${item.current.memberId}" onchange="updatePreviewData(${item.index}, 'memberId', this.value)"></div>
+                        <div class="flex items-center"><span class="font-bold text-slate-500 w-16 inline-block shrink-0">ชื่อสมาชิก:</span> <input type="text" class="flex-1 border-b border-amber-300 bg-transparent px-1 py-0.5 focus:border-amber-600 font-medium" value="${item.current.memberName}" onchange="updatePreviewData(${item.index}, 'memberName', this.value)"></div>
+                        <div class="flex items-center"><span class="font-bold text-slate-500 w-16 inline-block shrink-0">ชื่อบุตร:</span> <input type="text" class="flex-1 border-b border-rose-300 bg-rose-50/50 px-1 py-0.5 focus:border-rose-600 text-rose-700 font-bold" value="${item.current.childName}" onchange="updatePreviewData(${item.index}, 'childName', this.value)" title="แก้ชื่อบุตรเพื่อไม่ให้ซ้ำ"></div>
+                        <div class="flex items-center"><span class="font-bold text-slate-500 w-16 inline-block shrink-0">ระดับชั้น:</span> <span class="px-1">${item.current.level || "-"}</span></div>
+                        <div class="flex items-center"><span class="font-bold text-slate-500 w-16 inline-block shrink-0">จำนวนเงิน:</span> <span class="px-1 text-emerald-700 font-bold">${Number(item.current.amount).toLocaleString()} บาท</span></div>
+                      </div>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }
+
+      if (normal.length > 0) {
+        html += `<div class="mt-4">
+          <h4 class="text-sm font-bold text-slate-700 mb-2">✅ รายการอื่นๆ (${normal.length} รายการ)</h4>
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="min-w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold sticky top-0 shadow-sm z-10">
+                  <th class="px-3 py-2.5">#</th>
+                  <th class="px-3 py-2.5">เลขสมาชิก</th>
+                  <th class="px-3 py-2.5">ชื่อ-สกุล สมาชิก</th>
+                  <th class="px-3 py-2.5">ชื่อบุตร</th>
+                  <th class="px-3 py-2.5 text-right">จำนวนเงิน</th>
+                  <th class="px-3 py-2.5">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${normal.map((item, idx) => `
+                  <tr class="hover:bg-slate-50 ${item.isDup2569 ? "bg-rose-50/50" : ""}">
+                    <td class="px-3 py-2 text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="px-3 py-2 font-mono font-bold text-indigo-900">${item.current.memberId}</td>
+                    <td class="px-3 py-2 font-medium">${item.current.memberName}</td>
+                    <td class="px-3 py-2">${item.current.childName}</td>
+                    <td class="px-3 py-2 text-right font-bold text-emerald-700">${Number(item.current.amount).toLocaleString()}</td>
+                    <td class="px-3 py-2">
+                      ${item.isDup2569 ? `<span class="px-2 py-0.5 bg-rose-100 border border-rose-300 text-rose-800 rounded-full text-[10px] font-bold">ข้อมูลซ้ำ (ปี 2569)</span>` : `<span class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[10px] font-bold">ปกติ</span>`}
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }
+
+      container.innerHTML = html;
+
+      let totalDups = dup2568.length + normal.filter(n => n.isDup2569).length;
+      countEl.textContent = `${records.length} รายการ ${totalDups > 0 ? `(ซ้ำ ${totalDups} รายการ)` : ""}`;
+      if (totalDups > 0) {
         countEl.className = "text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200";
       } else {
         countEl.className = "text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200";
