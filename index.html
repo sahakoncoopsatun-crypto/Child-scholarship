@@ -4927,9 +4927,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }
 
       let addedCount = 0;
+      let skippedRecords = [];
       importPreviewData.forEach(record => {
-        const normalizeId = id => { const num = (id || '').toString().replace(/\D/g, ''); return num ? parseInt(num, 10).toString() : (id || '').toString().trim(); };
-        const normalizeName = name => (name || '').toString().replace(/[\s\u00a0\r\n]/g, '');
+        const normalizeId = id => { const num = (id || "").toString().replace(/\D/g, ""); return num ? parseInt(num, 10).toString() : (id || "").toString().trim(); };
+        const normalizeName = name => (name || "").toString().replace(/[\s\u00a0\r\n]/g, "");
         // Check duplicate by memberId + childName
         const exists = dbData.some(d =>
           normalizeId(d.memberId) === normalizeId(record.memberId) && normalizeName(d.childName) === normalizeName(record.childName)
@@ -4942,8 +4943,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           };
           dbData.push(newRecord);
           addedCount++;
-          syncToGoogleSheets(newRecord, 'save');
+          syncToGoogleSheets(newRecord, "save");
           saveToSupabase(newRecord);
+        } else {
+          skippedRecords.push(record);
         }
       });
 
@@ -4951,11 +4954,21 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       saveLocalStorageData();
       renderAdminDashboard();
 
-      const resultArea = document.getElementById('importResultArea');
-      const previewArea = document.getElementById('importPreviewArea');
+      const resultArea = document.getElementById("importResultArea");
+      const previewArea = document.getElementById("importPreviewArea");
       if (resultArea) {
-        resultArea.textContent = `✅ นำเข้า ${addedCount} รายการเรียบร้อย! (ข้าม${importPreviewData.length - addedCount} ที่ซ้ำ)`;
-        resultArea.classList.remove('hidden');
+        let htmlMsg = `✅ นำเข้า ${addedCount} รายการเรียบร้อย!`;
+        if (skippedRecords.length > 0) {
+          htmlMsg += ` <span class="text-rose-600">(ข้าม ${skippedRecords.length} รายการที่ซ้ำ)</span>`;
+          htmlMsg += `<div class="mt-3 text-left text-xs bg-white/70 rounded-xl p-4 border border-rose-200 max-h-48 overflow-y-auto">
+            <p class="font-bold text-rose-800 mb-2">รายชื่อที่ซ้ำและถูกข้ามการนำเข้า (มีอยู่ในระบบแล้ว):</p>
+            <ul class="list-disc list-inside text-rose-700 space-y-1">
+              ${skippedRecords.map(r => `<li>เลขสมาชิก: <span class="font-mono font-bold">${r.memberId}</span> - ${r.memberName} <span class="text-rose-500">(บุตร: ${r.childName})</span></li>`).join("")}
+            </ul>
+          </div>`;
+        }
+        resultArea.innerHTML = htmlMsg;
+        resultArea.classList.remove("hidden");
       }
       if (previewArea) previewArea.classList.add('hidden');
 
