@@ -4866,6 +4866,13 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       reader.readAsArrayBuffer(file);
     }
 
+        function updatePreviewData(index, field, value) {
+      if (importPreviewData && importPreviewData[index]) {
+        importPreviewData[index][field] = value;
+        renderImportPreview(importPreviewData);
+      }
+    }
+
     function renderImportPreview(records) {
       const previewArea = document.getElementById("importPreviewArea");
       const previewBody = document.getElementById("importPreviewBody");
@@ -4881,26 +4888,64 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       let dupCount = 0;
       previewBody.innerHTML = records.map((r, i) => {
-        const isDup = dbData.some(d =>
-          normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName)
-        );
-        if (isDup) dupCount++;
+        const isDup2569 = dbData.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName));
+        const isDup2568 = (typeof window.dbData2568 !== "undefined") ? window.dbData2568.find(d => normalizeId(d.memberId) === normalizeId(r.memberId) && normalizeName(d.childName) === normalizeName(r.childName)) : null;
+        const isDup = isDup2569 || isDup2568;
         
-        return `
-        <tr class="hover:bg-slate-50 ${isDup ? "bg-rose-50/50" : ""}">
-          <td class="px-3 py-2 text-slate-400 font-mono">${i + 1}</td>
-          <td class="px-3 py-2 font-mono font-bold text-indigo-900">${r.memberId}</td>
-          <td class="px-3 py-2 font-medium">${r.memberName}</td>
-          <td class="px-3 py-2">${r.childName}</td>
-          <td class="px-3 py-2">${r.level || "-"}</td>
-          <td class="px-3 py-2">${r.department || "-"}</td>
-          <td class="px-3 py-2 text-right font-bold text-emerald-700">${Number(r.amount).toLocaleString()}</td>
-          <td class="px-3 py-2 font-mono">${r.coopAccount || "-"}</td>
-          <td class="px-3 py-2">
-            ${isDup ? `<span class="px-2 py-0.5 bg-rose-100 border border-rose-300 text-rose-800 rounded-full text-[10px] font-bold" title="ข้อมูลซ้ำ มีในระบบแล้ว">ข้อมูลซ้ำ</span>` : `<span class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-[10px] font-bold">${r.docStatus}</span>`}
-          </td>
-        </tr>
-      `}).join("");
+        if (isDup) {
+          dupCount++;
+          let sourceText = isDup2569 ? "พบประวัติซ้ำในปี 2569" : "พบประวัติซ้ำในปี 2568";
+          return `
+            <tr class="bg-rose-50 border-t border-rose-200">
+              <td class="px-2 py-1 text-center border-r border-rose-200" rowspan="2">
+                <span class="text-rose-600 font-bold text-[10px] block leading-tight">${sourceText}</span>
+              </td>
+              <td class="px-2 py-1 text-slate-500 font-mono text-[10px]" colspan="8">👇 ข้อมูลเดิมที่พบในระบบ:</td>
+            </tr>
+            <tr class="bg-rose-50/50">
+              <td class="px-2 py-1 font-mono text-slate-500 text-[11px]">${isDup.memberId}</td>
+              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.memberName}</td>
+              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.childName}</td>
+              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.level || "-"}</td>
+              <td class="px-2 py-1 text-slate-500 text-[11px]">${isDup.department || "-"}</td>
+              <td class="px-2 py-1 text-slate-500 text-[11px] text-right">${Number(isDup.amount).toLocaleString()}</td>
+              <td class="px-2 py-1 text-slate-500 font-mono text-[11px]">${isDup.coopAccount || "-"}</td>
+              <td class="px-2 py-1">
+                 <span class="px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-[9px] font-bold">ประวัติเดิม</span>
+              </td>
+            </tr>
+            <tr class="bg-amber-50 border-b border-rose-300">
+              <td class="px-2 py-1 text-amber-700 font-bold text-[10px] text-center border-r border-amber-200">✏️ ข้อมูลใหม่</td>
+              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600 font-mono font-bold text-indigo-900" value="${r.memberId}" onchange="updatePreviewData(${i}, 'memberId', this.value)"></td>
+              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600 font-medium" value="${r.memberName}" onchange="updatePreviewData(${i}, 'memberName', this.value)"></td>
+              <td class="px-1 py-1"><input type="text" class="w-full text-[11px] border-b border-amber-300 bg-transparent focus:outline-none focus:border-amber-600" value="${r.childName}" onchange="updatePreviewData(${i}, 'childName', this.value)"></td>
+              <td class="px-2 py-1 text-[11px]">${r.level || "-"}</td>
+              <td class="px-2 py-1 text-[11px]">${r.department || "-"}</td>
+              <td class="px-2 py-1 text-right font-bold text-emerald-700 text-[11px]">${Number(r.amount).toLocaleString()}</td>
+              <td class="px-2 py-1 font-mono text-[11px]">${r.coopAccount || "-"}</td>
+              <td class="px-2 py-1">
+                 <span class="px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full text-[9px] font-bold">แก้เพื่อบันทึก</span>
+              </td>
+            </tr>
+          `;
+        } else {
+          return `
+          <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="px-3 py-2 text-slate-400 font-mono">${i + 1}</td>
+            <td class="px-3 py-2 font-mono font-bold text-indigo-900">${r.memberId}</td>
+            <td class="px-3 py-2 font-medium">${r.memberName}</td>
+            <td class="px-3 py-2">${r.childName}</td>
+            <td class="px-3 py-2">${r.level || "-"}</td>
+            <td class="px-3 py-2">${r.department || "-"}</td>
+            <td class="px-3 py-2 text-right font-bold text-emerald-700">${Number(r.amount).toLocaleString()}</td>
+            <td class="px-3 py-2 font-mono">${r.coopAccount || "-"}</td>
+            <td class="px-3 py-2">
+              <span class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[10px] font-bold">ข้อมูลใหม่</span>
+            </td>
+          </tr>
+          `;
+        }
+      }).join("");
 
       countEl.textContent = `${records.length} รายการ ${dupCount > 0 ? `(มีข้อมูลซ้ำ ${dupCount} รายการ)` : ""}`;
       if (dupCount > 0) {
@@ -4910,9 +4955,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }
 
       previewArea.classList.remove("hidden");
-    }
-
-    async function confirmImportData(isReplace = false) {
+    }async function confirmImportData(isReplace = false) {
       if (!importPreviewData || importPreviewData.length === 0) return;
 
       if (isReplace) {
@@ -4932,9 +4975,13 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         const normalizeId = id => { const num = (id || "").toString().replace(/\D/g, ""); return num ? parseInt(num, 10).toString() : (id || "").toString().trim(); };
         const normalizeName = name => (name || "").toString().replace(/[\s\u00a0\r\n]/g, "");
         // Check duplicate by memberId + childName
-        const exists = dbData.some(d =>
+        const exists2569 = dbData.some(d =>
           normalizeId(d.memberId) === normalizeId(record.memberId) && normalizeName(d.childName) === normalizeName(record.childName)
         );
+        const exists2568 = (typeof window.dbData2568 !== "undefined") ? window.dbData2568.some(d =>
+          normalizeId(d.memberId) === normalizeId(record.memberId) && normalizeName(d.childName) === normalizeName(record.childName)
+        ) : false;
+        const exists = exists2569 || exists2568;
         if (!exists) {
           const newRecord = {
             ...record,
