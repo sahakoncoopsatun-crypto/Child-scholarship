@@ -327,7 +327,10 @@
           <button id="manualFormSyncBtn" onclick="manualSyncFormSheet()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1">
             🔄 Sync Form
           </button>
-          <span class="text-[10px] text-slate-400 ml-auto">อัปเดตอัตโนมัติทุก 5 นาที</span>
+          <button id="toggleFormSyncBtn" onclick="toggleFormSync()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1">
+              <span id="toggleFormSyncIcon">✅</span><span id="toggleFormSyncText">เปิดดึงข้อมูล</span>
+            </button>
+            <span class="text-[10px] text-slate-400 ml-auto">อัปเดตอัตโนมัติทุก 5 นาที</span>
         </div>
 
         <!-- Dashboard Analytics Stat Cards -->
