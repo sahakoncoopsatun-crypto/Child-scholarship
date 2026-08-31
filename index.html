@@ -4181,7 +4181,35 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       return { records, incomplete };
     }
 
+    let isFormSyncEnabled = localStorage.getItem("coop_form_sync_enabled") !== "false";
+    function toggleFormSync() {
+      isFormSyncEnabled = !isFormSyncEnabled;
+      localStorage.setItem("coop_form_sync_enabled", isFormSyncEnabled);
+      updateFormSyncBtnUI();
+      if (isFormSyncEnabled) {
+        syncFromFormSheet(true);
+      } else {
+        updateFormSyncBadge("warn", "ปิดดึงข้อมูล");
+      }
+    }
+    function updateFormSyncBtnUI() {
+      const btn = document.getElementById("toggleFormSyncBtn");
+      const icon = document.getElementById("toggleFormSyncIcon");
+      const text = document.getElementById("toggleFormSyncText");
+      if (!btn || !icon || !text) return;
+      if (isFormSyncEnabled) {
+        btn.className = "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1";
+        icon.textContent = "✅";
+        text.textContent = "เปิดดึงข้อมูล";
+      } else {
+        btn.className = "px-3 py-1.5 bg-slate-400 hover:bg-slate-500 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1";
+        icon.textContent = "⏸️";
+        text.textContent = "ปิดดึงข้อมูล";
+      }
+    }
+
     async function syncFromFormSheet(silent = false) {
+      if (!isFormSyncEnabled) return 0;
       try {
         if (!silent) updateFormSyncBadge('syncing');
         const url = `https://docs.google.com/spreadsheets/d/${FORM_SHEET_ID}/export?format=csv&gid=${FORM_SHEET_GID}`;
@@ -5031,6 +5059,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
     // DOM Lifecycle Initialization
     window.addEventListener('DOMContentLoaded', () => {
+      updateFormSyncBtnUI();
       loadLocalStorageData();
 
       // Initialize to Member View by default
