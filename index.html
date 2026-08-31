@@ -650,9 +650,9 @@
           </div>
 
           <!-- Responsive Table -->
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 250px);">
             <table class="min-w-full text-left text-xs border-collapse">
-              <thead>
+              <thead class="sticky top-0 z-10 shadow-sm">
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
                   <th class="px-4 py-3.5 text-center w-10">
                     <input type="checkbox" id="selectAllAdmin" onclick="toggleAllAdminCheckboxes()" class="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
@@ -1206,8 +1206,11 @@ function doPost(e) {
                 <h4 class="text-sm font-bold text-slate-800">👁️ รายการที่อ่านได้ — ตรวจสอบข้อมูลก่อนนำเข้า</h4>
                 <div class="flex items-center gap-2">
                   <span id="importPreviewCount" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">0 รายการ</span>
-                  <button onclick="confirmImportData()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5">
-                    <span>✅</span><span>ยืนยันนำเข้าข้อมูล</span>
+                  <button onclick="confirmImportData(false)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5">
+                    <span>➕</span><span>เพิ่มต่อท้าย</span>
+                  </button>
+                  <button onclick="confirmImportData(true)" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5" title="ลบข้อมูลเก่าทั้งหมดและใช้ข้อมูลจากไฟล์นี้เท่านั้น">
+                    <span>⚠️</span><span>แทนที่ทั้งหมด</span>
                   </button>
                 </div>
               </div>
@@ -4862,8 +4865,21 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       previewArea.classList.remove('hidden');
     }
 
-    function confirmImportData() {
+    async function confirmImportData(isReplace = false) {
       if (!importPreviewData || importPreviewData.length === 0) return;
+
+      if (isReplace) {
+        if (!confirm("คุณแน่ใจหรือไม่ที่จะ ลบข้อมูลเดิมทั้งหมด และ แทนที่ด้วยข้อมูลจากไฟล์นี้? (ข้อมูลเดิมจะไม่สามารถกู้คืนได้)")) return;
+        
+        showLoading("กำลังลบข้อมูลเก่า...");
+        dbData = [];
+        if (typeof supabaseClient !== "undefined" && supabaseClient) {
+          try {
+            await supabaseFetch("scholarships?id=not.is.null", "DELETE");
+          } catch(e) { console.error("Error clearing Supabase", e); }
+        }
+        hideLoading();
+      }
 
       let addedCount = 0;
       importPreviewData.forEach(record => {
