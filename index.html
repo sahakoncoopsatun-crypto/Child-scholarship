@@ -3383,7 +3383,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       
       if (!confirm(`ระบบตรวจสอบ: คุณกำลังจะลบข้อมูลจำนวน ${checkboxes.length} รายการ ออกจากระบบอย่างถาวร!\n\nการกระทำนี้ไม่สามารถกู้คืนได้ คุณยืนยันที่จะลบข้อมูลเหล่านี้หรือไม่?`)) return;
       
-      showLoading('กำลังลบข้อมูลหลายรายการ...');
+      
       
       try {
         const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
@@ -3414,7 +3414,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         
         reIndexDbData();
         saveLocalStorageData();
-        hideLoading();
+        
         Swal.fire({
           icon: 'success',
           title: 'ลบข้อมูลสำเร็จ',
@@ -3426,7 +3426,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         renderAdminDashboard();
         
       } catch (error) {
-        hideLoading();
+        
         console.error('Bulk Delete error:', error);
         Swal.fire({
           icon: 'error',
@@ -4902,14 +4902,12 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       if (isReplace) {
         if (!confirm("คุณแน่ใจหรือไม่ที่จะ ลบข้อมูลเดิมทั้งหมด และ แทนที่ด้วยข้อมูลจากไฟล์นี้? (ข้อมูลเดิมจะไม่สามารถกู้คืนได้)")) return;
         
-        showLoading("กำลังลบข้อมูลเก่า...");
         dbData = [];
         if (typeof supabaseClient !== "undefined" && supabaseClient) {
           try {
             await supabaseFetch("scholarships?id=not.is.null", "DELETE");
           } catch(e) { console.error("Error clearing Supabase", e); }
         }
-        hideLoading();
       }
 
       let addedCount = 0;
