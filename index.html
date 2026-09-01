@@ -2959,8 +2959,12 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         const deptMap = {};
         dbData.forEach(d => {
           if (isApprovedOrTransferredStatus(d.docStatus)) {
-            const dept = d.department || 'ไม่ระบุสังกัด';
-            deptMap[dept] = (deptMap[dept] || 0) + (Number(d.amount) || 0);
+            let rawDept = (d.department || "").replace(/\s+/g, "").toLowerCase();
+            let deptGroup = "สำนักงานสาธารณสุขจังหวัดสตูล";
+            if (rawDept.includes("โรงพยาบาลสตูล") || rawDept.includes("รพ.สตูล") || rawDept.includes("รพสตูล")) {
+              deptGroup = "โรงพยาบาลสตูล";
+            }
+            deptMap[deptGroup] = (deptMap[deptGroup] || 0) + (Number(d.amount) || 0);
           }
         });
 
