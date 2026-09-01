@@ -3402,26 +3402,14 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         reIndexDbData();
         saveLocalStorageData();
         
-        Swal.fire({
-          icon: 'success',
-          title: 'ลบข้อมูลสำเร็จ',
-          text: `ลบข้อมูลทั้งหมด ${deletedCount} รายการเรียบร้อยแล้ว`,
-          confirmButtonText: 'ตกลง',
-          confirmButtonColor: '#4f46e5'
-        });
+        showToast('ดำเนินการเรียบร้อย', 'success');
         
         renderAdminDashboard();
         
       } catch (error) {
         
         console.error('Bulk Delete error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'เกิดข้อผิดพลาด',
-          text: error.message || 'ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
-          confirmButtonText: 'ตกลง',
-          confirmButtonColor: '#e11d48'
-        });
+        showToast('เกิดข้อผิดพลาด: ' + (error.message || 'ไม่สามารถลบข้อมูลได้'), 'error');
       }
     }
 
