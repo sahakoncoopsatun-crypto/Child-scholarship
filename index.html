@@ -1450,6 +1450,13 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     function isRejectedOrErrorStatus(status) {
       return matchStatusFilter(status, 'ไม่ได้รับการอนุมัติ') || matchStatusFilter(status, 'เอกสารไม่ถูกต้อง');
     }
+    function isRejectedStatus(status) {
+      return matchStatusFilter(status, 'ไม่ได้รับการอนุมัติ');
+    }
+
+    function isDocCorrectionStatus(status) {
+      return matchStatusFilter(status, 'เอกสารไม่ถูกต้อง');
+    }
 
     function isPendingStatus(status) {
       return matchStatusFilter(status, 'ยื่นเอกสารสำเร็จ') || 
