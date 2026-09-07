@@ -4583,21 +4583,42 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       XLSX.utils.book_append_sheet(wb, ws, 'ผู้ยื่นทุน 2569');
 
       // Add summary sheet
-      const approvedTotal = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).reduce((s, d) => s + (Number(d.amount) || 0), 0);
-      const allTotal = dbData.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const approvedList = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus));
+      const pendingList = dbData.filter(d => isPendingStatus(d.docStatus));
+      const notApprovedList = dbData.filter(d => isRejectedStatus(d.docStatus));
+      const correctionList = dbData.filter(d => isDocCorrectionStatus(d.docStatus));
+      const validList = dbData.filter(d => !isRejectedOrErrorStatus(d.docStatus));
+
+      const getRecordRate = (d) => {
+        const cat = categorizeEducationLevel(d.level, d.amount, d.eduType);
+        return getEducationRate(cat);
+      };
+
+      const approvedTotal = approvedList.reduce((s, d) => s + getRecordRate(d), 0);
+      const pendingTotal = pendingList.reduce((s, d) => s + getRecordRate(d), 0);
+      const notApprovedAmount = notApprovedList.reduce((s, d) => s + getRecordRate(d), 0);
+      const correctionAmount = correctionList.reduce((s, d) => s + getRecordRate(d), 0);
+      const validTotalAmount = validList.reduce((s, d) => s + getRecordRate(d), 0);
+
       const summaryData = [
         ['สรุปรายงานผู้ยื่นทุนการศึกษา ประจำปี 2569'],
         ['สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด'],
         [''],
-        ['รายการ', 'จำนวน'],
-        ['จำนวนคำขอทั้งหมด', dbData.length + ' ราย'],
-        ['อนุมัติแล้ว', dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).length + ' ราย'],
-        ['รอพิจารณา', dbData.filter(d => isPendingStatus(d.docStatus)).length + ' ราย'],
-        ['ไม่อนุมัติ/เอกสารไม่ถูกต้อง', dbData.filter(d => isRejectedOrErrorStatus(d.docStatus)).length + ' ราย'],
+        ['รายการ', 'จำนวน (คน/ราย)'],
+        ['จำนวนคำขอทั้งหมดในระบบ', dbData.length + ' ราย'],
+        ['อนุมัติสำเร็จ / โอนเงินแล้ว', approvedList.length + ' ราย'],
+        ['อยู่ระหว่างตรวจสอบ / พิจารณา', pendingList.length + ' ราย'],
+        ['ยอดผู้ยื่นสุทธิ (นำมาคิดยอดสรุปงบประมาณ)', validList.length + ' ราย'],
+        ['ผู้ไม่ได้รับการอนุมัติ', notApprovedList.length + ' คน'],
+        ['อยู่ระหว่างแก้ไขเอกสาร (เอกสารไม่ถูกต้อง)', correctionList.length + ' คน'],
+        ['รวมที่ไม่อนุมัติ/ต้องแก้ไข (ไม่นำมาคิดงบ)', (notApprovedList.length + correctionList.length) + ' คน'],
         [''],
-        ['วงเงิน (บาท)', ''],
-        ['ประมาณการจ่ายทั้งหมด', allTotal.toLocaleString() + ' บาท'],
-        ['วงเงินอนุมัติแล้ว', approvedTotal.toLocaleString() + ' บาท'],
+        ['วงเงินงบประมาณ (บาท)', 'จำนวนเงิน'],
+        ['ยอดสรุปประมาณการจ่ายสุทธิ (ไม่รวมไม่อนุมัติ/แก้ไข)', validTotalAmount.toLocaleString() + ' บาท'],
+        ['วงเงินอนุมัติจ่ายแล้ว', approvedTotal.toLocaleString() + ' บาท'],
+        ['วงเงินอยู่ระหว่างตรวจสอบ/พิจารณา', pendingTotal.toLocaleString() + ' บาท'],
+        ['วงเงินผู้ไม่ได้รับการอนุมัติ (ตัดออก)', notApprovedAmount.toLocaleString() + ' บาท'],
+        ['วงเงินผู้ที่อยู่ระหว่างแก้ไขเอกสาร (ตัดออก)', correctionAmount.toLocaleString() + ' บาท'],
         [''],
         ['วันที่ส่งออก', new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })]
       ];
