@@ -485,6 +485,73 @@
           </div>
         </section>
 
+        <!-- Budget Allocation Breakdown by Submission Channel (2 Channels) -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden space-y-5">
+          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-indigo-600 to-blue-600"></div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>📱</span>
+                <span>สรุปการจัดสรรงบประมาณตามช่องทางการยื่นคำขอ (2 ช่องทาง)</span>
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">เปรียบเทียบ <strong class="text-amber-800">"ยื่นผ่านเอกสาร (กระดาษ)"</strong> กับ <strong class="text-blue-700">"ยื่นผ่านระบบออนไลน์ (Google Form)"</strong></p>
+            </div>
+            <span class="px-3 py-1 bg-amber-50 border border-amber-100 text-amber-800 font-bold text-xs rounded-full self-start sm:self-auto">
+              📋 ช่องทางการยื่นคำขอ
+            </span>
+          </div>
+
+          <!-- 2 Channel Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Channel 1: Paper Document -->
+            <div class="p-4 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded-full">ช่องทาง 1</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">1. ยื่นผ่านเอกสาร (กระดาษ / สหกรณ์)</h4>
+                  <p class="text-[11px] font-semibold text-amber-700">ยื่นผ่านเจ้าหน้าที่ หรือส่งเอกสารกระดาษ</p>
+                </div>
+                <span class="text-2xl">📄</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-amber-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-amber-50/80 p-1.5 rounded-lg border border-amber-100">
+                  <span class="text-amber-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="channelReqPaper" class="font-extrabold text-amber-900">0 ราย (0 บ.)</span>
+                </div>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="channelAppPaper" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Channel 2: Online Google Form -->
+            <div class="p-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/60 to-white relative overflow-hidden shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider bg-blue-100 px-2 py-0.5 rounded-full">ช่องทาง 2</span>
+                  <h4 class="text-sm font-bold text-slate-900 mt-1.5">2. ยื่นผ่านระบบออนไลน์ (Google Form)</h4>
+                  <p class="text-[11px] font-semibold text-blue-700">ยื่นผ่านลิงก์ลงทะเบียนออนไลน์</p>
+                </div>
+                <span class="text-2xl">🌐</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-blue-100 space-y-1.5">
+                <div class="flex justify-between items-baseline text-xs bg-blue-50/80 p-1.5 rounded-lg border border-blue-100">
+                  <span class="text-blue-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span id="channelReqOnline" class="font-extrabold text-blue-900">0 ราย (0 บ.)</span>
+                </div>
+                <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
+                  <span class="text-emerald-900 font-medium">2. วงเงินจ่ายทั้งหมด (อนุมัติแล้ว):</span>
+                  <span id="channelAppOnline" class="font-extrabold text-emerald-800">0 ราย (0 บ.)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         <!-- Dashboard Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:col-span-1">
@@ -644,6 +711,11 @@
                 <option value="เอกสารไม่ถูกต้อง">เอกสารไม่ถูกต้อง</option>
                 <option value="ไม่ได้รับการอนุมัติ">ไม่ได้รับการอนุมัติ</option>
                 <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
+              </select>
+              <select id="adminChannelFilter" onchange="filterAdminTable()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium outline-none focus:border-indigo-600 bg-white">
+                <option value="ALL">ช่องทางทั้งหมด</option>
+                <option value="PAPER">📄 1. เอกสาร</option>
+                <option value="ONLINE">🌐 2. ออนไลน์</option>
               </select>
               <button onclick="deleteSelectedAdminRecords()" id="btnDeleteSelected" class="hidden px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
                 <span>🗑️</span>
@@ -816,8 +888,16 @@
           </div>
 
           <div>
-            <label class="font-bold text-slate-700 block mb-1">เลขที่บัญชีเงินฝากสหกรณ์</label>
+          <div class="grid grid-cols-2 gap-3">
             <input type="text" id="formCoopAccount" placeholder="เช่น 123-45678-9" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none font-mono" />
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">ช่องทางการยื่นคำขอ *</label>
+              <select id="formSubmissionChannel" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-indigo-600 outline-none font-semibold">
+                <option value="เอกสาร">📄 1. เอกสาร (กระดาษ/สหกรณ์)</option>
+                <option value="ออนไลน์">🌐 2. ออนไลน์ (Google Form)</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -1505,6 +1585,21 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       if (cat === 'SENIOR') return 1400;
       if (cat === 'BACHELOR') return 1600;
       return 1000;
+    }
+
+    function categorizeSubmissionChannel(item) {
+      if (!item) return 'PAPER';
+      const ch = (item.submissionChannel || item.channel || item.channelType || '').toString().toLowerCase().trim();
+      if (ch.includes('ออนไลน์') || ch.includes('online') || ch.includes('form') || item.isOnline || item.isFormSync) {
+        return 'ONLINE';
+      }
+      if (ch.includes('เอกสาร') || ch.includes('paper') || ch.includes('กระดาษ')) {
+        return 'PAPER';
+      }
+      if (item.isOnline || item.isFormSync || (item.remark && item.remark.includes('สถานศึกษา:'))) {
+        return 'ONLINE';
+      }
+      return 'PAPER';
     }
 
     // Auto preset amount helper for Modal
@@ -2828,6 +2923,38 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       // 4 Education Level Budget Breakdown Calculations across ALL and Approved requests
       renderEducationLevelBreakdown(dbData, approvedList);
+      // Calculate Submission Channel Breakdown across validList and approvedList
+      const validList = dbData.filter(d => !isRejectedOrErrorStatus(d.docStatus));
+      let reqCountPaper = 0, appCountPaper = 0;
+      let reqCountOnline = 0, appCountOnline = 0;
+
+      validList.forEach(item => {
+        const ch = categorizeSubmissionChannel(item);
+        if (ch === 'ONLINE') reqCountOnline++;
+        else reqCountPaper++;
+      });
+
+      approvedList.forEach(item => {
+        const ch = categorizeSubmissionChannel(item);
+        if (ch === 'ONLINE') appCountOnline++;
+        else appCountPaper++;
+      });
+
+      const reqSumPaper = validList.filter(d => categorizeSubmissionChannel(d) === 'PAPER').reduce((s, d) => s + getRecordRate(d), 0);
+      const appSumPaper = approvedList.filter(d => categorizeSubmissionChannel(d) === 'PAPER').reduce((s, d) => s + getRecordRate(d), 0);
+
+      const reqSumOnline = validList.filter(d => categorizeSubmissionChannel(d) === 'ONLINE').reduce((s, d) => s + getRecordRate(d), 0);
+      const appSumOnline = approvedList.filter(d => categorizeSubmissionChannel(d) === 'ONLINE').reduce((s, d) => s + getRecordRate(d), 0);
+
+      const elReqPaper = document.getElementById('channelReqPaper');
+      const elAppPaper = document.getElementById('channelAppPaper');
+      const elReqOnline = document.getElementById('channelReqOnline');
+      const elAppOnline = document.getElementById('channelAppOnline');
+
+      if (elReqPaper) elReqPaper.textContent = ` ราย ( บ.)`;
+      if (elAppPaper) elAppPaper.textContent = ` ราย ( บ.)`;
+      if (elReqOnline) elReqOnline.textContent = ` ราย ( บ.)`;
+      if (elAppOnline) elAppOnline.textContent = ` ราย ( บ.)`;
 
       updateAdminStatusDropdownOptions();
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
@@ -3292,13 +3419,19 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       const searchVal = document.getElementById('adminSearchInput').value.trim().toLowerCase();
       const statusFilterVal = document.getElementById('adminStatusFilter').value;
+      const channelFilterVal = document.getElementById('adminChannelFilter') ? document.getElementById('adminChannelFilter').value : 'ALL';
 
       const filtered = dbData.filter(item => {
         const searchTarget = `${item.memberId} ${item.memberName} ${item.childName} ${item.department} ${item.eduType} ${item.level}`.toLowerCase();
         const matchSearch = searchVal === '' || searchTarget.includes(searchVal);
         const matchStatus = matchStatusFilter(item.docStatus, statusFilterVal);
 
-        return matchSearch && matchStatus;
+        let matchChannel = true;
+        if (channelFilterVal !== 'ALL') {
+          const ch = categorizeSubmissionChannel(item);
+          matchChannel = (ch === channelFilterVal);
+        }
+        return matchSearch && matchStatus && matchChannel;
       });
 
       if (filtered.length === 0) {
@@ -3446,7 +3579,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     function openAddModal() {
       document.getElementById('modalTitle').textContent = 'เพิ่มรายการผู้ยื่นคำขอใหม่';
       document.getElementById('editIndex').value = '-1';
-      document.getElementById('recordForm').reset();
+      document.getElementById('formIndex').value = (dbData.length + 1).toString();
+      if (document.getElementById('formSubmissionChannel')) document.getElementById('formSubmissionChannel').value = 'เอกสาร';
       document.getElementById('formIndex').value = (dbData.length + 1).toString();
       document.getElementById('recordModal').classList.remove('hidden');
     }
@@ -3468,6 +3602,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       document.getElementById('formCoopAccount').value = item.coopAccount || '';
       document.getElementById('formDocStatus').value = item.docStatus;
       document.getElementById('formRemark').value = item.remark || '';
+      if (document.getElementById('formSubmissionChannel')) document.getElementById('formSubmissionChannel').value = (categorizeSubmissionChannel(item) === 'ONLINE' ? 'ออนไลน์' : 'เอกสาร');
 
       document.getElementById('recordModal').classList.remove('hidden');
     }
@@ -3505,6 +3640,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         coopAccount: document.getElementById('formCoopAccount').value.trim() || '-',
         docStatus: document.getElementById('formDocStatus').value,
         remark: document.getElementById('formRemark').value.trim(),
+        submissionChannel: document.getElementById('formSubmissionChannel') ? document.getElementById('formSubmissionChannel').value : 'เอกสาร',
         isLocalOnly: true
       };
 
@@ -4685,6 +4821,30 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       for (const key in deptGroupSummary) {
           const st = deptGroupSummary[key];
           summaryData.push([key, st.count + ' ราย', st.amount.toLocaleString() + ' บาท', st.approved.toLocaleString() + ' บาท']);
+      }
+      summaryData.push(['']);
+      // --- เพิ่ม: สรุปแยกตามช่องทางการยื่นคำขอ 2 ช่องทาง (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร) ---
+      const channelSummary = {
+        'PAPER': { label: '1. เอกสาร (ยื่นผ่านกระดาษ/สหกรณ์)', count: 0, amount: 0, approvedCount: 0, approvedAmount: 0 },
+        'ONLINE': { label: '2. ออนไลน์ (ยื่นผ่านระบบ Google Form)', count: 0, amount: 0, approvedCount: 0, approvedAmount: 0 }
+      };
+
+      validList.forEach(d => {
+        const chKey = categorizeSubmissionChannel(d);
+        const amt = getRecordRate(d);
+        channelSummary[chKey].count++;
+        channelSummary[chKey].amount += amt;
+        if (isApprovedOrTransferredStatus(d.docStatus)) {
+          channelSummary[chKey].approvedCount++;
+          channelSummary[chKey].approvedAmount += amt;
+        }
+      });
+
+      summaryData.push(['สรุปแยกตามช่องทางการยื่นคำขอ 2 ช่องทาง (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร)']);
+      summaryData.push(['ช่องทางการยื่น', 'จำนวนยื่นขอสุทธิ (ราย)', 'ยอดเงินยื่นขอสุทธิ (บาท)', 'ยอดเงินอนุมัติแล้ว (บาท)']);
+      for (const key in channelSummary) {
+        const st = channelSummary[key];
+        summaryData.push([st.label, st.count + ' ราย', st.amount.toLocaleString() + ' บาท', st.approvedAmount.toLocaleString() + ' บาท']);
       }
       summaryData.push(['']);
 
