@@ -338,7 +338,8 @@
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold text-slate-500">จำนวนคำขอทั้งหมด</p>
             <h3 id="statTotalCount" class="text-2xl font-bold text-slate-900 mt-1">0 ราย</h3>
-            <p id="statTotalRequested" class="text-[11px] font-bold text-blue-700 mt-1">ประมาณการจ่าย: 0 บาท</p>
+            <p id="statTotalRequested" class="text-[11px] font-bold text-blue-700 mt-1">ประมาณการจ่ายสุทธิ: 0 บาท</p>
+            <p id="statValidCountNote" class="text-[10px] text-slate-500 mt-0.5 font-medium">(สุทธิ 0 ราย | หักไม่อนุมัติ/แก้ไข)</p>
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 shadow-sm">
@@ -354,9 +355,12 @@
           </div>
 
           <div class="bg-white p-5 rounded-2xl border border-rose-100 bg-rose-50/20 shadow-sm">
-            <p class="text-xs font-semibold text-rose-700">เอกสารไม่ถูกต้อง / ไม่อนุมัติ</p>
+            <p class="text-xs font-semibold text-rose-700">ไม่อนุมัติ / แก้ไขเอกสาร</p>
             <h3 id="statRejectCount" class="text-2xl font-bold text-rose-700 mt-1">0 ราย</h3>
-            <p id="statRejectAmount" class="text-[11px] font-bold text-rose-800 mt-1">วงเงินไม่อนุมัติ: 0 บาท</p>
+            <div class="mt-1 space-y-0.5">
+              <p id="statRejectBreakdown" class="text-[11px] font-bold text-rose-800">ไม่อนุมัติ: 0 คน | แก้ไขเอกสาร: 0 คน</p>
+              <p id="statRejectAmount" class="text-[10px] text-rose-600 font-medium">ไม่รวมในงบ: 0 บาท</p>
+            </div>
           </div>
 
           <div class="bg-indigo-950 p-5 rounded-2xl text-white shadow-sm border border-indigo-900">
@@ -376,7 +380,7 @@
                 <span>📊</span>
                 <span>สรุปการจัดสรรงบประมาณตามระดับการศึกษา (4 ประเภท)</span>
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5">เปรียบเทียบ <strong class="text-blue-700">"ประมาณการจ่าย (ผู้ยื่นทั้งหมด)"</strong> กับ <strong class="text-emerald-700">"วงเงินจ่ายทั้งหมด (ได้รับอนุมัติ)"</strong></p>
+              <p class="text-xs text-slate-500 mt-0.5">เปรียบเทียบ <strong class="text-blue-700">"ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข)"</strong> กับ <strong class="text-emerald-700">"วงเงินจ่ายทั้งหมด (ได้รับอนุมัติ)"</strong></p>
             </div>
             <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 font-bold text-xs rounded-full self-start sm:self-auto">
               💰 เกณฑ์ทุนสวัสดิการ 2569
@@ -398,7 +402,7 @@
               </div>
               <div class="mt-4 pt-3 border-t border-blue-100 space-y-1.5">
                 <div class="flex justify-between items-baseline text-xs bg-blue-50/80 p-1.5 rounded-lg border border-blue-100">
-                  <span class="text-blue-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span class="text-blue-900 font-medium">1. ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข):</span>
                   <span id="eduReqPrimary" class="font-extrabold text-blue-900">0 ราย (0 บ.)</span>
                 </div>
                 <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
@@ -420,7 +424,7 @@
               </div>
               <div class="mt-4 pt-3 border-t border-teal-100 space-y-1.5">
                 <div class="flex justify-between items-baseline text-xs bg-teal-50/80 p-1.5 rounded-lg border border-teal-100">
-                  <span class="text-teal-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span class="text-teal-900 font-medium">1. ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข):</span>
                   <span id="eduReqJunior" class="font-extrabold text-teal-900">0 ราย (0 บ.)</span>
                 </div>
                 <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
@@ -442,7 +446,7 @@
               </div>
               <div class="mt-4 pt-3 border-t border-indigo-100 space-y-1.5">
                 <div class="flex justify-between items-baseline text-xs bg-indigo-50/80 p-1.5 rounded-lg border border-indigo-100">
-                  <span class="text-indigo-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span class="text-indigo-900 font-medium">1. ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข):</span>
                   <span id="eduReqSenior" class="font-extrabold text-indigo-900">0 ราย (0 บ.)</span>
                 </div>
                 <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
@@ -464,7 +468,7 @@
               </div>
               <div class="mt-4 pt-3 border-t border-violet-100 space-y-1.5">
                 <div class="flex justify-between items-baseline text-xs bg-violet-50/80 p-1.5 rounded-lg border border-violet-100">
-                  <span class="text-violet-900 font-medium">1. ประมาณการจ่าย (ผู้ยื่นทั้งหมด):</span>
+                  <span class="text-violet-900 font-medium">1. ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข):</span>
                   <span id="eduReqBachelor" class="font-extrabold text-violet-900">0 ราย (0 บ.)</span>
                 </div>
                 <div class="flex justify-between items-baseline text-xs bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100">
@@ -1443,12 +1447,20 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       return status.includes(filter);
     }
 
-    function isApprovedOrTransferredStatus(status) {
+        function isApprovedOrTransferredStatus(status) {
       return matchStatusFilter(status, 'ได้รับการอนุมัติ') || matchStatusFilter(status, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก');
     }
 
+    function isRejectedStatus(status) {
+      return matchStatusFilter(status, 'ไม่ได้รับการอนุมัติ');
+    }
+
+    function isDocCorrectionStatus(status) {
+      return matchStatusFilter(status, 'เอกสารไม่ถูกต้อง');
+    }
+
     function isRejectedOrErrorStatus(status) {
-      return matchStatusFilter(status, 'ไม่ได้รับการอนุมัติ') || matchStatusFilter(status, 'เอกสารไม่ถูกต้อง');
+      return isRejectedStatus(status) || isDocCorrectionStatus(status);
     }
 
     function isPendingStatus(status) {
@@ -2785,32 +2797,53 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const approvedCount = approvedList.length;
       const pendingList = dbData.filter(d => isPendingStatus(d.docStatus));
       const pendingCount = pendingList.length;
+
+      const notApprovedList = dbData.filter(d => isRejectedStatus(d.docStatus));
+      const notApprovedCount = notApprovedList.length;
+      const correctionList = dbData.filter(d => isDocCorrectionStatus(d.docStatus));
+      const correctionCount = correctionList.length;
       const rejectList = dbData.filter(d => isRejectedOrErrorStatus(d.docStatus));
       const rejectCount = rejectList.length;
 
+      // รายการที่นำมาคิดยอดสรุป (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร)
+      const validList = dbData.filter(d => !isRejectedOrErrorStatus(d.docStatus));
+      const validCount = validList.length;
+
       const approvedTotalAmount = approvedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
       const pendingTotalAmount = pendingList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const notApprovedTotalAmount = notApprovedList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const correctionTotalAmount = correctionList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
       const rejectTotalAmount = rejectList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-      const allRequestedTotalAmount = dbData.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const validTotalAmount = validList.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
       document.getElementById('statTotalCount').textContent = `${totalCount} ราย`;
+      const statValidCountNoteEl = document.getElementById('statValidCountNote');
+      if (statValidCountNoteEl) {
+        statValidCountNoteEl.textContent = `(สุทธิ ${validCount} ราย | หักไม่อนุมัติ/แก้ไข)`;
+      }
+
       document.getElementById('statApprovedCount').textContent = `${approvedCount} ราย`;
       document.getElementById('statPendingCount').textContent = `${pendingCount} ราย`;
       document.getElementById('statRejectCount').textContent = `${rejectCount} ราย`;
 
-      document.getElementById('statTotalRequested').textContent = `ประมาณการจ่าย: ${allRequestedTotalAmount.toLocaleString()} บาท`;
+      document.getElementById('statTotalRequested').textContent = `ประมาณการจ่ายสุทธิ: ${validTotalAmount.toLocaleString()} บาท`;
       document.getElementById('statApprovedAmount').textContent = `วงเงินอนุมัติจ่าย: ${approvedTotalAmount.toLocaleString()} บาท`;
       document.getElementById('statPendingAmount').textContent = `ประมาณการ: ${pendingTotalAmount.toLocaleString()} บาท`;
-      document.getElementById('statRejectAmount').textContent = `วงเงินไม่อนุมัติ: ${rejectTotalAmount.toLocaleString()} บาท`;
+
+      const statRejectBreakdownEl = document.getElementById('statRejectBreakdown');
+      if (statRejectBreakdownEl) {
+        statRejectBreakdownEl.textContent = `ไม่อนุมัติ: ${notApprovedCount} คน | แก้ไขเอกสาร: ${correctionCount} คน`;
+      }
+      document.getElementById('statRejectAmount').textContent = `ไม่รวมในงบ: ${rejectTotalAmount.toLocaleString()} บาท`;
       
       document.getElementById('statTotalAmount').textContent = `${approvedTotalAmount.toLocaleString()} บาท`;
-      document.getElementById('statSummaryComparison').textContent = `ผู้ยื่นรวม ${allRequestedTotalAmount.toLocaleString()} บ. | อนุมัติแล้ว ${approvedTotalAmount.toLocaleString()} บ.`;
+      document.getElementById('statSummaryComparison').textContent = `ผู้ยื่นสุทธิ ${validTotalAmount.toLocaleString()} บ. | อนุมัติแล้ว ${approvedTotalAmount.toLocaleString()} บ.`;
 
-      // 4 Education Level Budget Breakdown Calculations across ALL and Approved requests
-      renderEducationLevelBreakdown(dbData, approvedList);
+      // 4 Education Level Budget Breakdown Calculations across VALID (non-rejected/non-editing) and Approved requests
+      renderEducationLevelBreakdown(validList, approvedList);
 
       updateAdminStatusDropdownOptions();
-      renderAdminCharts(approvedCount, pendingCount, rejectCount);
+      renderAdminCharts(approvedCount, pendingCount, rejectCount, notApprovedCount, correctionCount);
       filterAdminTable();
       renderSurveyAdmin();
       initVisitorFilterPickers();
@@ -2891,7 +2924,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
             labels: ['1. ประถมศึกษา (1,000บ.)', '2. ม.ต้น (1,200บ.)', '3. ม.ปลาย/ปวช. (1,400บ.)', '4. ป.ตรี/ปวส. (1,600บ.)'],
             datasets: [
               {
-                label: 'ประมาณการจ่าย (ผู้ยื่นทั้งหมด) [บาท]',
+                label: 'ประมาณการจ่าย (ไม่รวมไม่อนุมัติ/แก้ไข) [บาท]',
                 data: [reqSumPrimary, reqSumJunior, reqSumSenior, reqSumBachelor],
                 backgroundColor: '#3b82f6',
                 borderRadius: 6
@@ -2928,7 +2961,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }
     }
 
-    function renderAdminCharts(approved, pending, reject) {
+        function renderAdminCharts(approved, pending, reject, notApproved = 0, correction = 0) {
       const ctxDoughnut = document.getElementById('statusDoughnutChart');
       if (ctxDoughnut && typeof Chart !== 'undefined') {
         if (chartInstanceDoughnut) chartInstanceDoughnut.destroy();
@@ -2936,10 +2969,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         chartInstanceDoughnut = new Chart(ctxDoughnut, {
           type: 'doughnut',
           data: {
-            labels: ['อนุมัติสำเร็จ / โอนเงิน', 'อยู่ระหว่างพิจารณา / ตรวจสอบ', 'เอกสารไม่ถูกต้อง / ไม่อนุมัติ'],
+            labels: ['อนุมัติสำเร็จ / โอนเงิน', 'อยู่ระหว่างพิจารณา / ตรวจสอบ', 'อยู่ระหว่างแก้ไขเอกสาร', 'ไม่ได้รับการอนุมัติ'],
             datasets: [{
-              data: [approved, pending, reject],
-              backgroundColor: ['#059669', '#d97706', '#dc2626'],
+              data: [approved, pending, correction, notApproved],
+              backgroundColor: ['#059669', '#d97706', '#f59e0b', '#dc2626'],
               borderWidth: 2,
               borderColor: '#ffffff'
             }]
@@ -4560,26 +4593,43 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'ผู้ยื่นทุน 2569');
 
-      // Add summary sheet
-      const approvedTotal = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).reduce((s, d) => s + (Number(d.amount) || 0), 0);
-      const allTotal = dbData.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+            // Add summary sheet
+      const approvedList = dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus));
+      const pendingList = dbData.filter(d => isPendingStatus(d.docStatus));
+      const notApprovedList = dbData.filter(d => isRejectedStatus(d.docStatus));
+      const correctionList = dbData.filter(d => isDocCorrectionStatus(d.docStatus));
+      // ข้อมูลที่นำมาคิดยอดสรุป (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร)
+      const validList = dbData.filter(d => !isRejectedOrErrorStatus(d.docStatus));
+
+      const approvedTotal = approvedList.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const pendingTotal = pendingList.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const notApprovedAmount = notApprovedList.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const correctionAmount = correctionList.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+      const validTotalAmount = validList.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+
       const summaryData = [
         ['สรุปรายงานผู้ยื่นทุนการศึกษา ประจำปี 2569'],
         ['สหกรณ์ออมทรัพย์สาธารณสุขสตูล จำกัด'],
         [''],
-        ['รายการ', 'จำนวน'],
-        ['จำนวนคำขอทั้งหมด', dbData.length + ' ราย'],
-        ['อนุมัติแล้ว', dbData.filter(d => isApprovedOrTransferredStatus(d.docStatus)).length + ' ราย'],
-        ['รอพิจารณา', dbData.filter(d => isPendingStatus(d.docStatus)).length + ' ราย'],
-        ['ไม่อนุมัติ/เอกสารไม่ถูกต้อง', dbData.filter(d => isRejectedOrErrorStatus(d.docStatus)).length + ' ราย'],
+        ['รายการ', 'จำนวน (คน/ราย)'],
+        ['จำนวนคำขอทั้งหมดในระบบ', dbData.length + ' ราย'],
+        ['อนุมัติสำเร็จ / โอนเงินแล้ว', approvedList.length + ' ราย'],
+        ['อยู่ระหว่างตรวจสอบ / พิจารณา', pendingList.length + ' ราย'],
+        ['ยอดผู้ยื่นสุทธิ (นำมาคิดยอดสรุปงบประมาณ)', validList.length + ' ราย'],
+        ['ผู้ไม่ได้รับการอนุมัติ', notApprovedList.length + ' คน'],
+        ['อยู่ระหว่างแก้ไขเอกสาร (เอกสารไม่ถูกต้อง)', correctionList.length + ' คน'],
+        ['รวมที่ไม่อนุมัติ/ต้องแก้ไข (ไม่นำมาคิดงบ)', (notApprovedList.length + correctionList.length) + ' คน'],
         [''],
-        ['วงเงิน (บาท)', ''],
-        ['ประมาณการจ่ายทั้งหมด', allTotal.toLocaleString() + ' บาท'],
-        ['วงเงินอนุมัติแล้ว', approvedTotal.toLocaleString() + ' บาท'],
+        ['วงเงินงบประมาณ (บาท)', 'จำนวนเงิน'],
+        ['ยอดสรุปประมาณการจ่ายสุทธิ (ไม่รวมไม่อนุมัติ/แก้ไข)', validTotalAmount.toLocaleString() + ' บาท'],
+        ['วงเงินอนุมัติจ่ายแล้ว', approvedTotal.toLocaleString() + ' บาท'],
+        ['วงเงินอยู่ระหว่างตรวจสอบ/พิจารณา', pendingTotal.toLocaleString() + ' บาท'],
+        ['วงเงินผู้ไม่ได้รับการอนุมัติ (ตัดออก)', notApprovedAmount.toLocaleString() + ' บาท'],
+        ['วงเงินผู้ที่อยู่ระหว่างแก้ไขเอกสาร (ตัดออก)', correctionAmount.toLocaleString() + ' บาท'],
         [''],
         ['วันที่ส่งออก', new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })]
       ];
-      // --- เพิ่ม: สรุปงบประมาณแยกตามระดับการศึกษา ---
+      // --- เพิ่ม: สรุปงบประมาณแยกตามระดับการศึกษา (ไม่รวมไม่อนุมัติ/แก้ไขเอกสาร) ---
       const eduSummary = {
         'PRIMARY': { label: '1. ประถมศึกษา', count: 0, amount: 0, approved: 0 },
         'JUNIOR': { label: '2. มัธยมศึกษาตอนต้น', count: 0, amount: 0, approved: 0 },
@@ -4588,7 +4638,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         'OTHER': { label: 'อื่นๆ / ไม่ระบุ', count: 0, amount: 0, approved: 0 }
       };
       
-      dbData.forEach(d => {
+      validList.forEach(d => {
         const cat = categorizeEducationLevel(d.level, d.amount, d.eduType) || 'OTHER';
         if (eduSummary[cat]) {
             eduSummary[cat].count++;
@@ -4601,25 +4651,25 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         }
       });
       summaryData.push(['']);
-      summaryData.push(['สรุปแบ่งตามระดับการศึกษา (ข้อมูลทั้งหมด)']);
+      summaryData.push(['สรุปแบ่งตามระดับการศึกษา (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร)']);
       for (const catKey in eduSummary) {
         const stats = eduSummary[catKey];
         summaryData.push([
           stats.label,
           stats.count + ' ทุน',
           stats.amount.toLocaleString() + ' บาท',
-          'อนุมัติ: ' + stats.approved.toLocaleString() + ' บาท'
+          'อนุมัติแล้ว: ' + stats.approved.toLocaleString() + ' บาท'
         ]);
       }
-            summaryData.push(['']);
+      summaryData.push(['']);
 
-      // --- เพิ่ม: สรุปแยกตามสังกัด (2 หน่วย) ---
+      // --- เพิ่ม: สรุปแยกตามสังกัด 2 หน่วย (ไม่รวมไม่อนุมัติ/แก้ไขเอกสาร) ---
       const deptGroupSummary = {
           'โรงพยาบาลสตูล': { count: 0, amount: 0, approved: 0 },
           'สำนักงานสาธารณสุขจังหวัดสตูล': { count: 0, amount: 0, approved: 0 }
       };
 
-      dbData.forEach(d => {
+      validList.forEach(d => {
           let rawDept = (d.department || '').replace(/\s+/g, '').toLowerCase();
           let deptGroup = 'สำนักงานสาธารณสุขจังหวัดสตูล';
           if (rawDept.includes('โรงพยาบาลสตูล') || rawDept.includes('รพ.สตูล') || rawDept.includes('รพสตูล')) {
@@ -4632,8 +4682,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           }
       });
       
-      summaryData.push(['สรุปแยกตามสังกัด (2 หน่วย)']);
-      summaryData.push(['สังกัด', 'จำนวนยื่นขอ (ราย)', 'ยอดเงินยื่นขอ (บาท)', 'ยอดเงินอนุมัติแล้ว (บาท)']);
+      summaryData.push(['สรุปแยกตามสังกัด 2 หน่วย (ไม่รวมผู้ที่ไม่ได้รับอนุมัติ หรืออยู่ระหว่างแก้ไขเอกสาร)']);
+      summaryData.push(['สังกัด', 'จำนวนยื่นขอสุทธิ (ราย)', 'ยอดเงินยื่นขอสุทธิ (บาท)', 'ยอดเงินอนุมัติแล้ว (บาท)']);
       for (const key in deptGroupSummary) {
           const st = deptGroupSummary[key];
           summaryData.push([key, st.count + ' ราย', st.amount.toLocaleString() + ' บาท', st.approved.toLocaleString() + ' บาท']);
