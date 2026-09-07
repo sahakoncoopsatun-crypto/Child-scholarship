@@ -2832,10 +2832,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
     // Calculate & Render Budget Allocations across 4 Education Tiers
     function renderEducationLevelBreakdown(allRecords, approvedRecords) {
-      let reqCountPrimary = 0, reqSumPrimary = 0, appCountPrimary = 0, appSumPrimary = 0;
-      let reqCountJunior = 0, reqSumJunior = 0, appCountJunior = 0, appSumJunior = 0;
-      let reqCountSenior = 0, reqSumSenior = 0, appCountSenior = 0, appSumSenior = 0;
-      let reqCountBachelor = 0, reqSumBachelor = 0, appCountBachelor = 0, appSumBachelor = 0;
+      let reqCountPrimary = 0, appCountPrimary = 0;
+      let reqCountJunior = 0, appCountJunior = 0;
+      let reqCountSenior = 0, appCountSenior = 0;
+      let reqCountBachelor = 0, appCountBachelor = 0;
 
       // Process All Submitted Records
       allRecords.forEach(item => {
