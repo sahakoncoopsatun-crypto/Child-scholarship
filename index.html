@@ -741,6 +741,7 @@
                   <th class="px-4 py-3.5 text-center">ระดับชั้น</th>
                   <th class="px-4 py-3.5 text-right">จำนวนเงิน</th>
                   <th class="px-4 py-3.5">เลขบัญชีโอน</th>
+                  <th class="px-4 py-3.5 text-center">ช่องทาง</th>
                   <th class="px-4 py-3.5 text-center">สถานะคำขอ</th>
                   <th class="px-4 py-3.5">หมายเหตุ/เหตุผล</th>
                   <th class="px-4 py-3.5 text-center">จัดการ</th>
@@ -1231,6 +1232,7 @@ function doPost(e) {
                     <th class="px-3 py-3 min-w-32">สังกัด/หน่วยงาน</th>
                     <th class="px-3 py-3 min-w-24">จำนวนเงิน</th>
                     <th class="px-3 py-3 min-w-32">เลขที่บัญชี</th>
+                    <th class="px-3 py-3 min-w-28">ช่องทาง</th>
                     <th class="px-3 py-3 min-w-36">สถานะคำขอ</th>
                     <th class="px-3 py-3 w-10">ลบ</th>
                   </tr>
@@ -1369,11 +1371,13 @@ CREATE TABLE IF NOT EXISTS scholarships (
   level TEXT DEFAULT '',
   amount NUMERIC DEFAULT 0,
   coop_account TEXT DEFAULT '-',
+  submission_channel TEXT DEFAULT 'เอกสาร',
   doc_status TEXT DEFAULT 'ยื่นเอกสารสำเร็จ',
   remark TEXT DEFAULT '',
   sort_index INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE scholarships ADD COLUMN IF NOT EXISTS submission_channel TEXT DEFAULT 'เอกสาร';
 
 -- เปิด Public Access
 ALTER TABLE scholarships ENABLE ROW LEVEL SECURITY;
@@ -1910,7 +1914,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     // Dynamic Column Mapper for Main Scholarship Sheet
     function parseDynamicCSV(rows) {
       if (!rows || rows.length === 0) return [];
-      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, eduTypeCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1;
+      let memberIdCol = -1, memberNameCol = -1, childNameCol = -1, amountCol = -1, levelCol = -1, eduTypeCol = -1, indexCol = -1, deptCol = -1, coopAccCol = -1, docStatusCol = -1, remarkCol = -1, submissionChannelCol = -1;
 
       let headerRowIndex = -1;
       for (let r = 0; r < rows.length; r++) {
@@ -1966,6 +1970,9 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           }
           else if (val.includes('สังกัด') || val.includes('หน่วยงาน') || val.includes('ที่ทำงาน') || val.includes('สถานพยาบาล')) {
             deptCol = i;
+          }
+          else if (val.includes('ช่องทาง') || val.includes('การยื่น') || val.includes('รูปแบบการยื่น') || val.includes('channel')) {
+            submissionChannelCol = i;
           }
           else if (val.includes('สถานะ') || val.includes('ผลการพิจารณา') || val.includes('การอนุมัติ')) {
             docStatusCol = i;
@@ -2061,9 +2068,25 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         let remark = '';
         if (remarkCol !== -1 && remarkCol < row.length) remark = (row[remarkCol] || '').toString().trim();
 
+        let submissionChannel = 'เอกสาร';
+        if (submissionChannelCol !== -1 && submissionChannelCol < row.length) {
+          const rawCh = (row[submissionChannelCol] || '').toString().trim().toLowerCase();
+          if (rawCh.includes('ออนไลน์') || rawCh.includes('online') || rawCh.includes('form')) {
+            submissionChannel = 'ออนไลน์';
+          } else if (rawCh.includes('เอกสาร') || rawCh.includes('กระดาษ') || rawCh.includes('paper')) {
+            submissionChannel = 'เอกสาร';
+          } else if (rawCh) {
+            submissionChannel = rawCh;
+          }
+        } else {
+          if (remark.includes('สถานศึกษา:') || remark.includes('ออนไลน์') || remark.includes('Google Form')) {
+            submissionChannel = 'ออนไลน์';
+          }
+        }
+
         if (!memberName || !childName || childName === 'ชื่อบุตร' || childName === '-') continue;
 
-        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, eduType, level, department, coopAccount, docStatus, remark });
+        parsedRecords.push({ index: indexVal, memberId, memberName, childName, amount, eduType, level, department, coopAccount, submissionChannel, docStatus, remark });
       }
 
       return parsedRecords;
@@ -2951,10 +2974,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const elReqOnline = document.getElementById('channelReqOnline');
       const elAppOnline = document.getElementById('channelAppOnline');
 
-      if (elReqPaper) elReqPaper.textContent = ` ราย ( บ.)`;
-      if (elAppPaper) elAppPaper.textContent = ` ราย ( บ.)`;
-      if (elReqOnline) elReqOnline.textContent = ` ราย ( บ.)`;
-      if (elAppOnline) elAppOnline.textContent = ` ราย ( บ.)`;
+      if (elReqPaper) elReqPaper.textContent = `${reqCountPaper} ราย (${reqSumPaper.toLocaleString()} บ.)`;
+      if (elAppPaper) elAppPaper.textContent = `${appCountPaper} ราย (${appSumPaper.toLocaleString()} บ.)`;
+      if (elReqOnline) elReqOnline.textContent = `${reqCountOnline} ราย (${reqSumOnline.toLocaleString()} บ.)`;
+      if (elAppOnline) elAppOnline.textContent = `${appCountOnline} ราย (${appSumOnline.toLocaleString()} บ.)`;
 
       updateAdminStatusDropdownOptions();
       renderAdminCharts(approvedCount, pendingCount, rejectCount);
@@ -3437,7 +3460,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="text-center py-8 text-slate-400 font-medium">ไม่พบรายการข้อมูลที่ตรงตามเงื่อนไขที่เลือก</td>
+            <td colspan="13" class="text-center py-8 text-slate-400 font-medium">ไม่พบรายการข้อมูลที่ตรงตามเงื่อนไขที่เลือก</td>
           </tr>
         `;
         return;
@@ -3457,6 +3480,11 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           badgeClass = 'bg-amber-100 text-amber-800 border border-amber-300 font-bold';
         }
 
+        const isOnline = categorizeSubmissionChannel(item) === 'ONLINE';
+        const channelBadge = isOnline
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">🌐 ออนไลน์</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">📄 เอกสาร</span>`;
+
         return `
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-4 py-3 text-center">
@@ -3471,6 +3499,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
             <td class="px-4 py-3 text-center"><span class="bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-[10px]">${item.level}</span></td>
             <td class="px-4 py-3 text-right font-bold text-emerald-700">${Number(item.amount).toLocaleString()} บาท</td>
             <td class="px-4 py-3 font-mono font-bold text-indigo-950">${item.coopAccount || '-'}</td>
+            <td class="px-4 py-3 text-center">${channelBadge}</td>
             <td class="px-4 py-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] ${badgeClass}">${item.docStatus}</span></td>
             <td class="px-4 py-3 text-slate-500 max-w-xs truncate">${item.remark || '-'}</td>
             <td class="px-4 py-3 text-center">
@@ -4088,6 +4117,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
               level: row.level || '',
               amount: Number(row.amount) || 0,
               coopAccount: row.coop_account || '-',
+              submissionChannel: row.submission_channel || row.channel || (row.is_online ? 'ออนไลน์' : 'เอกสาร'),
               docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
               remark: row.remark || '',
               _supabaseId: row.id
@@ -4127,6 +4157,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           level: record.level || '',
           amount: Number(record.amount) || 0,
           coop_account: record.coopAccount || '-',
+          submission_channel: record.submissionChannel || 'เอกสาร',
           doc_status: record.docStatus || 'ยื่นเอกสารสำเร็จ',
           remark: record.remark || '',
           sort_index: parseInt(record.index) || 0
@@ -4695,7 +4726,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }
 
       // Build rows
-      const header = ['ลำดับ', 'เลขที่สมาชิก', 'ชื่อ-สกุล สมาชิก', 'สังกัด/หน่วยงาน', 'ชื่อบุตรผู้รับทุน', 'ประเภทการศึกษา', 'ระดับชั้น', 'จำนวนเงิน (บาท)', 'เลขที่บัญชีเงินฝากสหกรณ์', 'สถานะคำขอ', 'หมายเหตุ'];
+      const header = ['ลำดับ', 'เลขที่สมาชิก', 'ชื่อ-สกุล สมาชิก', 'สังกัด/หน่วยงาน', 'ชื่อบุตรผู้รับทุน', 'ประเภทการศึกษา', 'ระดับชั้น', 'จำนวนเงิน (บาท)', 'เลขที่บัญชีเงินฝากสหกรณ์', 'ช่องทางการยื่น', 'สถานะคำขอ', 'หมายเหตุ'];
       const rows = [header];
       dbData.forEach(d => {
         rows.push([
@@ -4708,6 +4739,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           d.level || '',
           Number(d.amount) || 0,
           d.coopAccount || '-',
+          d.submissionChannel || (categorizeSubmissionChannel(d) === 'ONLINE' ? 'ออนไลน์' : 'เอกสาร'),
           d.docStatus || '',
           d.remark || ''
         ]);
@@ -4718,7 +4750,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       // Column widths
       ws['!cols'] = [
         { wch: 6 }, { wch: 12 }, { wch: 28 }, { wch: 22 }, { wch: 24 },
-        { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 28 }, { wch: 30 }
+        { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 16 }, { wch: 28 }, { wch: 30 }
       ];
 
       // Style header row (SheetJS CE doesn't support rich styles, but we set basic format)
@@ -4916,6 +4948,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         <td class="px-1.5 py-1"><input type="text" placeholder="รพ.สตูล, สสอ." /></td>
         <td class="px-1.5 py-1"><input type="number" placeholder="1000" class="font-mono text-right" style="text-align:right" /></td>
         <td class="px-1.5 py-1"><input type="text" placeholder="xxx-xxxxx-x" class="font-mono" /></td>
+        <td class="px-1.5 py-1"><select><option value="เอกสาร">📄 เอกสาร</option><option value="ออนไลน์">🌐 ออนไลน์</option></select></td>
         <td class="px-1.5 py-1"><select>${statusHtml}</select></td>
         <td class="px-2 py-1 text-center">
           <button onclick="removeBulkRow(${rowId})" class="text-rose-400 hover:text-rose-600 font-bold text-base leading-none">×</button>
@@ -4974,7 +5007,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
       rows.forEach(row => {
         const inputs = row.querySelectorAll('input, select');
-        if (inputs.length < 8) return;
+        if (inputs.length < 9) return;
         const memberId = (inputs[0].value || '').trim().replace(/\D/g, '');
         const memberName = (inputs[1].value || '').trim();
         const childName = (inputs[2].value || '').trim();
@@ -4982,7 +5015,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         const department = (inputs[4].value || '').trim() || 'ไม่ระบุสังกัด';
         const amount = parseFloat(inputs[5].value) || 0;
         const coopAccount = (inputs[6].value || '').trim() || '-';
-        const docStatus = inputs[7].value || 'ยื่นเอกสารสำเร็จ';
+        const submissionChannel = inputs[7].value || 'เอกสาร';
+        const docStatus = inputs[8].value || 'ยื่นเอกสารสำเร็จ';
 
         if (!memberId || !memberName || !childName) {
           skippedCount++;
@@ -5013,7 +5047,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           index: (dbData.length + addedCount + 1).toString(),
           memberId: memberId.padStart(5, '0'),
           memberName, childName, level, department,
-          eduType, amount, coopAccount, docStatus, remark: '',
+          eduType, amount, coopAccount, submissionChannel, docStatus, remark: '',
           isLocalOnly: true
         };
 
