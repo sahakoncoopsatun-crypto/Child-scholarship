@@ -4092,7 +4092,11 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         const opts = { method, headers };
         if (body) opts.body = JSON.stringify(body);
         const res = await fetch(`${supabaseClient.url}/rest/v1/${path}`, opts);
-        if (!res.ok) return null;
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn(`Supabase fetch failed (${res.status} ${res.statusText}):`, errText);
+          return null;
+        }
         const text = await res.text();
         return text ? JSON.parse(text) : [];
       } catch (e) {
@@ -4165,10 +4169,23 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         let res;
         if (record._supabaseId) {
           res = await supabaseFetch(`scholarships?id=eq.${record._supabaseId}`, 'PATCH', payload);
+          // If failed, retry without submission_channel (in case Supabase table doesn't have this column yet)
+          if (res === null && payload.submission_channel !== undefined) {
+            delete payload.submission_channel;
+            res = await supabaseFetch(`scholarships?id=eq.${record._supabaseId}`, 'PATCH', payload);
+          }
         } else {
           res = await supabaseFetch('scholarships', 'POST', payload);
+          // If failed, retry without submission_channel (in case Supabase table doesn't have this column yet)
+          if (res === null && payload.submission_channel !== undefined) {
+            delete payload.submission_channel;
+            res = await supabaseFetch('scholarships', 'POST', payload);
+          }
         }
         if (res === null) return false;
+        if (Array.isArray(res) && res.length > 0 && res[0].id) {
+          record._supabaseId = res[0].id;
+        }
         return true;
       } catch (e) {
         console.warn('saveToSupabase error:', e);
