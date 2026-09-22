@@ -715,6 +715,7 @@
                 <option value="เอกสารไม่ถูกต้อง">เอกสารไม่ถูกต้อง</option>
                 <option value="ไม่ได้รับการอนุมัติ">ไม่ได้รับการอนุมัติ</option>
                 <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
+                <option value="โอนเงินสำเร็จแล้ว">โอนเงินสำเร็จแล้ว</option>
               </select>
               <select id="adminChannelFilter" onchange="filterAdminTable()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium outline-none focus:border-indigo-600 bg-white">
                 <option value="ALL">ช่องทางทั้งหมด</option>
@@ -915,6 +916,7 @@
               <option value="ได้รับการอนุมัติ">4. ได้รับการอนุมัติสิทธิ์</option>
               <option value="ไม่ได้รับการอนุมัติ">4.1 ไม่ได้รับการอนุมัติ</option>
               <option value="อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก">5. อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก</option>
+              <option value="โอนเงินสำเร็จแล้ว">6. โอนเงินสำเร็จแล้ว</option>
             </select>
           </div>
 
@@ -1512,8 +1514,12 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
                status.includes('แก้ไข');
       }
 
+      if (filter === 'โอนเงินสำเร็จแล้ว') {
+        return status.includes('โอนเงินสำเร็จ') || status.includes('โอนสำเร็จ') || status === 'โอนเงินสำเร็จแล้ว';
+      }
+
       if (filter === 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก') {
-        return status.includes('โอน');
+        return (status.includes('อยู่ระหว่างการโอน') || status.includes('โอน')) && !status.includes('สำเร็จ');
       }
 
       if (filter === 'อยู่ระหว่างตรวจสอบเอกสาร') {
@@ -1532,7 +1538,9 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     }
 
     function isApprovedOrTransferredStatus(status) {
-      return matchStatusFilter(status, 'ได้รับการอนุมัติ') || matchStatusFilter(status, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก');
+      return matchStatusFilter(status, 'ได้รับการอนุมัติ') || 
+             matchStatusFilter(status, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก') ||
+             matchStatusFilter(status, 'โอนเงินสำเร็จแล้ว');
     }
 
     function isRejectedOrErrorStatus(status) {
@@ -2524,25 +2532,28 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
 
     // Evaluate Progress Steps
     function evaluateProgress(status) {
+      if (matchStatusFilter(status, 'โอนเงินสำเร็จแล้ว')) {
+        return { step: 6, label: 'โอนเงินเข้าบัญชีเงินฝากสหกรณ์เรียบร้อยแล้ว', color: 'emerald', percent: 'w-full', isFailed: false, isCompleted: true };
+      }
       if (matchStatusFilter(status, 'เอกสารไม่ถูกต้อง')) {
-        return { step: 2, label: 'เอกสารไม่ถูกต้อง (โปรดติดต่อเจ้าหน้าที่เพื่อแก้ไข)', color: 'rose', percent: 'w-2/5', isFailed: true, isDocError: true };
+        return { step: 2, label: 'เอกสารไม่ถูกต้อง (โปรดติดต่อเจ้าหน้าที่เพื่อแก้ไข)', color: 'rose', percent: 'w-2/6', isFailed: true, isDocError: true };
       }
       if (matchStatusFilter(status, 'ไม่ได้รับการอนุมัติ')) {
-        return { step: 4, label: 'ไม่ได้รับการอนุมัติทุนการศึกษา', color: 'rose', percent: 'w-4/5', isFailed: true, isRejected: true };
+        return { step: 4, label: 'ไม่ได้รับการอนุมัติทุนการศึกษา', color: 'rose', percent: 'w-4/6', isFailed: true, isRejected: true };
       }
       if (matchStatusFilter(status, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก')) {
-        return { step: 5, label: 'อยู่ระหว่างการโอนเงินเข้าบัญชีเงินฝากสหกรณ์', color: 'indigo', percent: 'w-full', isFailed: false };
+        return { step: 5, label: 'อยู่ระหว่างการโอนเงินเข้าบัญชีเงินฝากสหกรณ์', color: 'indigo', percent: 'w-5/6', isFailed: false };
       }
       if (matchStatusFilter(status, 'ได้รับการอนุมัติ')) {
-        return { step: 4, label: 'ได้รับการอนุมัติทุนการศึกษาเรียบร้อยแล้ว', color: 'emerald', percent: 'w-4/5', isFailed: false };
+        return { step: 4, label: 'ได้รับการอนุมัติทุนการศึกษาเรียบร้อยแล้ว', color: 'emerald', percent: 'w-4/6', isFailed: false };
       }
       if (matchStatusFilter(status, 'อยู่ระหว่างการพิจารณา')) {
-        return { step: 3, label: 'อยู่ระหว่างการพิจารณาคุณสมบัติ', color: 'amber', percent: 'w-3/5', isFailed: false };
+        return { step: 3, label: 'อยู่ระหว่างการพิจารณาคุณสมบัติ', color: 'amber', percent: 'w-3/6', isFailed: false };
       }
       if (matchStatusFilter(status, 'อยู่ระหว่างตรวจสอบเอกสาร')) {
-        return { step: 2, label: 'อยู่ระหว่างตรวจสอบเอกสารประกอบคำขอ', color: 'amber', percent: 'w-2/5', isFailed: false };
+        return { step: 2, label: 'อยู่ระหว่างตรวจสอบเอกสารประกอบคำขอ', color: 'amber', percent: 'w-2/6', isFailed: false };
       }
-      return { step: 1, label: 'ยื่นเอกสารเข้าระบบเรียบร้อยแล้ว', color: 'blue', percent: 'w-1/5', isFailed: false };
+      return { step: 1, label: 'ยื่นเอกสารเข้าระบบเรียบร้อยแล้ว', color: 'blue', percent: 'w-1/6', isFailed: false };
     }
 
     // Print Printable Slip
@@ -2599,14 +2610,18 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         activeColorClass = 'bg-rose-600';
         textAccentClass = 'text-rose-700 font-bold';
         bgAlertClass = 'bg-rose-50 border-rose-200';
+      } else if (prog.step === 6) {
+        activeColorClass = 'bg-emerald-600';
+        textAccentClass = 'text-emerald-800 font-bold';
+        bgAlertClass = 'bg-emerald-50 border-emerald-200';
       } else if (prog.step === 5) {
         activeColorClass = 'bg-indigo-700';
         textAccentClass = 'text-indigo-900 font-bold';
         bgAlertClass = 'bg-indigo-50 border-indigo-200';
       } else if (prog.step === 4) {
-        activeColorClass = 'bg-emerald-600';
-        textAccentClass = 'text-emerald-800 font-bold';
-        bgAlertClass = 'bg-emerald-50 border-emerald-200';
+        activeColorClass = 'bg-teal-600';
+        textAccentClass = 'text-teal-800 font-bold';
+        bgAlertClass = 'bg-teal-50 border-teal-200';
       } else if (prog.step === 2 || prog.step === 3) {
         activeColorClass = 'bg-amber-500';
         textAccentClass = 'text-amber-800 font-bold';
@@ -2621,8 +2636,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         let badgeClass = 'bg-slate-100 text-slate-800 border border-slate-200';
         if (itemProg.isFailed) {
           badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold';
+        } else if (matchStatusFilter(item.docStatus, 'โอนเงินสำเร็จแล้ว')) {
+          badgeClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold';
         } else if (matchStatusFilter(item.docStatus, 'ได้รับการอนุมัติ')) {
-          badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold';
+          badgeClass = 'bg-teal-100 text-teal-800 border border-teal-200 font-bold';
         } else if (matchStatusFilter(item.docStatus, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก')) {
           badgeClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold';
         } else if (isPendingStatus(item.docStatus)) {
@@ -2683,8 +2700,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
             <!-- DESKTOP TIMELINE -->
             <div class="hidden md:block relative mb-8 pt-4 pb-6">
               <div class="relative">
-                <div class="absolute top-5 left-10 right-10 h-1 bg-slate-200 rounded-full"></div>
-                <div class="absolute top-5 left-10 right-10 h-1 ${activeColorClass} rounded-full transition-all duration-500 ${prog.percent}"></div>
+                <div class="absolute top-5 left-8 right-8 h-1 bg-slate-200 rounded-full"></div>
+                <div class="absolute top-5 left-8 right-8 h-1 ${activeColorClass} rounded-full transition-all duration-500 ${prog.percent}"></div>
 
                 <div class="relative z-10 flex justify-between">
                   <div class="flex flex-col items-center">
@@ -2708,8 +2725,13 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
                   </div>
 
                   <div class="flex flex-col items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 5 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}">5</div>
-                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 5 ? 'text-emerald-800' : 'text-slate-400'}">โอนเงินเข้าบัญชี</span>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 5 ? 'bg-indigo-900 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400'}">5</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 5 ? 'text-indigo-950' : 'text-slate-400'}">อยู่ระหว่างโอน</span>
+                  </div>
+
+                  <div class="flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow transition-all duration-300 ${prog.step >= 6 ? 'bg-emerald-600 text-white ring-4 ring-emerald-200' : 'bg-slate-100 text-slate-400'}">${prog.step >= 6 ? '✓' : '6'}</div>
+                    <span class="text-[11px] font-bold mt-3 ${prog.step >= 6 ? 'text-emerald-700 font-extrabold' : 'text-slate-400'}">โอนเงินสำเร็จ</span>
                   </div>
                 </div>
               </div>
@@ -3476,8 +3498,10 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         let badgeClass = 'bg-slate-100 text-slate-800 border border-slate-200';
         if (matchStatusFilter(item.docStatus, 'เอกสารไม่ถูกต้อง') || matchStatusFilter(item.docStatus, 'ไม่ได้รับการอนุมัติ')) {
           badgeClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold';
+        } else if (matchStatusFilter(item.docStatus, 'โอนเงินสำเร็จแล้ว')) {
+          badgeClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold';
         } else if (matchStatusFilter(item.docStatus, 'ได้รับการอนุมัติ')) {
-          badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold';
+          badgeClass = 'bg-teal-100 text-teal-800 border border-teal-200 font-bold';
         } else if (matchStatusFilter(item.docStatus, 'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก')) {
           badgeClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold';
         } else if (isPendingStatus(item.docStatus)) {
@@ -5010,7 +5034,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         'ยื่นเอกสารสำเร็จ', 'อยู่ระหว่างตรวจสอบเอกสาร',
         'อยู่ระหว่างการพิจารณา', 'ได้รับการอนุมัติ',
         'เอกสารไม่ถูกต้อง', 'ไม่ได้รับการอนุมัติ',
-        'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก'
+        'อยู่ระหว่างการโอนเข้าบัญชีเงินฝาก',
+        'โอนเงินสำเร็จแล้ว'
       ];
       const statusHtml = statusOptions.map(s => `<option value="${s}">${s}</option>`).join('');
       const tr = document.createElement('tr');
