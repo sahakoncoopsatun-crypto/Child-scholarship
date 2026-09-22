@@ -4393,7 +4393,6 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     }
 
     let isFormSyncEnabled = localStorage.getItem("coop_form_sync_enabled") === "true";
-    let formSyncInterval = null;
 
     function toggleFormSync() {
       isFormSyncEnabled = !isFormSyncEnabled;
