@@ -320,17 +320,21 @@
         </div>
 
         <!-- Google Form Sync Status Bar -->
-        <div class="mb-3 flex items-center gap-3 flex-wrap">
-          <div id="formSyncBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">
-            <span id="formSyncBadgeText">📋 Form Sync: รอเชื่อมต่อ...</span>
+        <div class="mb-3 flex items-center justify-between gap-3 flex-wrap bg-white p-2.5 px-4 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">ดึงข้อมูล Google Form:</span>
+            <div id="formSyncBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 border border-slate-300 text-slate-600">
+              <span id="formSyncBadgeText">🔴 ปิดการดึงข้อมูล Form แล้ว</span>
+            </div>
           </div>
-          <button id="manualFormSyncBtn" onclick="manualSyncFormSheet()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1">
-            🔄 Sync Form
-          </button>
-          <button id="toggleFormSyncBtn" onclick="toggleFormSync()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1">
-              <span id="toggleFormSyncIcon">✅</span><span id="toggleFormSyncText">เปิดดึงข้อมูล</span>
+          <div class="flex items-center gap-2">
+            <button id="toggleFormSyncBtn" onclick="toggleFormSync()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5">
+              <span id="toggleFormSyncIcon">▶️</span><span id="toggleFormSyncText">กดเพื่อเปิดดึงข้อมูล</span>
             </button>
-            <span class="text-[10px] text-slate-400 ml-auto">อัปเดตอัตโนมัติทุก 5 นาที</span>
+            <button id="manualFormSyncBtn" onclick="manualSyncFormSheet()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5" title="ดึงข้อมูลจาก Form Sheet ด้วยตนเองทันที">
+              <span>🔄</span><span>ดึงข้อมูลทันที (Sync ครั้งเดียว)</span>
+            </button>
+          </div>
         </div>
 
         <!-- Dashboard Analytics Stat Cards -->
@@ -1289,13 +1293,13 @@ function doPost(e) {
             <div id="importPreviewArea" class="hidden">
               <div class="flex items-center justify-between mb-3">
                 <h4 class="text-sm font-bold text-slate-800">👁️ รายการที่อ่านได้ — ตรวจสอบข้อมูลก่อนนำเข้า</h4>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap justify-end">
                   <span id="importPreviewCount" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">0 รายการ</span>
-                  <button onclick="confirmImportData(false)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5">
-                    <span>➕</span><span>เพิ่มต่อท้าย</span>
+                  <button onclick="confirmImportData(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5" title="ลบข้อมูลเดิมทั้งหมดและใช้ข้อมูลจากไฟล์ Excel นี้เท่านั้น">
+                    <span>⚡</span><span>แทนที่ข้อมูลทั้งหมดด้วยไฟล์นี้ (แนะนำ)</span>
                   </button>
-                  <button onclick="confirmImportData(true)" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow active:scale-95 transition-all flex items-center gap-1.5" title="ลบข้อมูลเก่าทั้งหมดและใช้ข้อมูลจากไฟล์นี้เท่านั้น">
-                    <span>⚠️</span><span>แทนที่ทั้งหมด</span>
+                  <button onclick="confirmImportData(false)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs active:scale-95 transition-all flex items-center gap-1.5" title="เพิ่มเฉพาะรายการใหม่ที่ไม่ซ้ำต่อท้ายข้อมูลเดิม">
+                    <span>➕</span><span>เพิ่มต่อท้าย</span>
                   </button>
                 </div>
               </div>
@@ -3514,20 +3518,6 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       updateDeleteSelectedButton();
     }
 
-    async function loadSettingsFromSupabase() {
-      if (!supabaseClient) return;
-      try {
-        const res = await supabaseFetch('site_settings?id=eq.1&select=is_maintenance_mode');
-        if (res && res.length > 0) {
-          isMaintenanceMode = res[0].is_maintenance_mode;
-          localStorage.setItem('coop_maintenance_mode', isMaintenanceMode ? 'true' : 'false');
-          updateMaintenanceUI();
-        }
-      } catch (err) {
-        console.warn('Failed to load settings from Supabase', err);
-      }
-    }
-
     function toggleAllAdminCheckboxes() {
       const selectAll = document.getElementById('selectAllAdmin').checked;
       const checkboxes = document.querySelectorAll('.admin-row-checkbox');
@@ -4110,36 +4100,26 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       try {
         const data = await supabaseFetch('scholarships?select=*&order=sort_index.asc,id.asc');
         if (data && Array.isArray(data) && data.length > 0) {
-          data.forEach((row, idx) => {
-            const mappedRecord = {
-              index: (idx + 1).toString(),
-              memberId: row.member_id || '',
-              memberName: row.member_name || '',
-              childName: row.child_name || '',
-              department: row.department || 'ไม่ระบุสังกัด',
-              eduType: row.edu_type || '',
-              level: row.level || '',
-              amount: Number(row.amount) || 0,
-              coopAccount: row.coop_account || '-',
-              submissionChannel: row.submission_channel || row.channel || (row.is_online ? 'ออนไลน์' : 'เอกสาร'),
-              docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
-              remark: row.remark || '',
-              _supabaseId: row.id
-            };
+          const freshData = data.map((row, idx) => ({
+            index: (idx + 1).toString(),
+            memberId: (row.member_id || '').toString().replace(/^'+/, '').trim(),
+            memberName: row.member_name || '',
+            childName: row.child_name || '',
+            department: row.department || 'ไม่ระบุสังกัด',
+            eduType: row.edu_type || '',
+            level: row.level || '',
+            amount: Number(row.amount) || 0,
+            coopAccount: row.coop_account || '-',
+            submissionChannel: row.submission_channel || row.channel || (row.is_online ? 'ออนไลน์' : 'เอกสาร'),
+            docStatus: row.doc_status || 'ยื่นเอกสารสำเร็จ',
+            remark: row.remark || '',
+            _supabaseId: row.id
+          }));
 
-            // Merge with existing dbData
-            const normalizeId = id => { const num = (id || '').toString().replace(/\D/g, ''); return num ? parseInt(num, 10).toString() : (id || '').toString().trim(); };
-            const normalizeName = name => (name || '').toString().replace(/[\s\u00a0\r\n]/g, '');
-            const existingIdx = dbData.findIndex(d => normalizeId(d.memberId) === normalizeId(mappedRecord.memberId) && normalizeName(d.childName) === normalizeName(mappedRecord.childName));
-            if (existingIdx !== -1) {
-              dbData[existingIdx] = { ...dbData[existingIdx], ...mappedRecord };
-            } else {
-              dbData.push(mappedRecord);
-            }
-          });
-
+          dbData = freshData;
           reIndexDbData();
           saveLocalStorageData();
+          if (activeView === 'admin' && isAdminLoggedIn) renderAdminDashboard();
           return true;
         }
         return false;
@@ -4153,7 +4133,7 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       if (!supabaseClient) return true;
       try {
         const payload = {
-          member_id: record.memberId,
+          member_id: (record.memberId || '').toString().replace(/^'+/, '').trim(),
           member_name: record.memberName,
           child_name: record.childName,
           department: record.department || 'ไม่ระบุสังกัด',
@@ -4189,6 +4169,49 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         return true;
       } catch (e) {
         console.warn('saveToSupabase error:', e);
+        return false;
+      }
+    }
+
+    async function bulkSaveToSupabase(records) {
+      if (!supabaseClient || !records || records.length === 0) return true;
+      try {
+        const payload = records.map((record, idx) => ({
+          member_id: (record.memberId || '').toString().replace(/^'+/, '').trim(),
+          member_name: record.memberName || '',
+          child_name: record.childName || '',
+          department: record.department || 'ไม่ระบุสังกัด',
+          edu_type: record.eduType || '',
+          level: record.level || '',
+          amount: Number(record.amount) || 0,
+          coop_account: record.coopAccount || '-',
+          submission_channel: record.submissionChannel || 'เอกสาร',
+          doc_status: record.docStatus || 'ยื่นเอกสารสำเร็จ',
+          remark: record.remark || '',
+          sort_index: parseInt(record.index) || (idx + 1)
+        }));
+
+        const chunkSize = 50;
+        for (let i = 0; i < payload.length; i += chunkSize) {
+          const chunk = payload.slice(i, i + chunkSize);
+          let res = await supabaseFetch('scholarships', 'POST', chunk);
+          if (res === null) {
+            const fallbackChunk = chunk.map(item => {
+              const copy = { ...item };
+              delete copy.submission_channel;
+              return copy;
+            });
+            res = await supabaseFetch('scholarships', 'POST', fallbackChunk);
+          }
+          if (res && Array.isArray(res)) {
+            res.forEach((row, cIdx) => {
+              if (records[i + cIdx]) records[i + cIdx]._supabaseId = row.id;
+            });
+          }
+        }
+        return true;
+      } catch (e) {
+        console.warn('bulkSaveToSupabase error:', e);
         return false;
       }
     }
@@ -4369,36 +4392,58 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       return { records, incomplete };
     }
 
-    let isFormSyncEnabled = localStorage.getItem("coop_form_sync_enabled") !== "false";
+    let isFormSyncEnabled = localStorage.getItem("coop_form_sync_enabled") === "true";
+    let formSyncInterval = null;
+
     function toggleFormSync() {
       isFormSyncEnabled = !isFormSyncEnabled;
-      localStorage.setItem("coop_form_sync_enabled", isFormSyncEnabled);
+      localStorage.setItem("coop_form_sync_enabled", isFormSyncEnabled ? "true" : "false");
       updateFormSyncBtnUI();
       if (isFormSyncEnabled) {
-        syncFromFormSheet(true);
+        showToast('เปิดระบบดึงข้อมูลจาก Google Form Sheet อัตโนมัติแล้ว', 'info');
+        startFormSheetAutoSync();
+        syncFromFormSheet(false);
       } else {
-        updateFormSyncBadge("warn", "ปิดดึงข้อมูล");
+        if (formSyncInterval) {
+          clearInterval(formSyncInterval);
+          formSyncInterval = null;
+        }
+        showToast('ปิดระบบดึงข้อมูลจาก Google Form Sheet แล้ว', 'warning');
       }
     }
+
     function updateFormSyncBtnUI() {
       const btn = document.getElementById("toggleFormSyncBtn");
       const icon = document.getElementById("toggleFormSyncIcon");
       const text = document.getElementById("toggleFormSyncText");
-      if (!btn || !icon || !text) return;
+      const badge = document.getElementById("formSyncBadge");
+      const badgeText = document.getElementById("formSyncBadgeText");
+
       if (isFormSyncEnabled) {
-        btn.className = "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1";
-        icon.textContent = "✅";
-        text.textContent = "เปิดดึงข้อมูล";
+        if (btn) {
+          btn.className = "px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5";
+          if (icon) icon.textContent = "⏸️";
+          if (text) text.textContent = "กดเพื่อปิดดึงข้อมูล";
+        }
+        if (badge && badgeText) {
+          badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-800";
+          badgeText.textContent = "🟢 เปิดการดึงข้อมูล Form อัตโนมัติอยู่ (ทุก 5 นาที)";
+        }
       } else {
-        btn.className = "px-3 py-1.5 bg-slate-400 hover:bg-slate-500 text-white text-[10px] font-bold rounded-full shadow-sm transition-all active:scale-95 flex items-center gap-1";
-        icon.textContent = "⏸️";
-        text.textContent = "ปิดดึงข้อมูล";
-        updateFormSyncBadge("warn", "ปิดดึงข้อมูล");
+        if (btn) {
+          btn.className = "px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5";
+          if (icon) icon.textContent = "▶️";
+          if (text) text.textContent = "กดเพื่อเปิดดึงข้อมูล";
+        }
+        if (badge && badgeText) {
+          badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 border border-slate-300 text-slate-600";
+          badgeText.textContent = "🔴 ปิดการดึงข้อมูล Form แล้ว (ไม่อนุญาตให้ดึง)";
+        }
       }
     }
 
-    async function syncFromFormSheet(silent = false) {
-      if (!isFormSyncEnabled) return 0;
+    async function syncFromFormSheet(silent = false, force = false) {
+      if (!isFormSyncEnabled && !force) return 0;
       try {
         if (!silent) updateFormSyncBadge('syncing');
         const url = `https://docs.google.com/spreadsheets/d/${FORM_SHEET_ID}/export?format=csv&gid=${FORM_SHEET_GID}`;
@@ -4529,10 +4574,16 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
     }
 
     function startFormSheetAutoSync() {
-      // Sync once immediately after 3s delay (let main data load first)
-      setTimeout(() => syncFromFormSheet(true), 3000);
-      // Then every 5 minutes
-      formSyncInterval = setInterval(() => syncFromFormSheet(true), 5 * 60 * 1000);
+      if (!isFormSyncEnabled) return;
+      if (formSyncInterval) clearInterval(formSyncInterval);
+      // Sync once immediately after 3s delay if enabled
+      setTimeout(() => {
+        if (isFormSyncEnabled) syncFromFormSheet(true);
+      }, 3000);
+      // Then every 5 minutes if enabled
+      formSyncInterval = setInterval(() => {
+        if (isFormSyncEnabled) syncFromFormSheet(true);
+      }, 5 * 60 * 1000);
     }
 
     function updateFormSyncBadge(status, countOrMsg = null, newAdded = 0, dupCount = 0, incompleteCount = 0) {
@@ -4540,8 +4591,14 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       const text = document.getElementById('formSyncBadgeText');
       if (!badge || !text) return;
 
+      if (!isFormSyncEnabled && status !== 'syncing' && status !== 'error') {
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 border border-slate-300 text-slate-600';
+        text.textContent = '🔴 ปิดการดึงข้อมูล Form แล้ว (ไม่อนุญาตให้ดึง)';
+        return;
+      }
+
       if (status === 'syncing') {
-        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700';
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 border border-amber-200 text-amber-700';
         text.textContent = '⏳ กำลัง Sync Form (แถว 92+)...';
       } else if (status === 'ok') {
         const total = typeof countOrMsg === 'number' ? countOrMsg : 0;
@@ -4551,8 +4608,8 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         const incLabel = incompleteCount > 0 ? ` | ⚠️ ไม่ครบ ${incompleteCount}` : '';
         const hasIssue = incompleteCount > 0;
         badge.className = hasIssue
-          ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700'
-          : 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700';
+          ? 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 border border-amber-200 text-amber-700'
+          : 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700';
         text.textContent = `📋 Form (แถว 92+): ${total} คำขอ${newLabel}${dupLabel}${incLabel} | ${timeStr}`;
         if (newAdded > 0) {
           showToast(`📋 มีคำขอใหม่จาก Google Form ${newAdded} รายการ!`, 'success');
@@ -4563,22 +4620,26 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
           showToast(`⚠️ พบ ${incompleteCount} รายการข้อมูลไม่ครบ — ดูแถบแจ้งเตือนด้านบน`, 'warning');
         }
       } else if (status === 'error') {
-        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-rose-50 border border-rose-200 text-rose-600';
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 border border-rose-200 text-rose-600';
         text.textContent = '❌ Form Sync ล้มเหลว — ตรวจสอบสิทธิ์ Sheet';
       } else if (status === 'warn') {
-        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500';
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 border border-slate-200 text-slate-500';
         text.textContent = `⚠️ ${countOrMsg}`;
       }
     }
 
-
     async function manualSyncFormSheet() {
+      if (!isFormSyncEnabled) {
+        if (!confirm('ขณะนี้ระบบปิดการดึงข้อมูลอัตโนมัติจาก Google Form ไว้อยู่\n\nคุณต้องการดึงข้อมูลจาก Google Form Sheet เข้ามาในระบบตอนนี้ใช่หรือไม่?')) {
+          return;
+        }
+      }
       const btn = document.getElementById('manualFormSyncBtn');
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Sync...'; }
-      const added = await syncFromFormSheet(false);
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span><span>กำลัง Sync...</span>'; }
+      const added = await syncFromFormSheet(false, true);
       if (btn) {
         btn.disabled = false;
-        btn.textContent = '🔄 Sync Form';
+        btn.innerHTML = '<span>🔄</span><span>ดึงข้อมูลทันที (Sync ครั้งเดียว)</span>';
         if (added > 0) showToast(`นำเข้าคำขอใหม่ ${added} รายการเรียบร้อย`, 'success');
         else showToast('ไม่มีคำขอใหม่จาก Google Form', 'info');
       }
@@ -5248,7 +5309,9 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
       }
 
       previewArea.classList.remove("hidden");
-    }async function confirmImportData(isReplace = false) {
+    }
+
+    async function confirmImportData(isReplace = false) {
       if (!importPreviewData || importPreviewData.length === 0) return;
 
       if (isReplace) {
@@ -5262,37 +5325,50 @@ CREATE POLICY "public_delete" ON scholarships FOR DELETE USING (true);
         }
       }
 
+      showSavingIndicator(isReplace ? 'กำลังแทนที่ข้อมูลทั้งหมด...' : 'กำลังนำเข้าข้อมูล...');
+
       let addedCount = 0;
       let skippedRecords = [];
+      const newRecordsToAdd = [];
+
       importPreviewData.forEach(record => {
+        const cleanId = (record.memberId || "").toString().replace(/^'+/, '').trim();
+        record.memberId = cleanId;
         const normalizeId = id => { const num = (id || "").toString().replace(/\D/g, ""); return num ? parseInt(num, 10).toString() : (id || "").toString().trim(); };
         const normalizeName = name => (name || "").toString().replace(/[\s\u00a0\r\n]/g, "");
+        
         // Check duplicate by memberId + childName
         const exists2569 = dbData.some(d =>
           normalizeId(d.memberId) === normalizeId(record.memberId) && normalizeName(d.childName) === normalizeName(record.childName)
         );
-        const exists2568 = (typeof window.dbData2568 !== "undefined") ? window.dbData2568.some(d =>
+        const exists2568 = !isReplace && (typeof window.dbData2568 !== "undefined") ? window.dbData2568.some(d =>
           normalizeId(d.memberId) === normalizeId(record.memberId) && normalizeName(d.childName) === normalizeName(record.childName)
         ) : false;
+
         const exists = exists2569 || exists2568;
         if (!exists) {
           const newRecord = {
             ...record,
-            index: (dbData.length + addedCount + 1).toString(),
+            index: (dbData.length + 1).toString(),
             isLocalOnly: true
           };
           dbData.push(newRecord);
+          newRecordsToAdd.push(newRecord);
           addedCount++;
           syncToGoogleSheets(newRecord, "save");
-          saveToSupabase(newRecord);
         } else {
           skippedRecords.push(record);
         }
       });
 
+      if (newRecordsToAdd.length > 0) {
+        await bulkSaveToSupabase(newRecordsToAdd);
+      }
+
       reIndexDbData();
       saveLocalStorageData();
       renderAdminDashboard();
+      hideSavingIndicator('นำเข้าข้อมูลเรียบร้อยแล้ว');
 
       const resultArea = document.getElementById("importResultArea");
       const previewArea = document.getElementById("importPreviewArea");
